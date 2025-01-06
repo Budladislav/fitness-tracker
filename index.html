@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Фитнес Трекер</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="workout-card">
+            <h2>Запись тренировки</h2>
+            <div id="workoutDateContainer" class="workout-date-display hidden">
+                Тренировка от <span id="workoutDate"></span>
+            </div>
+            <div class="workout-content">
+                <div class="input-section">
+                    <div id="startWorkoutSection">
+                        <button id="startWorkout">Начать тренировку</button>
+                    </div>
+
+                    <div id="workoutForm" class="hidden">
+                        <div class="form-inputs">
+                            <select id="exerciseType">
+                                <option value="bodyweight">Без веса</option>
+                                <option value="weighted">С весом</option>
+                            </select>
+                            
+                            <input type="text" id="exerciseName" placeholder="Название упражнения">
+                            
+                            <div id="repsInput" class="input-field">
+                                <input type="number" id="exerciseReps" placeholder="Количество повторений">
+                            </div>
+                            
+                            <div id="weightInput" class="input-field hidden">
+                                <input type="number" id="exerciseWeight" placeholder="Вес (кг)">
+                            </div>
+                        </div>
+                        
+                        <button id="addExercise">Добавить в лог</button>
+                    </div>
+                </div>
+
+                <div class="vertical-divider"></div>
+
+                <div class="log-section">
+                    <div id="exerciseLog"></div>
+                    <button id="saveWorkout">Сохранить тренировку</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-container">
+        <h2>История тренировок</h2>
+        <div id="workoutHistory"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

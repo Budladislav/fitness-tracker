@@ -1,0 +1,234 @@
+body {
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+.container, .history-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.workout-card, .history-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.workout-content {
+    display: flex;
+    min-height: 300px;
+    gap: 40px;
+}
+
+.input-section, .log-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.vertical-divider {
+    width: 1px;
+    background-color: #eee;
+    align-self: stretch;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+select, input, button {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 200px;
+    margin: 10px auto;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#startWorkoutSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+}
+
+#exerciseLog {
+    flex-grow: 1;
+    margin-bottom: 20px;
+}
+
+#startWorkout, #saveWorkout {
+    margin-top: auto;
+    margin-bottom: 20px;
+}
+
+.workout-date-display {
+    text-align: center;
+    color: #007bff;
+    font-weight: bold;
+    margin: 0 auto 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+#workoutDate {
+    color: #333;
+}
+
+#workoutForm {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+    width: 80%;
+    margin: 0 auto;
+}
+
+select, input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.input-field {
+    width: 100%;
+}
+
+#addExercise {
+    margin-top: auto;
+    margin-bottom: 20px;
+}
+
+.exercise-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* История тренировок */
+.history-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.workout-entry {
+    background: white;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.workout-date {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.workout-exercises {
+    margin-left: 15px;
+    margin-top: 15px;
+}
+
+.workout-exercises div {
+    margin: 5px 0;
+    color: #333;
+}
+
+/* Убираем стрелки для Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Добавляем метатег в HTML для корректного масштабирования */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .workout-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .vertical-divider {
+        width: 100%;
+        height: 1px;
+        margin: 10px 0;
+    }
+
+    .form-inputs {
+        width: 100%;
+    }
+
+    select, input, button {
+        font-size: 16px; /* Оптимальный размер для мобильных устройств */
+        padding: 12px; /* Увеличиваем область нажатия */
+    }
+
+    .workout-entry {
+        margin: 10px 0;
+        padding: 12px;
+    }
+
+    .workout-exercises {
+        margin-left: 0;
+    }
+
+    /* Увеличиваем отступы между элементами для удобства нажатия */
+    .exercise-item {
+        padding: 12px 0;
+        margin: 5px 0;
+    }
+}
