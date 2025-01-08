@@ -146,7 +146,7 @@ class UIManager {
         this.elements.exerciseWeight.value = '';
     }
 
-    displayWorkoutHistory(workouts, createWorkoutEntry) {
+    displayWorkoutHistory(workouts) {
         this.elements.historyContainer.innerHTML = '';
         
         if (workouts.length === 0) {
@@ -155,7 +155,7 @@ class UIManager {
         }
 
         [...workouts].reverse().forEach(workout => {
-            const workoutEntry = createWorkoutEntry(workout);
+            const workoutEntry = this.createWorkoutEntry(workout);
             this.elements.historyContainer.appendChild(workoutEntry);
         });
     }
@@ -163,7 +163,7 @@ class UIManager {
     createWorkoutDateElement(date) {
         const dateElement = document.createElement('div');
         dateElement.className = 'workout-date';
-        dateElement.textContent = `Тренировка от ${date || 'неизвестной даты'}`;
+        dateElement.textContent = DateFormatter.formatWorkoutDate(date);
         return dateElement;
     }
 
@@ -254,52 +254,52 @@ class WorkoutStorage {
 
 // 5. ExerciseValidator
 class ExerciseValidator {
-    validateName(name) {
-        const trimmedName = name.trim();
-        if (!trimmedName) {
-            throw new Error('Название упражнения не может быть пустым');
-        }
-        return trimmedName;
-    }
+    constructor(notifications) {
+        this.notifications = notifications;
+        // Определяем validate как свойство в конструкторе
+        this.validate = (formData) => {
+            const { type, name, reps, weight } = formData;
+            
+            // Проверка имени
+            if (!name || !name.trim()) {
+                this.notifications.error('Введите название упражнения');
+                return null;
+            }
 
-    validateReps(reps) {
-        const repsNumber = parseInt(reps, 10);
-        if (isNaN(repsNumber) || repsNumber <= 0) {
-            throw new Error('Количество повторений должно быть положительным числом');
-        }
-        return repsNumber;
-    }
+            // Проверка повторений
+            const repsNum = parseInt(reps, 10);
+            if (isNaN(repsNum) || repsNum <= 0) {
+                this.notifications.error('Введите корректное количество повторений');
+                return null;
+            }
 
-    validateWeight(type, weight) {
-        if (type === 'bodyweight') {
-            return null;
-        }
-        const weightNumber = parseFloat(weight);
-        if (isNaN(weightNumber) || weightNumber <= 0) {
-            throw new Error('Вес должен быть положительным числом');
-        }
-        return weightNumber;
-    }
+            // Проверка веса для упражнений с весом
+            if (type !== 'bodyweight') {
+                const weightNum = parseFloat(weight);
+                if (isNaN(weightNum) || weightNum <= 0) {
+                    this.notifications.error('Введите корректный вес');
+                    return null;
+                }
+            }
 
-    validateExerciseInput(name, reps) {
-        try {
-            this.validateName(name);
-            this.validateReps(reps);
-            return true;
-        } catch (error) {
-            alert(error.message);
-            return false;
-        }
+            // Возвращаем валидные данные
+            return {
+                type,
+                name: name.trim(),
+                reps: repsNum,
+                weight: type === 'bodyweight' ? null : parseFloat(weight)
+            };
+        };
     }
 }
 
 // 6. WorkoutManager
 class WorkoutManager {
     constructor() {
+        this.notifications = new NotificationManager();
         this.ui = new UIManager();
         this.storage = new WorkoutStorage();
-        this.validator = new ExerciseValidator();
-        this.notifications = new NotificationManager();
+        this.validator = new ExerciseValidator(this.notifications);
         this.currentWorkout = {
             date: null,
             exercises: []
@@ -324,22 +324,12 @@ class WorkoutManager {
         // Обработчик добавления упражнения в лог
         this.ui.elements.addExercise.addEventListener('click', () => {
             const formData = this.ui.getFormData();
+            const validatedData = this.validator.validate(formData);
             
-            if (!this.validateExerciseInput(formData.name, formData.reps)) {
-                return;
-            }
-            
-            try {
-                const exercise = this.createExerciseData(
-                    formData.type, 
-                    formData.name, 
-                    formData.reps, 
-                    formData.weight
-                );
-                this.ui.addExerciseToLog(exercise);
+            if (validatedData) {
+                this.ui.addExerciseToLog(validatedData);
                 this.notifications.success('Упражнение добавлено');
-            } catch (error) {
-                this.notifications.error(error.message);
+                this.ui.clearInputs();
             }
         });
     }
@@ -393,10 +383,7 @@ class WorkoutManager {
 
     displayWorkoutHistory() {
         const savedWorkouts = this.storage.getWorkoutHistory();
-        this.ui.displayWorkoutHistory(
-            savedWorkouts, 
-            (workout) => this.ui.createWorkoutEntry(workout)
-        );
+        this.ui.displayWorkoutHistory(savedWorkouts);
     }
 
     // Оставляем методы для работы с данными
@@ -406,20 +393,6 @@ class WorkoutManager {
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const year = now.getFullYear();
         return `${day}.${month}.${year}`;
-    }
-
-    createExerciseData(type, name, reps, weight) {
-        const exercise = {
-            type,
-            name: this.validator.validateName(name),
-            reps: this.validator.validateReps(reps),
-            weight: this.validator.validateWeight(type, weight)
-        };
-        return exercise;
-    }
-
-    validateExerciseInput(name, reps) {
-        return this.validator.validateExerciseInput(name, reps);
     }
 }
 
