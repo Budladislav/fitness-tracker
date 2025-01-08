@@ -205,10 +205,28 @@ class UIManager {
     }
 
     resetWorkoutForm() {
+        // Очищаем лог упражнений
         this.elements.exerciseLog.innerHTML = '';
+        
+        // Скрываем форму и показываем кнопку "Начать тренировку"
         this.elements.workoutForm.classList.add('hidden');
         this.elements.workoutDateContainer.classList.add('hidden');
         this.elements.startWorkoutSection.classList.remove('hidden');
+        
+        // Сбрасываем значения полей
+        this.elements.exerciseType.value = 'bodyweight'; // Возвращаем к дефолтному значению
+        this.elements.exerciseName.value = ''; // Очищаем выбор упражнения
+        this.elements.exerciseReps.value = ''; // Очищаем повторения
+        this.elements.exerciseWeight.value = ''; // Очищаем вес
+        
+        // Обновляем список упражнений для выбранного типа
+        this.initializeExercisesList();
+        
+        // Скрываем поле веса для упражнений без веса
+        this.toggleWeightInput(true);
+        
+        // Отключаем кнопку добавления упражнения
+        this.elements.addExercise.disabled = true;
     }
 
     /**
@@ -518,13 +536,32 @@ class WorkoutManager {
         this.ui = new UIManager(this.notifications);
         this.storage = new WorkoutStorage();
         this.validator = new ExerciseValidator(this.notifications);
-        this.currentWorkout = {
+        this.currentWorkout = this.storage.getCurrentWorkout() || {
             date: null,
             exercises: []
         };
 
         this.initializeEventListeners();
+        this.restoreWorkoutState();
         this.displayWorkoutHistory();
+    }
+
+    restoreWorkoutState() {
+        const currentWorkout = this.storage.getCurrentWorkout();
+        
+        if (currentWorkout && currentWorkout.date) {
+            // Восстанавливаем форму
+            this.ui.showWorkoutForm(currentWorkout.date);
+            
+            // Восстанавливаем упражнения
+            if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
+                currentWorkout.exercises.forEach(exercise => {
+                    this.ui.addExerciseToLog(exercise);
+                });
+            }
+            
+            this.notifications.info('Восстановлена текущая тренировка');
+        }
     }
 
     initializeEventListeners() {
@@ -546,6 +583,12 @@ class WorkoutManager {
             
             if (validatedData) {
                 this.ui.addExerciseToLog(validatedData);
+                
+                // Сохраняем текущее состояние в sessionStorage
+                const currentWorkout = this.storage.getCurrentWorkout();
+                currentWorkout.exercises = this.ui.getExercisesFromLog();
+                this.storage.saveCurrentWorkout(currentWorkout);
+                
                 this.notifications.success('Упражнение добавлено');
             }
         });
@@ -573,6 +616,10 @@ class WorkoutManager {
             
             if (exercises.length === 0) {
                 this.notifications.error('Добавьте хотя бы одно упражнение!');
+                return;
+            }
+
+            if (!confirm('Вы уверены, что хотите сохранить тренировку?')) {
                 return;
             }
 
