@@ -125,9 +125,14 @@ class NotificationManager {
  * @class UIManager
  */
 class UIManager {
-    constructor() {
+    /**
+     * @param {NotificationManager} notifications - Менеджер уведомлений
+     */
+    constructor(notifications) {
+        this.notifications = notifications;
         this.elements = this.initializeElements();
         this.setupEventListeners();
+        this.initializeExercisesList();
     }
 
     initializeElements() {
@@ -146,14 +151,15 @@ class UIManager {
             addExercise: document.getElementById('addExercise'),
             startWorkout: document.getElementById('startWorkout'),
             saveWorkout: document.getElementById('saveWorkout'),
-            historyContainer: document.getElementById('workoutHistory')
+            historyContainer: document.getElementById('workoutHistory'),
+            exercisesList: document.getElementById('exercisesList')
         };
     }
 
     setupEventListeners() {
-        // Добавляем дебаунс для обработки ввода
-        this.elements.exerciseName.addEventListener('input', 
-            Utils.debounce(() => this.validateInput(), 300)
+        // Добавляем валидацию для всех полей ввода
+        this.elements.exerciseName.addEventListener('change', 
+            () => this.validateInput()
         );
 
         this.elements.exerciseReps.addEventListener('input', 
@@ -163,16 +169,22 @@ class UIManager {
         this.elements.exerciseWeight.addEventListener('input', 
             Utils.debounce(() => this.validateInput(), 300)
         );
+
+        // Добавляем валидацию при изменении типа упражнения
+        this.elements.exerciseType.addEventListener('change', () => {
+            this.validateInput();
+            const isBodyweight = this.elements.exerciseType.value === 'bodyweight';
+            this.toggleWeightInput(isBodyweight);
+        });
     }
 
     validateInput() {
         const formData = this.getFormData();
-        const isValid = formData.name.trim() && 
-                       (!isNaN(formData.reps) && formData.reps > 0) &&
-                       (formData.type === 'bodyweight' || (!isNaN(formData.weight) && formData.weight > 0));
-
-        this.elements.addExercise.disabled = !isValid;
-        return isValid;
+        const validator = new ExerciseValidator(this.notifications);
+        const validatedData = validator.validate(formData);
+        
+        this.elements.addExercise.disabled = !validatedData;
+        return !!validatedData;
     }
 
     toggleWeightInput(isBodyweight) {
@@ -311,6 +323,34 @@ class UIManager {
         return Array.from(this.elements.exerciseLog.children).map(item => {
             return JSON.parse(item.dataset.exercise);
         });
+    }
+
+    initializeExercisesList() {
+        const exerciseNameSelect = this.elements.exerciseName;
+        
+        const updateExercisesList = () => {
+            const type = this.elements.exerciseType.value;
+            const exercises = ExercisePool.getExercisesByType(type);
+            
+            // Очищаем список
+            exerciseNameSelect.innerHTML = '<option value="" disabled selected>Выберите упражнение</option>';
+            
+            // Добавляем упражнения
+            exercises.forEach(exercise => {
+                const option = document.createElement('option');
+                option.value = exercise.name;
+                option.textContent = exercise.name;
+                exerciseNameSelect.appendChild(option);
+            });
+        };
+
+        // Обновляем список при изменении типа упражнения
+        this.elements.exerciseType.addEventListener('change', () => {
+            updateExercisesList();
+        });
+        
+        // Инициализируем список
+        updateExercisesList();
     }
 }
 
@@ -475,7 +515,7 @@ class WorkoutManager {
      */
     constructor() {
         this.notifications = new NotificationManager();
-        this.ui = new UIManager();
+        this.ui = new UIManager(this.notifications);
         this.storage = new WorkoutStorage();
         this.validator = new ExerciseValidator(this.notifications);
         this.currentWorkout = {
@@ -533,11 +573,6 @@ class WorkoutManager {
             
             if (exercises.length === 0) {
                 this.notifications.error('Добавьте хотя бы одно упражнение!');
-                return;
-            }
-
-            // Показываем диалог подтверждения
-            if (!confirm('Вы уверены, что хотите сохранить тренировку? Это действие нельзя отменить.')) {
                 return;
             }
 
