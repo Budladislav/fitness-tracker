@@ -1,4 +1,28 @@
-// Сначала определяем UIManager
+// 1. Утилитарные классы
+class DateFormatter {
+    static getCurrentFormattedDate() {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
+    static formatWorkoutDate(date) {
+        return `Тренировка от ${date || 'неизвестной даты'}`;
+    }
+}
+
+class ExerciseFormatter {
+    static formatExercise(exercise) {
+        const { type, name, reps, weight } = exercise;
+        return type === 'bodyweight'
+            ? `${name} - ${reps} повторений`
+            : `${name} - ${reps} повторений × ${weight} кг`;
+    }
+}
+
+// 2. UIManager
 class UIManager {
     constructor() {
         this.elements = this.initializeElements();
@@ -127,10 +151,103 @@ class UIManager {
     }
 }
 
-// Затем определяем WorkoutManager
+// 3. WorkoutStorage
+class WorkoutStorage {
+    saveToStorage(key, data, storage = localStorage) {
+        try {
+            storage.setItem(key, JSON.stringify(data));
+            return true;
+        } catch (e) {
+            console.error(`Ошибка сохранения данных для ключа "${key}":`, e);
+            return false;
+        }
+    }
+
+    getFromStorage(key, storage = localStorage) {
+        try {
+            return JSON.parse(storage.getItem(key) || 'null');
+        } catch (e) {
+            console.error(`Ошибка чтения данных для ключа "${key}":`, e);
+            return null;
+        }
+    }
+
+    removeFromStorage(key, storage = localStorage) {
+        try {
+            storage.removeItem(key);
+            return true;
+        } catch (e) {
+            console.error(`Ошибка удаления данных для ключа "${key}":`, e);
+            return false;
+        }
+    }
+
+    getCurrentWorkout() {
+        return this.getFromStorage('currentWorkout', sessionStorage) || {};
+    }
+
+    saveCurrentWorkout(workout) {
+        return this.saveToStorage('currentWorkout', workout, sessionStorage);
+    }
+
+    getWorkoutHistory() {
+        return this.getFromStorage('exercises') || [];
+    }
+
+    saveWorkoutToHistory(workout) {
+        const savedWorkouts = this.getWorkoutHistory();
+        savedWorkouts.push(workout);
+        return this.saveToStorage('exercises', savedWorkouts);
+    }
+}
+
+// 4. ExerciseValidator
+class ExerciseValidator {
+    validateName(name) {
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+            throw new Error('Название упражнения не может быть пустым');
+        }
+        return trimmedName;
+    }
+
+    validateReps(reps) {
+        const repsNumber = parseInt(reps, 10);
+        if (isNaN(repsNumber) || repsNumber <= 0) {
+            throw new Error('Количество повторений должно быть положительным числом');
+        }
+        return repsNumber;
+    }
+
+    validateWeight(type, weight) {
+        if (type === 'bodyweight') {
+            return null;
+        }
+        const weightNumber = parseFloat(weight);
+        if (isNaN(weightNumber) || weightNumber <= 0) {
+            throw new Error('Вес должен быть положительным числом');
+        }
+        return weightNumber;
+    }
+
+    validateExerciseInput(name, reps) {
+        try {
+            this.validateName(name);
+            this.validateReps(reps);
+            return true;
+        } catch (error) {
+            alert(error.message);
+            return false;
+        }
+    }
+}
+
+// 5. WorkoutManager
 class WorkoutManager {
     constructor() {
         this.ui = new UIManager();
+        this.storage = new WorkoutStorage();
+        this.validator = new ExerciseValidator();
         this.currentWorkout = {
             date: null,
             exercises: []
@@ -180,7 +297,7 @@ class WorkoutManager {
             const currentDate = this.getCurrentFormattedDate();
             this.ui.showWorkoutForm(currentDate);
             
-            this.saveCurrentWorkout({
+            this.storage.saveCurrentWorkout({
                 date: currentDate,
                 exercises: []
             });
@@ -195,19 +312,22 @@ class WorkoutManager {
                 return;
             }
 
-            const currentWorkout = this.getCurrentWorkout();
+            const currentWorkout = this.storage.getCurrentWorkout();
             
             if (!currentWorkout.date) {
                 alert('Ошибка: дата тренировки не найдена!');
                 return;
             }
 
-            this.saveWorkoutToHistory({
+            if (!this.storage.saveWorkoutToHistory({
                 date: currentWorkout.date,
                 exercises: exercises
-            });
+            })) {
+                alert('Не удалось сохранить тренировку');
+                return;
+            }
             
-            sessionStorage.removeItem('currentWorkout');
+            this.storage.removeFromStorage('currentWorkout', sessionStorage);
             this.ui.resetWorkoutForm();
             this.displayWorkoutHistory();
             alert('Тренировка сохранена!');
@@ -215,7 +335,7 @@ class WorkoutManager {
     }
 
     displayWorkoutHistory() {
-        const savedWorkouts = this.getFromStorage('exercises') || [];
+        const savedWorkouts = this.storage.getWorkoutHistory();
         this.ui.displayWorkoutHistory(
             savedWorkouts, 
             (workout) => this.ui.createWorkoutEntry(workout, this.formatExerciseText.bind(this))
@@ -234,50 +354,15 @@ class WorkoutManager {
     createExerciseData(type, name, reps, weight) {
         const exercise = {
             type,
-            name: this.validateName(name),
-            reps: this.validateReps(reps),
-            weight: this.validateWeight(type, weight)
+            name: this.validator.validateName(name),
+            reps: this.validator.validateReps(reps),
+            weight: this.validator.validateWeight(type, weight)
         };
         return exercise;
     }
 
-    // Методы валидации
     validateExerciseInput(name, reps) {
-        try {
-            this.validateName(name);
-            this.validateReps(reps);
-            return true;
-        } catch (error) {
-            alert(error.message);
-            return false;
-        }
-    }
-
-    validateName(name) {
-        const trimmedName = name.trim();
-        if (!trimmedName) {
-            throw new Error('Название упражнения не может быть пустым');
-        }
-        return trimmedName;
-    }
-
-    validateReps(reps) {
-        const repsNumber = parseInt(reps, 10);
-        if (isNaN(repsNumber) || repsNumber <= 0) {
-            throw new Error('Количество повторений должно быть положительным числом');
-        }
-        return repsNumber;
-    }
-
-    validateWeight(type, weight) {
-        if (type === 'bodyweight') {
-            return null;
-        }
-        const weightNumber = parseFloat(weight);
-        if (isNaN(weightNumber) || weightNumber <= 0) {
-            throw new Error('Вес должен быть положительным числом');
-        }
-        return weightNumber;
+        return this.validator.validateExerciseInput(name, reps);
     }
 
     formatExerciseText(exercise) {
@@ -285,47 +370,6 @@ class WorkoutManager {
         return type === 'bodyweight'
             ? `${name} - ${reps} повторений`
             : `${name} - ${reps} повторений × ${weight} кг`;
-    }
-
-    // Методы для работы с хранилищем
-    saveToStorage(key, data, storage = localStorage) {
-        try {
-            storage.setItem(key, JSON.stringify(data));
-            return true;
-        } catch (e) {
-            console.error(`Ошибка сохранения данных для ключа "${key}":`, e);
-            return false;
-        }
-    }
-
-    getFromStorage(key, storage = localStorage) {
-        try {
-            return JSON.parse(storage.getItem(key) || 'null');
-        } catch (e) {
-            console.error(`Ошибка чтения данных для ключа "${key}":`, e);
-            return null;
-        }
-    }
-
-    getCurrentWorkout() {
-        return this.getFromStorage('currentWorkout', sessionStorage) || {};
-    }
-
-    saveCurrentWorkout(workout) {
-        if (!this.saveToStorage('currentWorkout', workout, sessionStorage)) {
-            alert('Не удалось сохранить текущую тренировку');
-        }
-    }
-
-    saveWorkoutToHistory(workout) {
-        const savedWorkouts = this.getFromStorage('exercises') || [];
-        savedWorkouts.push(workout);
-        
-        if (!this.saveToStorage('exercises', savedWorkouts)) {
-            alert('Не удалось сохранить тренировку');
-            return false;
-        }
-        return true;
     }
 }
 
