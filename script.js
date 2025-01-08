@@ -22,7 +22,58 @@ class ExerciseFormatter {
     }
 }
 
-// 2. UIManager
+// 2. NotificationManager (добавляем перед UIManager)
+class NotificationManager {
+    static SUCCESS = 'success';
+    static ERROR = 'error';
+    static INFO = 'info';
+
+    constructor() {
+        this.container = this.createContainer();
+    }
+
+    createContainer() {
+        const container = document.createElement('div');
+        container.id = 'notification-container';
+        document.body.appendChild(container);
+        return container;
+    }
+
+    show(message, type = NotificationManager.INFO) {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        this.container.appendChild(notification);
+
+        // Анимация появления
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+
+        // Автоматическое скрытие
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                this.container.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    success(message) {
+        this.show(message, NotificationManager.SUCCESS);
+    }
+
+    error(message) {
+        this.show(message, NotificationManager.ERROR);
+    }
+
+    info(message) {
+        this.show(message, NotificationManager.INFO);
+    }
+}
+
+// 3. UIManager
 class UIManager {
     constructor() {
         this.elements = this.initializeElements();
@@ -81,11 +132,11 @@ class UIManager {
         };
     }
 
-    addExerciseToLog(exercise, formatExerciseText) {
+    addExerciseToLog(exercise) {
         const item = document.createElement('div');
         item.className = 'exercise-item';
         item.dataset.exercise = JSON.stringify(exercise);
-        item.textContent = formatExerciseText(exercise);
+        item.textContent = ExerciseFormatter.formatExercise(exercise);
         this.elements.exerciseLog.appendChild(item);
     }
 
@@ -116,15 +167,15 @@ class UIManager {
         return dateElement;
     }
 
-    createExerciseElement(exercise, formatExerciseText) {
+    createExerciseElement(exercise) {
         const exerciseDiv = document.createElement('div');
         if (exercise && exercise.name) {
-            exerciseDiv.textContent = formatExerciseText(exercise);
+            exerciseDiv.textContent = ExerciseFormatter.formatExercise(exercise);
         }
         return exerciseDiv;
     }
 
-    createWorkoutEntry(workout, formatExerciseText) {
+    createWorkoutEntry(workout) {
         const workoutEntry = document.createElement('div');
         workoutEntry.className = 'workout-entry';
         
@@ -135,7 +186,7 @@ class UIManager {
         
         if (workout.exercises && Array.isArray(workout.exercises)) {
             workout.exercises.forEach(exercise => {
-                exercises.appendChild(this.createExerciseElement(exercise, formatExerciseText));
+                exercises.appendChild(this.createExerciseElement(exercise));
             });
         }
         
@@ -151,7 +202,7 @@ class UIManager {
     }
 }
 
-// 3. WorkoutStorage
+// 4. WorkoutStorage
 class WorkoutStorage {
     saveToStorage(key, data, storage = localStorage) {
         try {
@@ -201,7 +252,7 @@ class WorkoutStorage {
     }
 }
 
-// 4. ExerciseValidator
+// 5. ExerciseValidator
 class ExerciseValidator {
     validateName(name) {
         const trimmedName = name.trim();
@@ -242,12 +293,13 @@ class ExerciseValidator {
     }
 }
 
-// 5. WorkoutManager
+// 6. WorkoutManager
 class WorkoutManager {
     constructor() {
         this.ui = new UIManager();
         this.storage = new WorkoutStorage();
         this.validator = new ExerciseValidator();
+        this.notifications = new NotificationManager();
         this.currentWorkout = {
             date: null,
             exercises: []
@@ -284,9 +336,10 @@ class WorkoutManager {
                     formData.reps, 
                     formData.weight
                 );
-                this.ui.addExerciseToLog(exercise, this.formatExerciseText.bind(this));
+                this.ui.addExerciseToLog(exercise);
+                this.notifications.success('Упражнение добавлено');
             } catch (error) {
-                alert(error.message);
+                this.notifications.error(error.message);
             }
         });
     }
@@ -294,13 +347,17 @@ class WorkoutManager {
     initializeWorkoutEvents() {
         // Обработчик начала тренировки
         this.ui.elements.startWorkout.addEventListener('click', () => {
-            const currentDate = this.getCurrentFormattedDate();
+            const currentDate = DateFormatter.getCurrentFormattedDate();
             this.ui.showWorkoutForm(currentDate);
             
-            this.storage.saveCurrentWorkout({
+            if (!this.storage.saveCurrentWorkout({
                 date: currentDate,
                 exercises: []
-            });
+            })) {
+                this.notifications.error('Не удалось начать тренировку');
+                return;
+            }
+            this.notifications.info('Начата новая тренировка');
         });
 
         // Обработчик сохранения тренировки
@@ -308,14 +365,14 @@ class WorkoutManager {
             const exercises = this.ui.getExercisesFromLog();
             
             if (exercises.length === 0) {
-                alert('Добавьте хотя бы одно упражнение!');
+                this.notifications.error('Добавьте хотя бы одно упражнение!');
                 return;
             }
 
             const currentWorkout = this.storage.getCurrentWorkout();
             
             if (!currentWorkout.date) {
-                alert('Ошибка: дата тренировки не найдена!');
+                this.notifications.error('Ошибка: дата тренировки не найдена!');
                 return;
             }
 
@@ -323,14 +380,14 @@ class WorkoutManager {
                 date: currentWorkout.date,
                 exercises: exercises
             })) {
-                alert('Не удалось сохранить тренировку');
+                this.notifications.error('Не удалось сохранить тренировку');
                 return;
             }
             
             this.storage.removeFromStorage('currentWorkout', sessionStorage);
             this.ui.resetWorkoutForm();
             this.displayWorkoutHistory();
-            alert('Тренировка сохранена!');
+            this.notifications.success('Тренировка сохранена!');
         });
     }
 
@@ -338,7 +395,7 @@ class WorkoutManager {
         const savedWorkouts = this.storage.getWorkoutHistory();
         this.ui.displayWorkoutHistory(
             savedWorkouts, 
-            (workout) => this.ui.createWorkoutEntry(workout, this.formatExerciseText.bind(this))
+            (workout) => this.ui.createWorkoutEntry(workout)
         );
     }
 
@@ -363,13 +420,6 @@ class WorkoutManager {
 
     validateExerciseInput(name, reps) {
         return this.validator.validateExerciseInput(name, reps);
-    }
-
-    formatExerciseText(exercise) {
-        const { type, name, reps, weight } = exercise;
-        return type === 'bodyweight'
-            ? `${name} - ${reps} повторений`
-            : `${name} - ${reps} повторений × ${weight} кг`;
     }
 }
 
