@@ -1,5 +1,29 @@
+:root {
+    /* Цвета */
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --background-color: #f5f5f5;
+    --card-background: white;
+    --border-color: #eee;
+    --text-color: #333;
+    --success-color: #4caf50;
+    --error-color: #f44336;
+    --info-color: #2196F3;
+
+    /* Тени */
+    --shadow-default: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-notification: 0 2px 5px rgba(0,0,0,0.2);
+
+    /* Размеры */
+    --container-max-width: 1200px;
+    --border-radius: 8px;
+    --spacing-default: 20px;
+    --mobile-spacing: 10px;
+}
+
 body {
-    background-color: #f5f5f5;
+    background-color: var(--background-color);
+    color: var(--text-color);
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
@@ -13,10 +37,10 @@ body {
 }
 
 .workout-card, .history-container {
-    background: white;
+    background: var(--card-background);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
     width: 100%;
     box-sizing: border-box;
 }
@@ -36,7 +60,7 @@ body {
 
 .vertical-divider {
     width: 1px;
-    background-color: #eee;
+    background-color: var(--border-color);
     align-self: stretch;
 }
 
@@ -45,7 +69,7 @@ h2 {
     margin-top: 0;
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
 }
 
 select, input, button {
@@ -58,7 +82,7 @@ select, input, button {
 }
 
 button {
-    background-color: #007bff;
+    background-color: var(--primary-color);
     color: white;
     border: none;
     cursor: pointer;
@@ -68,7 +92,7 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: var(--primary-hover);
 }
 
 .hidden {
@@ -94,11 +118,11 @@ button:hover {
 
 .workout-date-display {
     text-align: center;
-    color: #007bff;
+    color: var(--primary-color);
     font-weight: bold;
     margin: 0 auto 20px;
     padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
 }
 
 #workoutDate {
@@ -233,14 +257,6 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 }
 
-/* В :root добавим новые переменные */
-:root {
-    /* ... существующие переменные ... */
-    --success-color: #4caf50;
-    --error-color: #f44336;
-    --info-color: var(--primary-color);
-}
-
 /* В конец файла добавим стили для уведомлений */
 #notification-container {
     position: fixed;
@@ -268,16 +284,16 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .notification-error {
-    background-color: #f44336;
+    background-color: var(--error-color);
     color: white;
 }
 
 .notification-success {
-    background-color: #4caf50;
+    background-color: var(--success-color);
     color: white;
 }
 
 .notification-info {
-    background-color: #2196F3;
+    background-color: var(--info-color);
     color: white;
 }

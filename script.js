@@ -204,21 +204,50 @@ class UIManager {
 
 // 4. WorkoutStorage
 class WorkoutStorage {
+    constructor() {
+        this.storageAvailable = this.checkStorageAvailability();
+    }
+
+    checkStorageAvailability() {
+        try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            return true;
+        } catch (e) {
+            console.error('Local storage is not available:', e);
+            return false;
+        }
+    }
+
     saveToStorage(key, data, storage = localStorage) {
+        if (!this.storageAvailable) {
+            console.error('Storage is not available');
+            return false;
+        }
+
         try {
             storage.setItem(key, JSON.stringify(data));
             return true;
         } catch (e) {
-            console.error(`Ошибка сохранения данных для ключа "${key}":`, e);
+            console.error(`Storage error for key "${key}":`, e);
+            if (e.name === 'QuotaExceededError') {
+                console.error('Storage quota exceeded');
+            }
             return false;
         }
     }
 
     getFromStorage(key, storage = localStorage) {
+        if (!this.storageAvailable) {
+            console.error('Storage is not available');
+            return null;
+        }
+
         try {
-            return JSON.parse(storage.getItem(key) || 'null');
+            const data = storage.getItem(key);
+            return data ? JSON.parse(data) : null;
         } catch (e) {
-            console.error(`Ошибка чтения данных для ключа "${key}":`, e);
+            console.error(`Error reading from storage for key "${key}":`, e);
             return null;
         }
     }
