@@ -1,5 +1,39 @@
-// 1. Утилитарные классы
+/**
+ * @fileoverview Фитнес-трекер для записи тренировок
+ * @version 1.2.0
+ * @author Budladislav
+ * @license MIT
+ */
+
+const APP_CONFIG = {
+    version: '1.2.0',
+    name: 'Fitness Tracker',
+    storagePrefix: 'fitness_tracker_',
+    debug: false // можно включить для отладки
+};
+
+// Добавим логгер для отладки
+class Logger {
+    static log(...args) {
+        if (APP_CONFIG.debug) {
+            console.log(`[${APP_CONFIG.name} v${APP_CONFIG.version}]`, ...args);
+        }
+    }
+
+    static error(...args) {
+        console.error(`[${APP_CONFIG.name} v${APP_CONFIG.version}]`, ...args);
+    }
+}
+
+/**
+ * Форматирует даты для отображения в приложении
+ * @class DateFormatter
+ */
 class DateFormatter {
+    /**
+     * Возвращает текущую дату в формате DD.MM.YYYY
+     * @returns {string} Отформатированная дата
+     */
     static getCurrentFormattedDate() {
         const now = new Date();
         const day = String(now.getDate()).padStart(2, '0');
@@ -8,6 +42,11 @@ class DateFormatter {
         return `${day}.${month}.${year}`;
     }
 
+    /**
+     * Форматирует дату тренировки для отображения
+     * @param {string} date - Дата в формате DD.MM.YYYY
+     * @returns {string} Отформатированная строка с датой
+     */
     static formatWorkoutDate(date) {
         return `Тренировка от ${date || 'неизвестной даты'}`;
     }
@@ -22,7 +61,37 @@ class ExerciseFormatter {
     }
 }
 
-// 2. NotificationManager (добавляем перед UIManager)
+class Utils {
+    static debounce(func, wait = 250) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    static sanitizeInput(input) {
+        if (typeof input !== 'string') return input;
+        
+        return input
+            .trim()
+            // Экранируем HTML-теги
+            .replace(/[<>]/g, '')
+            // Удаляем потенциально опасные символы
+            .replace(/[&'"]/g, '')
+            // Ограничиваем длину
+            .slice(0, 100);
+    }
+}
+
+/**
+ * Управляет отображением уведомлений
+ * @class NotificationManager
+ */
 class NotificationManager {
     static SUCCESS = 'success';
     static ERROR = 'error';
@@ -39,6 +108,11 @@ class NotificationManager {
         return container;
     }
 
+    /**
+     * Показывает уведомление
+     * @param {string} message - Текст уведомления
+     * @param {string} type - Тип уведомления (success/error/info)
+     */
     show(message, type = NotificationManager.INFO) {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -73,10 +147,14 @@ class NotificationManager {
     }
 }
 
-// 3. UIManager
+/**
+ * Управляет пользовательским интерфейсом
+ * @class UIManager
+ */
 class UIManager {
     constructor() {
         this.elements = this.initializeElements();
+        this.setupEventListeners();
     }
 
     initializeElements() {
@@ -97,6 +175,31 @@ class UIManager {
             saveWorkout: document.getElementById('saveWorkout'),
             historyContainer: document.getElementById('workoutHistory')
         };
+    }
+
+    setupEventListeners() {
+        // Добавляем дебаунс для обработки ввода
+        this.elements.exerciseName.addEventListener('input', 
+            Utils.debounce(() => this.validateInput(), 300)
+        );
+
+        this.elements.exerciseReps.addEventListener('input', 
+            Utils.debounce(() => this.validateInput(), 300)
+        );
+
+        this.elements.exerciseWeight.addEventListener('input', 
+            Utils.debounce(() => this.validateInput(), 300)
+        );
+    }
+
+    validateInput() {
+        const formData = this.getFormData();
+        const isValid = formData.name.trim() && 
+                       (!isNaN(formData.reps) && formData.reps > 0) &&
+                       (formData.type === 'bodyweight' || (!isNaN(formData.weight) && formData.weight > 0));
+
+        this.elements.addExercise.disabled = !isValid;
+        return isValid;
     }
 
     toggleWeightInput(isBodyweight) {
@@ -123,20 +226,36 @@ class UIManager {
         this.elements.startWorkoutSection.classList.remove('hidden');
     }
 
+    /**
+     * Получает данные из формы
+     * @returns {{name: string, reps: string, weight: string, type: string}}
+     */
     getFormData() {
         return {
-            name: this.elements.exerciseName.value,
+            name: Utils.sanitizeInput(this.elements.exerciseName.value),
             reps: this.elements.exerciseReps.value,
             weight: this.elements.exerciseWeight.value,
             type: this.elements.exerciseType.value
         };
     }
 
+    /**
+     * Добавляет упражнение в лог тренировки
+     * @param {Object} exercise - Данные упражнения
+     * @param {string} exercise.name - Название упражнения
+     * @param {number} exercise.reps - Количество повторений
+     * @param {number|null} exercise.weight - Вес (null для упражнений без веса)
+     * @param {string} exercise.type - Тип упражнения (bodyweight/weighted)
+     */
     addExerciseToLog(exercise) {
         const item = document.createElement('div');
         item.className = 'exercise-item';
-        item.dataset.exercise = JSON.stringify(exercise);
-        item.textContent = ExerciseFormatter.formatExercise(exercise);
+        const sanitizedExercise = {
+            ...exercise,
+            name: Utils.sanitizeInput(exercise.name)
+        };
+        item.dataset.exercise = JSON.stringify(sanitizedExercise);
+        item.textContent = ExerciseFormatter.formatExercise(sanitizedExercise);
         this.elements.exerciseLog.appendChild(item);
     }
 
@@ -202,10 +321,14 @@ class UIManager {
     }
 }
 
-// 4. WorkoutStorage
+/**
+ * Управляет хранением данных
+ * @class WorkoutStorage
+ */
 class WorkoutStorage {
     constructor() {
         this.storageAvailable = this.checkStorageAvailability();
+        this.prefix = APP_CONFIG.storagePrefix;
     }
 
     checkStorageAvailability() {
@@ -219,35 +342,31 @@ class WorkoutStorage {
         }
     }
 
+    /**
+     * Сохраняет данные в хранилище
+     * @param {string} key - Ключ для сохранения
+     * @param {*} data - Данные для сохранения
+     * @param {Storage} [storage=localStorage] - Хранилище (localStorage/sessionStorage)
+     * @returns {boolean} Успешность операции
+     */
     saveToStorage(key, data, storage = localStorage) {
-        if (!this.storageAvailable) {
-            console.error('Storage is not available');
-            return false;
-        }
-
+        const prefixedKey = this.getStorageKey(key);
         try {
-            storage.setItem(key, JSON.stringify(data));
+            storage.setItem(prefixedKey, JSON.stringify(data));
+            Logger.log('Data saved:', key);
             return true;
         } catch (e) {
-            console.error(`Storage error for key "${key}":`, e);
-            if (e.name === 'QuotaExceededError') {
-                console.error('Storage quota exceeded');
-            }
+            Logger.error('Storage error:', e);
             return false;
         }
     }
 
     getFromStorage(key, storage = localStorage) {
-        if (!this.storageAvailable) {
-            console.error('Storage is not available');
-            return null;
-        }
-
+        const prefixedKey = this.getStorageKey(key);
         try {
-            const data = storage.getItem(key);
-            return data ? JSON.parse(data) : null;
+            return JSON.parse(storage.getItem(prefixedKey));
         } catch (e) {
-            console.error(`Error reading from storage for key "${key}":`, e);
+            Logger.error('Read error:', e);
             return null;
         }
     }
@@ -279,13 +398,31 @@ class WorkoutStorage {
         savedWorkouts.push(workout);
         return this.saveToStorage('exercises', savedWorkouts);
     }
+
+    getStorageKey(key) {
+        return `${this.prefix}${key}`;
+    }
 }
 
-// 5. ExerciseValidator
+/**
+ * Валидирует данные упражнений
+ * @class ExerciseValidator
+ */
 class ExerciseValidator {
+    /**
+     * @param {NotificationManager} notifications - Менеджер уведомлений
+     */
     constructor(notifications) {
         this.notifications = notifications;
-        // Определяем validate как свойство в конструкторе
+        /**
+         * Валидирует данные упражнения
+         * @param {Object} formData - Данные формы
+         * @param {string} formData.name - Название упражнения
+         * @param {string} formData.reps - Количество повторений
+         * @param {string} formData.weight - Вес
+         * @param {string} formData.type - Тип упражнения
+         * @returns {Object|null} Валидированные данные или null при ошибке
+         */
         this.validate = (formData) => {
             const { type, name, reps, weight } = formData;
             
@@ -322,8 +459,14 @@ class ExerciseValidator {
     }
 }
 
-// 6. WorkoutManager
+/**
+ * Основной класс управления приложением
+ * @class WorkoutManager
+ */
 class WorkoutManager {
+    /**
+     * Инициализирует приложение и создает необходимые менеджеры
+     */
     constructor() {
         this.notifications = new NotificationManager();
         this.ui = new UIManager();
@@ -358,7 +501,6 @@ class WorkoutManager {
             if (validatedData) {
                 this.ui.addExerciseToLog(validatedData);
                 this.notifications.success('Упражнение добавлено');
-                this.ui.clearInputs();
             }
         });
     }
@@ -414,18 +556,20 @@ class WorkoutManager {
         const savedWorkouts = this.storage.getWorkoutHistory();
         this.ui.displayWorkoutHistory(savedWorkouts);
     }
-
-    // Оставляем методы для работы с данными
-    getCurrentFormattedDate() {
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        return `${day}.${month}.${year}`;
-    }
 }
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
+    Logger.log('Initializing...');
+    
+    // Проверка версии в localStorage
+    const savedVersion = localStorage.getItem(`${APP_CONFIG.storagePrefix}version`);
+    if (savedVersion !== APP_CONFIG.version) {
+        Logger.log('Version changed:', savedVersion, '->', APP_CONFIG.version);
+        // Здесь можно добавить миграцию данных при необходимости
+        localStorage.setItem(`${APP_CONFIG.storagePrefix}version`, APP_CONFIG.version);
+    }
+
     const workoutManager = new WorkoutManager();
+    Logger.log('Application started');
 }); 
