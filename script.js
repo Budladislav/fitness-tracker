@@ -29,8 +29,8 @@ class ExerciseFormatter {
     static formatExercise(exercise) {
         const { type, name, reps, weight } = exercise;
         return type === 'bodyweight'
-            ? `${name} - ${reps} повторений`
-            : `${name} - ${reps} повторений × ${weight} кг`;
+            ? `${name} - ${reps}`
+            : `${name} - ${reps} × ${weight} кг`;
     }
 }
 
@@ -157,22 +157,8 @@ class UIManager {
     }
 
     setupEventListeners() {
-        // Добавляем валидацию для всех полей ввода
-        this.elements.exerciseName.addEventListener('change', 
-            () => this.validateInput()
-        );
-
-        this.elements.exerciseReps.addEventListener('input', 
-            Utils.debounce(() => this.validateInput(), 300)
-        );
-
-        this.elements.exerciseWeight.addEventListener('input', 
-            Utils.debounce(() => this.validateInput(), 300)
-        );
-
-        // Добавляем валидацию при изменении типа упражнения
+        // Убираем валидацию с полей ввода, оставляем только переключение веса
         this.elements.exerciseType.addEventListener('change', () => {
-            this.validateInput();
             const isBodyweight = this.elements.exerciseType.value === 'bodyweight';
             this.toggleWeightInput(isBodyweight);
         });
@@ -180,11 +166,10 @@ class UIManager {
 
     validateInput() {
         const formData = this.getFormData();
-        const validator = new ExerciseValidator(this.notifications);
-        const validatedData = validator.validate(formData);
-        
-        this.elements.addExercise.disabled = !validatedData;
-        return !!validatedData;
+        // Просто проверяем заполненность полей без показа уведомлений
+        return formData.name && 
+               formData.reps && 
+               (formData.type === 'bodyweight' || formData.weight);
     }
 
     toggleWeightInput(isBodyweight) {
@@ -202,6 +187,7 @@ class UIManager {
         this.elements.workoutDateContainer.classList.remove('hidden');
         this.elements.startWorkoutSection.classList.add('hidden');
         this.elements.workoutForm.classList.remove('hidden');
+        document.querySelector('.workout-buttons').classList.remove('hidden');
     }
 
     resetWorkoutForm() {
@@ -227,6 +213,7 @@ class UIManager {
         
         // Отключаем кнопку добавления упражнения
         this.elements.addExercise.disabled = true;
+        document.querySelector('.workout-buttons').classList.add('hidden');
     }
 
     /**
@@ -583,13 +570,9 @@ class WorkoutManager {
             
             if (validatedData) {
                 this.ui.addExerciseToLog(validatedData);
-                
-                // Сохраняем текущее состояние в sessionStorage
                 const currentWorkout = this.storage.getCurrentWorkout();
                 currentWorkout.exercises = this.ui.getExercisesFromLog();
                 this.storage.saveCurrentWorkout(currentWorkout);
-                
-                this.notifications.success('Упражнение добавлено');
             }
         });
     }

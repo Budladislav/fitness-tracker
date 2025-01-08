@@ -13,12 +13,19 @@
             <div id="workoutDateContainer" class="workout-date-display hidden">
                 Тренировка от <span id="workoutDate"></span>
             </div>
+            
+            <div class="buttons-container">
+                <div id="startWorkoutSection">
+                    <button id="startWorkout">Начать тренировку</button>
+                </div>
+                <div class="workout-buttons hidden">
+                    <button id="addExercise">Добавить в лог</button>
+                    <button id="saveWorkout">Сохранить тренировку</button>
+                </div>
+            </div>
+
             <div class="workout-content">
                 <div class="input-section">
-                    <div id="startWorkoutSection">
-                        <button id="startWorkout">Начать тренировку</button>
-                    </div>
-
                     <div id="workoutForm" class="hidden">
                         <div class="form-inputs">
                             <select id="exerciseType">
@@ -38,8 +45,6 @@
                                 <input type="number" id="exerciseWeight" placeholder="Вес (кг)">
                             </div>
                         </div>
-                        
-                        <button id="addExercise">Добавить в лог</button>
                     </div>
                 </div>
 
@@ -47,7 +52,6 @@
 
                 <div class="log-section">
                     <div id="exerciseLog"></div>
-                    <button id="saveWorkout">Сохранить тренировку</button>
                 </div>
             </div>
         </div>
@@ -64,4 +68,4 @@
     <script src="exercises.js"></script>
     <script src="script.js"></script>
 </body>
-</html> S
+</html>

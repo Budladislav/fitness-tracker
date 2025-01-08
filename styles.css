@@ -324,3 +324,40 @@ input[type="number"]::-webkit-outer-spin-button {
     background-color: var(--info-color);
     color: white;
 }
+
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.buttons-container button {
+    margin: 0;
+    width: auto; /* Отменяем фиксированную ширину */
+    min-width: 200px; /* Минимальная ширина для кнопок */
+}
+
+.workout-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.workout-buttons.hidden {
+    display: none;
+}
+
+/* Обновляем медиа-запрос */
+@media (max-width: 768px) {
+    .buttons-container, .workout-buttons {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .buttons-container button {
+        width: 100%;
+        max-width: 300px;
+    }
+}
