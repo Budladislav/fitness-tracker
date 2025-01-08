@@ -1,31 +1,4 @@
 /**
- * @fileoverview Фитнес-трекер для записи тренировок
- * @version 1.2.0
- * @author Budladislav
- * @license MIT
- */
-
-const APP_CONFIG = {
-    version: '1.2.0',
-    name: 'Fitness Tracker',
-    storagePrefix: 'fitness_tracker_',
-    debug: false // можно включить для отладки
-};
-
-// Добавим логгер для отладки
-class Logger {
-    static log(...args) {
-        if (APP_CONFIG.debug) {
-            console.log(`[${APP_CONFIG.name} v${APP_CONFIG.version}]`, ...args);
-        }
-    }
-
-    static error(...args) {
-        console.error(`[${APP_CONFIG.name} v${APP_CONFIG.version}]`, ...args);
-    }
-}
-
-/**
  * Форматирует даты для отображения в приложении
  * @class DateFormatter
  */
@@ -250,12 +223,32 @@ class UIManager {
     addExerciseToLog(exercise) {
         const item = document.createElement('div');
         item.className = 'exercise-item';
+        
+        const content = document.createElement('div');
+        content.className = 'exercise-content';
+        
+        const text = document.createElement('span');
         const sanitizedExercise = {
             ...exercise,
             name: Utils.sanitizeInput(exercise.name)
         };
+        text.textContent = ExerciseFormatter.formatExercise(sanitizedExercise);
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-exercise';
+        deleteBtn.textContent = '×';
+        deleteBtn.setAttribute('title', 'Удалить упражнение');
+        deleteBtn.onclick = (e) => {
+            e.preventDefault();
+            item.classList.add('removing');
+            setTimeout(() => item.remove(), 300);
+        };
+
+        content.appendChild(text);
+        content.appendChild(deleteBtn);
+        item.appendChild(content);
         item.dataset.exercise = JSON.stringify(sanitizedExercise);
-        item.textContent = ExerciseFormatter.formatExercise(sanitizedExercise);
+        
         this.elements.exerciseLog.appendChild(item);
     }
 
@@ -328,7 +321,6 @@ class UIManager {
 class WorkoutStorage {
     constructor() {
         this.storageAvailable = this.checkStorageAvailability();
-        this.prefix = APP_CONFIG.storagePrefix;
     }
 
     checkStorageAvailability() {
@@ -350,23 +342,41 @@ class WorkoutStorage {
      * @returns {boolean} Успешность операции
      */
     saveToStorage(key, data, storage = localStorage) {
-        const prefixedKey = this.getStorageKey(key);
+        if (!this.storageAvailable) {
+            console.error('Storage is not available');
+            return false;
+        }
+
         try {
-            storage.setItem(prefixedKey, JSON.stringify(data));
-            Logger.log('Data saved:', key);
+            const sanitizedData = Array.isArray(data) 
+                ? data.map(item => ({
+                    ...item,
+                    name: Utils.sanitizeInput(item.name)
+                }))
+                : {
+                    ...data,
+                    name: data.name ? Utils.sanitizeInput(data.name) : data.name
+                };
+
+            storage.setItem(key, JSON.stringify(sanitizedData));
             return true;
         } catch (e) {
-            Logger.error('Storage error:', e);
+            console.error(`Storage error for key "${key}":`, e);
             return false;
         }
     }
 
     getFromStorage(key, storage = localStorage) {
-        const prefixedKey = this.getStorageKey(key);
+        if (!this.storageAvailable) {
+            console.error('Storage is not available');
+            return null;
+        }
+
         try {
-            return JSON.parse(storage.getItem(prefixedKey));
+            const data = storage.getItem(key);
+            return data ? JSON.parse(data) : null;
         } catch (e) {
-            Logger.error('Read error:', e);
+            console.error(`Error reading from storage for key "${key}":`, e);
             return null;
         }
     }
@@ -397,10 +407,6 @@ class WorkoutStorage {
         const savedWorkouts = this.getWorkoutHistory();
         savedWorkouts.push(workout);
         return this.saveToStorage('exercises', savedWorkouts);
-    }
-
-    getStorageKey(key) {
-        return `${this.prefix}${key}`;
     }
 }
 
@@ -530,6 +536,11 @@ class WorkoutManager {
                 return;
             }
 
+            // Показываем диалог подтверждения
+            if (!confirm('Вы уверены, что хотите сохранить тренировку? Это действие нельзя отменить.')) {
+                return;
+            }
+
             const currentWorkout = this.storage.getCurrentWorkout();
             
             if (!currentWorkout.date) {
@@ -560,16 +571,5 @@ class WorkoutManager {
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
-    Logger.log('Initializing...');
-    
-    // Проверка версии в localStorage
-    const savedVersion = localStorage.getItem(`${APP_CONFIG.storagePrefix}version`);
-    if (savedVersion !== APP_CONFIG.version) {
-        Logger.log('Version changed:', savedVersion, '->', APP_CONFIG.version);
-        // Здесь можно добавить миграцию данных при необходимости
-        localStorage.setItem(`${APP_CONFIG.storagePrefix}version`, APP_CONFIG.version);
-    }
-
     const workoutManager = new WorkoutManager();
-    Logger.log('Application started');
 }); 
