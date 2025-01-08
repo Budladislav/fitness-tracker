@@ -187,7 +187,12 @@ class UIManager {
         this.elements.workoutDateContainer.classList.remove('hidden');
         this.elements.startWorkoutSection.classList.add('hidden');
         this.elements.workoutForm.classList.remove('hidden');
-        document.querySelector('.workout-buttons').classList.remove('hidden');
+        
+        // Показываем контейнер с кнопками
+        const workoutButtons = document.querySelector('.workout-buttons');
+        if (workoutButtons) {
+            workoutButtons.classList.remove('hidden');
+        }
     }
 
     resetWorkoutForm() {
@@ -199,21 +204,23 @@ class UIManager {
         this.elements.workoutDateContainer.classList.add('hidden');
         this.elements.startWorkoutSection.classList.remove('hidden');
         
+        // Скрываем контейнер с кнопками
+        const workoutButtons = document.querySelector('.workout-buttons');
+        if (workoutButtons) {
+            workoutButtons.classList.add('hidden');
+        }
+        
         // Сбрасываем значения полей
-        this.elements.exerciseType.value = 'bodyweight'; // Возвращаем к дефолтному значению
-        this.elements.exerciseName.value = ''; // Очищаем выбор упражнения
-        this.elements.exerciseReps.value = ''; // Очищаем повторения
-        this.elements.exerciseWeight.value = ''; // Очищаем вес
+        this.elements.exerciseType.value = 'bodyweight';
+        this.elements.exerciseName.value = '';
+        this.elements.exerciseReps.value = '';
+        this.elements.exerciseWeight.value = '';
         
         // Обновляем список упражнений для выбранного типа
         this.initializeExercisesList();
         
         // Скрываем поле веса для упражнений без веса
         this.toggleWeightInput(true);
-        
-        // Отключаем кнопку добавления упражнения
-        this.elements.addExercise.disabled = true;
-        document.querySelector('.workout-buttons').classList.add('hidden');
     }
 
     /**
