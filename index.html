@@ -7,73 +7,63 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Добавляем навигацию -->
+    <!-- Навигация -->
     <nav class="nav-tabs">
-        <button class="nav-tab active" data-page="workout">Тренировка</button>
         <button class="nav-tab" data-page="history">История</button>
+        <button class="nav-tab active" data-page="workout">Тренировка</button>
     </nav>
 
-    <!-- Оборачиваем страницы -->
-    <div class="pages">
-        <!-- Страница тренировки -->
-        <div id="workoutPage" class="page active">
-            <div class="container">
-                <div class="workout-card">
-                    <h2>Запись тренировки</h2>
-                    <div id="workoutDateContainer" class="workout-date-display hidden">
-                        Тренировка от <span id="workoutDate"></span>
+    <!-- Страница тренировки -->
+    <div id="workoutPage" class="page active">
+        <div class="container">
+            <div class="workout-card">
+                <h2>Запись тренировки</h2>
+                
+                <!-- Секция начала тренировки -->
+                <div id="startWorkoutSection">
+                    <button id="startWorkout">Начать тренировку</button>
+                </div>
+
+                <!-- Основная форма тренировки (изначально скрыта) -->
+                <div id="workoutContent" class="hidden">
+                    <div id="workoutDateContainer" class="workout-date-display">
+                        <span id="workoutDate"></span>
                     </div>
                     
-                    <div class="buttons-container">
-                        <div id="startWorkoutSection">
-                            <button id="startWorkout">Начать тренировку</button>
-                        </div>
-                        <div class="workout-buttons hidden">
-                            <button id="addExercise">Добавить в лог</button>
-                            <button id="saveWorkout">Сохранить тренировку</button>
-                        </div>
-                    </div>
-
-                    <div class="workout-content">
-                        <div class="input-section">
-                            <div id="workoutForm" class="hidden">
-                                <div class="form-inputs">
-                                    <select id="exerciseType">
-                                        <option value="bodyweight">Без веса</option>
-                                        <option value="weighted">С весом</option>
-                                    </select>
-                                    
-                                    <select id="exerciseName">
-                                        <option value="" disabled selected>Выберите упражнение</option>
-                                    </select>
-                                    
-                                    <div id="repsInput" class="input-field">
-                                        <input type="number" id="exerciseReps" placeholder="Количество повторений">
-                                    </div>
-                                    
-                                    <div id="weightInput" class="input-field hidden">
-                                        <input type="number" id="exerciseWeight" placeholder="Вес (кг)">
-                                    </div>
-                                </div>
+                    <div id="workoutForm">
+                        <div class="form-inputs">
+                            <select id="exerciseType">
+                                <option value="bodyweight">Без веса</option>
+                                <option value="weighted">С весом</option>
+                            </select>
+                            
+                            <select id="exerciseName">
+                                <option value="" disabled selected>Выберите упражнение</option>
+                            </select>
+                            
+                            <div id="repsInput" class="input-field">
+                                <input type="number" id="exerciseReps" placeholder="Количество повторений">
+                            </div>
+                            
+                            <div id="weightInput" class="input-field hidden">
+                                <input type="number" id="exerciseWeight" placeholder="Вес (кг)">
                             </div>
                         </div>
-
-                        <div class="vertical-divider"></div>
-
-                        <div class="log-section">
-                            <div id="exerciseLog"></div>
-                        </div>
+                        <button id="addExercise">Добавить в лог</button>
                     </div>
+
+                    <div id="exerciseLog"></div>
+                    <button id="saveWorkout">Сохранить тренировку</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Страница истории -->
-        <div id="historyPage" class="page">
-            <div class="history-container">
-                <h2>История тренировок</h2>
-                <div id="workoutHistory"></div>
-            </div>
+    <!-- Страница истории -->
+    <div id="historyPage" class="page">
+        <div class="history-container">
+            <h2>История тренировок</h2>
+            <div id="workoutHistory"></div>
         </div>
     </div>
 

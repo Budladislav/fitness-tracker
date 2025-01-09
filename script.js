@@ -138,21 +138,19 @@ class UIManager {
     initializeElements() {
         return {
             exerciseType: document.getElementById('exerciseType'),
-            repsInput: document.getElementById('repsInput'),
-            weightInput: document.getElementById('weightInput'),
+            exerciseName: document.getElementById('exerciseName'),
+            exerciseReps: document.getElementById('exerciseReps'),
+            exerciseWeight: document.getElementById('exerciseWeight'),
             exerciseLog: document.getElementById('exerciseLog'),
             workoutForm: document.getElementById('workoutForm'),
             startWorkoutSection: document.getElementById('startWorkoutSection'),
             workoutDate: document.getElementById('workoutDate'),
             workoutDateContainer: document.getElementById('workoutDateContainer'),
-            exerciseName: document.getElementById('exerciseName'),
-            exerciseReps: document.getElementById('exerciseReps'),
-            exerciseWeight: document.getElementById('exerciseWeight'),
+            workoutContent: document.getElementById('workoutContent'),
+            repsInput: document.getElementById('repsInput'),
+            weightInput: document.getElementById('weightInput'),
             addExercise: document.getElementById('addExercise'),
-            startWorkout: document.getElementById('startWorkout'),
-            saveWorkout: document.getElementById('saveWorkout'),
-            historyContainer: document.getElementById('workoutHistory'),
-            exercisesList: document.getElementById('exercisesList')
+            saveWorkout: document.getElementById('saveWorkout')
         };
     }
 
@@ -173,54 +171,72 @@ class UIManager {
     }
 
     toggleWeightInput(isBodyweight) {
-        if (isBodyweight) {
-            this.elements.repsInput.classList.remove('hidden');
-            this.elements.weightInput.classList.add('hidden');
-        } else {
-            this.elements.repsInput.classList.remove('hidden');
-            this.elements.weightInput.classList.remove('hidden');
+        try {
+            const weightInput = document.getElementById('weightInput');
+            const repsInput = document.getElementById('repsInput');
+            
+            if (!weightInput || !repsInput) {
+                console.error('Weight or reps input not found');
+                return;
+            }
+
+            if (isBodyweight) {
+                weightInput.classList.add('hidden');
+            } else {
+                weightInput.classList.remove('hidden');
+            }
+            repsInput.classList.remove('hidden');
+        } catch (error) {
+            console.error('Error in toggleWeightInput:', error);
         }
     }
 
     showWorkoutForm(date) {
-        this.elements.workoutDate.textContent = date;
-        this.elements.workoutDateContainer.classList.remove('hidden');
-        this.elements.startWorkoutSection.classList.add('hidden');
-        this.elements.workoutForm.classList.remove('hidden');
+        console.log('Showing workout form for date:', date);
         
-        // Показываем контейнер с кнопками
-        const workoutButtons = document.querySelector('.workout-buttons');
-        if (workoutButtons) {
-            workoutButtons.classList.remove('hidden');
-        }
+        // Обновляем дату
+        this.elements.workoutDate.textContent = DateFormatter.formatWorkoutDate(date);
+        
+        // Скрываем секцию начала тренировки
+        this.elements.startWorkoutSection.classList.add('hidden');
+        
+        // Показываем основной контент
+        this.elements.workoutContent.classList.remove('hidden');
+        this.elements.workoutDateContainer.classList.remove('hidden');
+        this.elements.workoutForm.classList.remove('hidden');
     }
 
     resetWorkoutForm() {
-        // Очищаем лог упражнений
-        this.elements.exerciseLog.innerHTML = '';
-        
-        // Скрываем форму и показываем кнопку "Начать тренировку"
-        this.elements.workoutForm.classList.add('hidden');
-        this.elements.workoutDateContainer.classList.add('hidden');
-        this.elements.startWorkoutSection.classList.remove('hidden');
-        
-        // Скрываем контейнер с кнопками
-        const workoutButtons = document.querySelector('.workout-buttons');
-        if (workoutButtons) {
-            workoutButtons.classList.add('hidden');
+        try {
+            // Очищаем лог упражнений
+            if (this.elements.exerciseLog) {
+                this.elements.exerciseLog.innerHTML = '';
+            }
+            
+            // Скрываем форму тренировки
+            if (this.elements.workoutContent) {
+                this.elements.workoutContent.classList.add('hidden');
+            }
+            
+            // Показываем кнопку "Начать тренировку"
+            if (this.elements.startWorkoutSection) {
+                this.elements.startWorkoutSection.classList.remove('hidden');
+            }
+            
+            // Сбрасываем значения полей
+            if (this.elements.exerciseType) this.elements.exerciseType.value = 'bodyweight';
+            if (this.elements.exerciseName) this.elements.exerciseName.value = '';
+            if (this.elements.exerciseReps) this.elements.exerciseReps.value = '';
+            if (this.elements.exerciseWeight) this.elements.exerciseWeight.value = '';
+            
+            // Обновляем список упражнений
+            this.initializeExercisesList();
+            
+            // Скрываем поле веса
+            this.toggleWeightInput(true);
+        } catch (error) {
+            console.error('Error in resetWorkoutForm:', error);
         }
-        
-        // Сбрасываем значения полей
-        this.elements.exerciseType.value = 'bodyweight';
-        this.elements.exerciseName.value = '';
-        this.elements.exerciseReps.value = '';
-        this.elements.exerciseWeight.value = '';
-        
-        // Обновляем список упражнений для выбранного типа
-        this.initializeExercisesList();
-        
-        // Скрываем поле веса для упражнений без веса
-        this.toggleWeightInput(true);
     }
 
     /**
@@ -282,18 +298,30 @@ class UIManager {
         this.elements.exerciseWeight.value = '';
     }
 
-    displayWorkoutHistory(workouts) {
-        this.elements.historyContainer.innerHTML = '';
-        
-        if (workouts.length === 0) {
-            this.elements.historyContainer.innerHTML = '<p>История тренировок пуста</p>';
-            return;
-        }
+    displayWorkoutHistory(workouts = []) {
+        try {
+            const historyContainer = document.getElementById('workoutHistory');
+            if (!historyContainer) {
+                console.error('History container not found');
+                return;
+            }
 
-        [...workouts].reverse().forEach(workout => {
-            const workoutEntry = this.createWorkoutEntry(workout);
-            this.elements.historyContainer.appendChild(workoutEntry);
-        });
+            historyContainer.innerHTML = '';
+            
+            if (workouts.length === 0) {
+                historyContainer.innerHTML = '<p>История тренировок пуста</p>';
+                return;
+            }
+
+            [...workouts].reverse().forEach(workout => {
+                const workoutEntry = this.createWorkoutEntry(workout);
+                if (workoutEntry) {
+                    historyContainer.appendChild(workoutEntry);
+                }
+            });
+        } catch (error) {
+            console.error('Error in displayWorkoutHistory:', error);
+        }
     }
 
     createWorkoutDateElement(date) {
@@ -526,18 +554,22 @@ class WorkoutManager {
      * Инициализирует приложение и создает необходимые менеджеры
      */
     constructor() {
-        this.notifications = new NotificationManager();
-        this.ui = new UIManager(this.notifications);
-        this.storage = new WorkoutStorage();
-        this.validator = new ExerciseValidator(this.notifications);
-        this.currentWorkout = this.storage.getCurrentWorkout() || {
-            date: null,
-            exercises: []
-        };
-
-        this.initializeEventListeners();
-        this.restoreWorkoutState();
-        this.displayWorkoutHistory();
+        try {
+            this.notifications = new NotificationManager();
+            this.storage = new WorkoutStorage();
+            this.ui = new UIManager(this.notifications);
+            this.validator = new ExerciseValidator(this.notifications);
+            
+            this.initializeEventListeners();
+            // Сначала восстанавливаем состояние
+            this.restoreWorkoutState();
+            // Потом отображаем историю
+            setTimeout(() => {
+                this.displayWorkoutHistory();
+            }, 0);
+        } catch (error) {
+            console.error('Error in WorkoutManager constructor:', error);
+        }
     }
 
     restoreWorkoutState() {
@@ -586,19 +618,23 @@ class WorkoutManager {
 
     initializeWorkoutEvents() {
         // Обработчик начала тренировки
-        this.ui.elements.startWorkout.addEventListener('click', () => {
-            const currentDate = DateFormatter.getCurrentFormattedDate();
-            this.ui.showWorkoutForm(currentDate);
-            
-            if (!this.storage.saveCurrentWorkout({
-                date: currentDate,
-                exercises: []
-            })) {
-                this.notifications.error('Не удалось начать тренировку');
-                return;
-            }
-            this.notifications.info('Начата новая тренировка');
-        });
+        const startWorkoutBtn = document.getElementById('startWorkout');
+        if (startWorkoutBtn) {
+            startWorkoutBtn.addEventListener('click', () => {
+                console.log('Start workout clicked');
+                const currentDate = DateFormatter.getCurrentFormattedDate();
+                this.ui.showWorkoutForm(currentDate);
+                
+                if (!this.storage.saveCurrentWorkout({
+                    date: currentDate,
+                    exercises: []
+                })) {
+                    this.notifications.error('Не удалось начать тренировку');
+                    return;
+                }
+                this.notifications.info('Начата новая тренировка');
+            });
+        }
 
         // Обработчик сохранения тренировки
         this.ui.elements.saveWorkout.addEventListener('click', () => {
