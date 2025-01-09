@@ -34,7 +34,15 @@ export class WorkoutManager {
             
             if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
                 currentWorkout.exercises.forEach(exercise => {
-                    this.ui.addExerciseToLog(exercise);
+                    exercise.sets.forEach(set => {
+                        const exerciseData = {
+                            name: exercise.name,
+                            type: exercise.type,
+                            reps: set.reps,
+                            weight: set.weight
+                        };
+                        this.ui.addExerciseToLog(exerciseData);
+                    });
                 });
             }
             
@@ -59,8 +67,10 @@ export class WorkoutManager {
             
             if (validatedData) {
                 this.ui.addExerciseToLog(validatedData);
-                const currentWorkout = this.storage.getCurrentWorkout();
-                currentWorkout.exercises = this.ui.getExercisesFromLog();
+                const currentWorkout = {
+                    date: this.storage.getCurrentWorkout().date,
+                    exercises: this.ui.getExercisesFromLog()
+                };
                 this.storage.saveCurrentWorkout(currentWorkout);
             }
         });

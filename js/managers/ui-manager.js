@@ -42,6 +42,17 @@ export class UIManager {
         this.elements.exerciseType.addEventListener('change', () => {
             const isBodyweight = this.elements.exerciseType.value === 'bodyweight';
             this.toggleWeightInput(isBodyweight);
+            this.clearInputs(true, true);
+            
+            this.updateExercisesList();
+        });
+
+        this.elements.exerciseName.addEventListener('change', () => {
+            const isWeighted = this.elements.exerciseType.value === 'weighted';
+            if (isWeighted) {
+                this.elements.exerciseReps.value = '';
+                this.elements.exerciseWeight.value = '';
+            }
         });
     }
 
@@ -81,6 +92,8 @@ export class UIManager {
         this.elements.workoutContent.classList.remove('hidden');
         this.elements.workoutDateContainer.classList.remove('hidden');
         this.elements.workoutForm.classList.remove('hidden');
+
+        this.clearInputs(true);
     }
 
     resetWorkoutForm() {
@@ -97,13 +110,9 @@ export class UIManager {
                 this.elements.startWorkoutSection.classList.remove('hidden');
             }
             
-            if (this.elements.exerciseType) this.elements.exerciseType.value = 'bodyweight';
-            if (this.elements.exerciseName) this.elements.exerciseName.value = '';
-            if (this.elements.exerciseReps) this.elements.exerciseReps.value = '';
-            if (this.elements.exerciseWeight) this.elements.exerciseWeight.value = '';
+            this.clearInputs(true);
             
             this.initializeExercisesList();
-            this.toggleWeightInput(true);
         } catch (error) {
             console.error('Error in resetWorkoutForm:', error);
         }
@@ -118,42 +127,86 @@ export class UIManager {
         };
     }
 
-    addExerciseToLog(exercise) {
-        const item = document.createElement('div');
-        item.className = 'exercise-item';
-        
-        const content = document.createElement('div');
-        content.className = 'exercise-content';
-        
-        const text = document.createElement('span');
-        const sanitizedExercise = {
-            ...exercise,
-            name: Utils.sanitizeInput(exercise.name)
-        };
-        text.textContent = ExerciseFormatter.formatExercise(sanitizedExercise);
-        
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-exercise';
-        deleteBtn.textContent = '×';
-        deleteBtn.setAttribute('title', 'Удалить упражнение');
-        deleteBtn.onclick = (e) => {
-            e.preventDefault();
-            item.classList.add('removing');
-            setTimeout(() => item.remove(), 300);
+    addExerciseToLog(exerciseData) {
+        const { type, name } = exerciseData;
+        const newSet = {
+            reps: parseInt(exerciseData.reps, 10),
+            ...(type === 'weighted' && { weight: parseFloat(exerciseData.weight) })
         };
 
-        content.appendChild(text);
-        content.appendChild(deleteBtn);
-        item.appendChild(content);
-        item.dataset.exercise = JSON.stringify(sanitizedExercise);
-        
-        this.elements.exerciseLog.appendChild(item);
+        // Ищем существующее упражнение в логе
+        const existingItem = Array.from(this.elements.exerciseLog.children)
+            .find(item => {
+                const data = JSON.parse(item.dataset.exercise);
+                return data.name === name;
+            });
+
+        if (existingItem) {
+            // Добавляем новый подход к существующему упражнению
+            const exerciseData = JSON.parse(existingItem.dataset.exercise);
+            exerciseData.sets.push(newSet);
+            
+            // Обновляем отображение
+            existingItem.dataset.exercise = JSON.stringify(exerciseData);
+            existingItem.querySelector('.exercise-content span').textContent = 
+                ExerciseFormatter.formatExercise(exerciseData);
+        } else {
+            // Создаем новое упражнение
+            const item = document.createElement('div');
+            item.className = 'exercise-item';
+            
+            const content = document.createElement('div');
+            content.className = 'exercise-content';
+            
+            const text = document.createElement('span');
+            const newExercise = {
+                name,
+                type,
+                sets: [newSet]
+            };
+            
+            text.textContent = ExerciseFormatter.formatExercise(newExercise);
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-exercise';
+            deleteBtn.textContent = '×';
+            deleteBtn.setAttribute('title', 'Удалить последний подход');
+            deleteBtn.onclick = (e) => {
+                e.preventDefault();
+                const data = JSON.parse(item.dataset.exercise);
+                
+                if (data.sets.length > 1) {
+                    // Удаляем последний подход
+                    data.sets.pop();
+                    item.dataset.exercise = JSON.stringify(data);
+                    text.textContent = ExerciseFormatter.formatExercise(data);
+                } else {
+                    // Удаляем всё упражнение, если остался последний подход
+                    item.classList.add('removing');
+                    setTimeout(() => item.remove(), 300);
+                }
+            };
+
+            content.appendChild(text);
+            content.appendChild(deleteBtn);
+            item.appendChild(content);
+            item.dataset.exercise = JSON.stringify(newExercise);
+            
+            this.elements.exerciseLog.appendChild(item);
+        }
     }
 
-    clearInputs() {
-        this.elements.exerciseName.value = '';
-        this.elements.exerciseReps.value = '';
-        this.elements.exerciseWeight.value = '';
+    clearInputs(fullReset = false) {
+        if (fullReset) {
+            // Сбрасываем все поля кроме типа упражнения
+            this.elements.exerciseName.value = '';
+            this.elements.exerciseReps.value = '';
+            this.elements.exerciseWeight.value = '';
+            
+            // Обновляем видимость поля веса в соответствии с текущим типом
+            const isBodyweight = this.elements.exerciseType.value === 'bodyweight';
+            this.toggleWeightInput(isBodyweight);
+        }
     }
 
     displayWorkoutHistory(workouts = []) {
@@ -225,25 +278,21 @@ export class UIManager {
 
     initializeExercisesList() {
         const exerciseNameSelect = this.elements.exerciseName;
-        
-        const updateExercisesList = () => {
-            const type = this.elements.exerciseType.value;
-            const exercises = ExercisePool.getExercisesByType(type);
-            
-            exerciseNameSelect.innerHTML = '<option value="" disabled selected>Выберите упражнение</option>';
-            
-            exercises.forEach(exercise => {
-                const option = document.createElement('option');
-                option.value = exercise.name;
-                option.textContent = exercise.name;
-                exerciseNameSelect.appendChild(option);
-            });
-        };
+        this.updateExercisesList();
+    }
 
-        this.elements.exerciseType.addEventListener('change', () => {
-            updateExercisesList();
-        });
+    updateExercisesList() {
+        const exerciseNameSelect = this.elements.exerciseName;
+        const type = this.elements.exerciseType.value;
+        const exercises = ExercisePool.getExercisesByType(type);
         
-        updateExercisesList();
+        exerciseNameSelect.innerHTML = '<option value="" disabled selected>Выберите упражнение</option>';
+        
+        exercises.forEach(exercise => {
+            const option = document.createElement('option');
+            option.value = exercise.name;
+            option.textContent = exercise.name;
+            exerciseNameSelect.appendChild(option);
+        });
     }
 } 
