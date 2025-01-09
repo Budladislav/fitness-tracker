@@ -1,65 +1,10 @@
-/**
- * Форматирует даты для отображения в приложении
- * @class DateFormatter
- */
-class DateFormatter {
-    /**
-     * Возвращает текущую дату в формате DD.MM.YYYY
-     * @returns {string} Отформатированная дата
-     */
-    static getCurrentFormattedDate() {
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        return `${day}.${month}.${year}`;
-    }
+import { ExercisePool } from './models/exercise-pool.js';
+import { DOM_SELECTORS } from './constants/selectors.js';
+import { DateFormatter } from './utils/date-formatter.js';
+import { ExerciseFormatter } from './utils/exercise-formatter.js';
+import { Utils } from './utils/utils.js';
 
-    /**
-     * Форматирует дату тренировки для отображения
-     * @param {string} date - Дата в формате DD.MM.YYYY
-     * @returns {string} Отформатированная строка с датой
-     */
-    static formatWorkoutDate(date) {
-        return `Тренировка от ${date || 'неизвестной даты'}`;
-    }
-}
 
-class ExerciseFormatter {
-    static formatExercise(exercise) {
-        const { type, name, reps, weight } = exercise;
-        return type === 'bodyweight'
-            ? `${name} - ${reps}`
-            : `${name} - ${reps} × ${weight} кг`;
-    }
-}
-
-class Utils {
-    static debounce(func, wait = 250) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    static sanitizeInput(input) {
-        if (typeof input !== 'string') return input;
-        
-        return input
-            .trim()
-            // Экранируем HTML-теги
-            .replace(/[<>]/g, '')
-            // Удаляем потенциально опасные символы
-            .replace(/[&'"]/g, '')
-            // Ограничиваем длину
-            .slice(0, 100);
-    }
-}
 
 /**
  * Управляет отображением уведомлений

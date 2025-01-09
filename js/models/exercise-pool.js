@@ -55,7 +55,7 @@ const DEFAULT_EXERCISES = {
     ]
 };
 
-class ExercisePool {
+export class ExercisePool {
     static getExercisesByType(type) {
         return DEFAULT_EXERCISES[type] || [];
     }
