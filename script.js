@@ -644,4 +644,24 @@ class WorkoutManager {
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
     const workoutManager = new WorkoutManager();
+
+    // Добавляем обработчик для навигации
+    document.querySelector('.nav-tabs').addEventListener('click', (e) => {
+        if (e.target.classList.contains('nav-tab')) {
+            // Убираем активный класс у всех кнопок
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Добавляем активный класс нажатой кнопке
+            e.target.classList.add('active');
+            
+            // Переключаем страницы
+            const targetPage = e.target.dataset.page;
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(`${targetPage}Page`).classList.add('active');
+        }
+    });
 }); 
