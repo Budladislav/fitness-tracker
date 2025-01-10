@@ -32,6 +32,8 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-family: Arial, sans-serif;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 .container {
@@ -54,6 +56,9 @@ body {
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
     height: 40px;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 .nav-tab {
@@ -73,7 +78,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 0 var(--spacing-md);
+    min-width: auto;
 }
 
 .nav-tab:hover {
@@ -177,9 +183,10 @@ body {
 
 /* Workout Form Container */
 #workoutForm {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 var(--spacing-md);
+    box-sizing: border-box;
 }
 
 /* 5. Forms & Inputs
@@ -221,8 +228,10 @@ button {
     border-radius: var(--border-radius);
     font-weight: 500;
     letter-spacing: 0.3px;
-    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
     margin: var(--spacing-md) auto;
+    box-sizing: border-box;
 }
 
 button:hover {
@@ -238,11 +247,15 @@ button:active {
     display: flex;
     gap: var(--spacing-md);
     margin-top: var(--spacing-md);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .workout-buttons button {
     flex: 1;
     margin: 0;
+    min-width: 0;
+    width: auto;
 }
 
 #startWorkout {
@@ -327,7 +340,7 @@ input[type="number"]::-webkit-outer-spin-button {
 .workout-exercises div {
     margin: var(--spacing-sm) 0;
     color: var(--text-color);
-    width: 80%;
+    width: 70%;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
