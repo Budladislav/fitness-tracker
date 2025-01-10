@@ -21,7 +21,6 @@
 
 /* 2. Base Styles
 -------------------------------------------------- */
-/* Убираем скролл на уровне html/body */
 html, body {
     height: 100%;
     margin: 0;
@@ -101,6 +100,29 @@ body {
     border-right: none;
 }
 
+/* Page Layout */
+#workoutPage {
+    display: none;
+    height: calc(100vh - 40px);
+    margin-top: 40px;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+#workoutPage.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Scrollable Content */
+#workoutContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    padding-bottom: 250px;
+}
+
 /* 4. Cards & Containers
 -------------------------------------------------- */
 .card {
@@ -127,6 +149,37 @@ body {
     padding: var(--spacing-md);
     background: var(--card-background);
     box-shadow: var(--shadow);
+}
+
+/* Fixed Control Panels */
+#workoutControls,
+#startWorkoutSection {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-background);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    z-index: 100;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#startWorkoutSection {
+    display: flex;
+    justify-content: center;
+}
+
+/* Exercise Log Container */
+#exerciseLog {
+    margin-top: var(--spacing-md);
+}
+
+/* Workout Form Container */
+#workoutForm {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
 }
 
 /* 5. Forms & Inputs
@@ -180,6 +233,23 @@ button:active {
     transform: scale(0.98);
 }
 
+/* Workout Buttons */
+.workout-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.workout-buttons button {
+    flex: 1;
+    margin: 0;
+}
+
+#startWorkout {
+    max-width: 300px;
+    margin: 0;
+}
+
 /* Убираем стрелки для number inputs */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
@@ -191,9 +261,9 @@ input[type="number"]::-webkit-outer-spin-button {
 -------------------------------------------------- */
 .exercise-item {
     display: flex;
-    padding: var(--spacing-md);
+    padding: 5px 15px;
     border-radius: var(--border-radius);
-    margin: 8px 0;
+    margin: 5px 0;
     background: rgba(245, 247, 250, 0.5);
     border: 1px solid var(--border-color);
     transition: var(--transition);
@@ -204,10 +274,15 @@ input[type="number"]::-webkit-outer-spin-button {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    padding-left: 15px;
 }
 
 .exercise-content span {
     flex-grow: 1;
+    text-align: left;
+    line-height: 1.2;
+    margin: 0;
+    padding: 2px 0;
 }
 
 .delete-exercise {
@@ -219,9 +294,10 @@ input[type="number"]::-webkit-outer-spin-button {
     width: 30px !important;
     height: 30px;
     padding: 0;
-    margin: 0 0 0 10px !important;
+    margin: 0 0 0 15px !important;
     opacity: 0.5;
     transition: var(--transition);
+    align-self: flex-start;
 }
 
 .delete-exercise:hover {
@@ -340,7 +416,7 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .exercise-item {
-        padding: 12px 0;
+        padding: 5px 15px;
         margin: 5px 0;
     }
 
@@ -362,69 +438,9 @@ input[type="number"]::-webkit-outer-spin-button {
         width: auto;
         min-width: 0;
     }
-}
 
-/* Обновляем структуру страницы тренировки */
-#workoutPage {
-    display: none;
-    height: calc(100vh - 40px); /* высота экрана минус высота табов */
-    margin-top: 40px; /* высота табов */
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-}
-
-#workoutPage.active {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Контейнер для скроллируемого контента */
-#workoutContent {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--spacing-md);
-    padding-bottom: 250px; /* увеличиваем отступ под панель управления */
-}
-
-/* Лог упражнений */
-#exerciseLog {
-    margin-top: var(--spacing-md);
-}
-
-/* Фиксированная панель управления */
-#workoutControls {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--card-background);
-    border-top: 1px solid var(--border-color);
-    padding: var(--spacing-md);
-    z-index: 100;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Форма добавления упражнений */
-#workoutForm {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 var(--spacing-md);
-}
-
-/* Кнопки */
-.workout-buttons {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
-}
-
-.workout-buttons button {
-    flex: 1;
-    margin: 0;
-}
-
-/* Обновляем z-index для табов чтобы точно быть уверенными */
-.nav-tabs {
-    z-index: 100;
+    #startWorkout {
+        width: 100%;
+        max-width: 300px;
+    }
 }
