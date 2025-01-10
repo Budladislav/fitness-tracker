@@ -1,3 +1,5 @@
+/* 1. CSS Variables
+-------------------------------------------------- */
 :root {
     --primary-color: #2196F3;
     --primary-hover: #1976D2;
@@ -10,364 +12,32 @@
     --error-color: #F44336;
     --info-color: #2196F3;
     --transition: all 0.3s ease;
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+    --spacing-sm: 5px;
+    --spacing-md: 10px;
+    --spacing-lg: 20px;
 }
 
+/* 2. Base Styles
+-------------------------------------------------- */
 body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: var(--spacing-lg);
 }
 
-.container, .history-container {
+.container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 5px;
+    padding: var(--spacing-sm);
 }
 
-.workout-card, .history-container {
-    background: var(--card-background);
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.workout-content {
-    display: flex;
-    min-height: 300px;
-    gap: 40px;
-}
-
-.input-section, .log-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-.vertical-divider {
-    width: 1px;
-    background-color: var(--border-color);
-    align-self: stretch;
-}
-
-h2 {
-    text-align: center;
-    margin-top: 0;
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 1.2em;
-    color: var(--text-color);
-}
-
-select, input, button {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    width: 200px;
-    margin: 10px auto;
-}
-
-button:hover {
-    background-color: var(--primary-hover);
-}
-
-.hidden {
-    display: none !important;
-}
-
-#startWorkoutSection {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-grow: 1;
-}
-
-#exerciseLog {
-    flex-grow: 1;
-    margin: 10px 0;
-    min-height: 100px;
-}
-
-#startWorkout, #saveWorkout {
-    margin-top: auto;
-    margin-bottom: 20px;
-}
-
-.workout-date-display {
-    text-align: center;
-    color: var(--primary-color);
-    font-weight: bold;
-    margin: 0 auto 20px;
-}
-
-#workoutDate {
-    color: #333;
-}
-
-#workoutForm {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.form-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-select, input {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-}
-
-.input-field {
-    width: 100%;
-}
-
-#addExercise {
-    margin-top: auto;
-    margin-bottom: 20px;
-}
-
-.exercise-item {
-    display: flex;
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.exercise-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.exercise-content span {
-    flex-grow: 1;
-}
-
-.delete-exercise {
-    background: none !important;
-    border: none;
-    color: var(--error-color);
-    font-size: 24px;
-    min-width: 30px;
-    width: 30px !important;
-    height: 30px;
-    padding: 0;
-    margin: 0 0 0 10px !important;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.exercise-item.removing {
-    opacity: 0;
-    transform: translateX(100%);
-}
-
-/* История тренировок */
-.history-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.workout-entry {
-    background: white;
-    margin: 10px 0;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.workout-date {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #007bff;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #eee;
-    text-align: center;
-}
-
-.workout-exercises {
-    margin-left: 15px;
-    margin-top: 15px;
-}
-
-.workout-exercises div {
-    margin: 5px 0;
-    color: #333;
-}
-
-/* Убираем стрелки для Chrome, Safari, Edge, Opera */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* Добавляем метатег в HTML для корректного масштабирования */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-
-    .workout-content {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .vertical-divider {
-        width: 100%;
-        height: 1px;
-        margin: 10px 0;
-    }
-
-    .form-inputs {
-        width: 100%;
-    }
-
-    select, input, button {
-        font-size: 16px; /* Оптимальный размер для мобильных устройств */
-        padding: 12px; /* Увеличиваем область нажатия */
-    }
-
-    .workout-entry {
-        margin: 10px 0;
-        padding: 12px;
-    }
-
-    .workout-exercises {
-        margin-left: 0;
-    }
-
-    /* Увеличиваем отступы между элементами для удобства нажатия */
-    .exercise-item {
-        padding: 12px 0;
-        margin: 5px 0;
-    }
-
-    .container, .history-container {
-        padding: 3px;
-    }
-    
-    .workout-card, .history-container {
-        padding: 8px;
-    }
-    
-}
-
-/* В конец файла добавим стили для уведомлений */
-#notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    pointer-events: none; /* Чтобы уведомления не мешали кликам */
-}
-
-.notification {
-    padding: 15px 20px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    opacity: 0;
-    transform: translateX(100%);
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    min-width: 250px;
-    pointer-events: auto; /* Восстанавливаем события для самих уведомлений */
-}
-
-.notification.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.notification-error {
-    background-color: var(--error-color);
-    color: white;
-}
-
-.notification-success {
-    background-color: var(--success-color);
-    color: white;
-}
-
-.notification-info {
-    background-color: var(--info-color);
-    color: white;
-}
-
-.buttons-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.buttons-container button {
-    margin: 0;
-    width: auto; /* Отменяем фиксированную ширину */
-    min-width: 200px; /* Минимальная ширина для кнопок */
-}
-
-.workout-buttons {
-    display: flex;
-    gap: 20px;
-}
-
-.workout-buttons.hidden {
-    display: none;
-}
-
-/* Обновляем медиа-запрос */
-@media (max-width: 768px) {
-    .buttons-container, .workout-buttons {
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-    }
-    
-    .buttons-container button {
-        width: 100%;
-        max-width: 300px;
-    }
-}
-
-/* Стили для навигации */
+/* 3. Layout Components
+-------------------------------------------------- */
+/* Navigation */
 .nav-tabs {
     position: fixed;
     top: 0;
@@ -376,7 +46,6 @@ input[type="number"]::-webkit-outer-spin-button {
     display: flex;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
-    padding: 0;
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
 }
@@ -415,70 +84,121 @@ input[type="number"]::-webkit-outer-spin-button {
     background-color: var(--primary-color);
 }
 
-/* Стили для страниц */
-.page {
-    display: none;
-    margin-top: 35px;
-    padding: 5px;
-}
-
-.page.active {
-    display: block;
-}
-
-/* Медиа-запрос для мобильных устройств */
-@media (max-width: 768px) {
-    .container, .history-container {
-        padding: 3px;
-    }
-    
-    .nav-tab {
-        padding: 6px 10px;
-        font-size: 13px;
-    }
-}
-
-/* Улучшаем карточки */
-.workout-card, .history-container, .workout-entry {
-    border-radius: 12px;
+/* 4. Cards & Containers
+-------------------------------------------------- */
+.card {
+    background: var(--card-background);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow);
+    width: 100%;
+    box-sizing: border-box;
     transition: var(--transition);
 }
 
-/* Улучшаем кнопки */
+.workout-card {
+    composes: card;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+.workout-entry {
+    composes: card;
+    margin: var(--spacing-md) 0;
+}
+
+/* 5. Forms & Inputs
+-------------------------------------------------- */
+.form-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: var(--spacing-md);
+}
+
+select, 
+input {
+    width: 100%;
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm) 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+select:focus, 
+input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    outline: none;
+}
+
 button {
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    border-radius: 8px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
     transition: var(--transition);
     padding: 12px 24px;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    min-width: 200px;
+    margin: var(--spacing-md) auto;
+}
+
+button:hover {
+    background-color: var(--primary-hover);
 }
 
 button:active {
     transform: scale(0.98);
 }
 
-/* Улучшаем поля ввода */
-select, input {
-    transition: var(--transition);
-    border: 1px solid var(--border-color);
+/* Убираем стрелки для number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-select:focus, input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-    outline: none;
-}
-
-/* Улучшаем элементы упражнений */
+/* 6. Exercise Components
+-------------------------------------------------- */
 .exercise-item {
-    border-radius: 8px;
+    display: flex;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
     margin: 8px 0;
     background: rgba(245, 247, 250, 0.5);
     border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.exercise-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.exercise-content span {
+    flex-grow: 1;
 }
 
 .delete-exercise {
+    background: none !important;
+    border: none;
+    color: var(--error-color);
+    font-size: 24px;
+    min-width: 30px;
+    width: 30px !important;
+    height: 30px;
+    padding: 0;
+    margin: 0 0 0 10px !important;
     opacity: 0.5;
     transition: var(--transition);
 }
@@ -488,50 +208,126 @@ select:focus, input:focus {
     transform: scale(1.1);
 }
 
-/* Улучшаем уведомления */
+/* 7. Workout History
+-------------------------------------------------- */
+.workout-date {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.workout-exercises {
+    margin-top: var(--spacing-lg);
+}
+
+.workout-exercises div {
+    margin: var(--spacing-sm) 0;
+    color: var(--text-color);
+}
+
+/* 8. Utility Classes
+-------------------------------------------------- */
+.hidden {
+    display: none !important;
+}
+
+.removing {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.page {
+    display: none;
+    margin-top: 45px; /* Увеличили отступ для фиксированной навигации */
+    padding: var(--spacing-sm);
+}
+
+.page.active {
+    display: block;
+}
+
+/* 9. Notifications
+-------------------------------------------------- */
+#notification-container {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 1000;
+    pointer-events: none;
+    width: auto;
+    max-width: 400px;
+}
+
 .notification {
-    border-radius: 8px;
-    font-weight: 500;
+    padding: 15px 20px;
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--border-radius);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: var(--transition);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    pointer-events: auto;
+    font-weight: 500;
+    width: auto;
+    min-width: 200px;
+    max-width: 100%;
 }
 
-/* Обновляем структуру карточки тренировки */
-.workout-card {
-    display: flex;
-    flex-direction: column;
-    min-height: 300px;
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
 }
 
-/* Стили для лога упражнений */
-#exerciseLog {
-    flex-grow: 1;
-    margin: 10px 0;
-    min-height: 100px;
-}
+.notification-error { background-color: var(--error-color); color: white; }
+.notification-success { background-color: var(--success-color); color: white; }
+.notification-info { background-color: var(--info-color); color: white; }
 
-/* Стили для кнопок */
-.buttons-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+/* 10. Media Queries
+-------------------------------------------------- */
+@media (max-width: 768px) {
+    body {
+        padding: var(--spacing-md);
+    }
 
-#saveWorkout {
-    margin-top: auto;
-    margin-bottom: 0;
-}
+    .nav-tab {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
 
-/* Обновляем стили формы */
-#workoutForm {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+    button {
+        width: 100%;
+        max-width: 300px;
+    }
 
-.form-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-    margin-bottom: 10px;
+    .workout-exercises {
+        margin-left: 0;
+    }
+
+    .exercise-item {
+        padding: 12px 0;
+        margin: 5px 0;
+    }
+
+    select, 
+    input, 
+    button {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    #notification-container {
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        left: var(--spacing-md);
+        max-width: none;
+    }
+
+    .notification {
+        width: auto;
+        min-width: 0;
+    }
 }
