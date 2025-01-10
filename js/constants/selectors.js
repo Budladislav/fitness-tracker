@@ -14,9 +14,7 @@ export const DOM_SELECTORS = {
         START_BUTTON: '#startWorkout',
         SAVE_BUTTON: '#saveWorkout',
         ADD_BUTTON: '#addExercise',
-        LOG: '#exerciseLog',
-        DATE_CONTAINER: '#workoutDateContainer',
-        DATE: '#workoutDate'
+        LOG: '#exerciseLog'
     },
     INPUTS: {
         TYPE: '#exerciseType',

@@ -16,44 +16,41 @@
 
     <!-- Страница тренировки -->
     <div id="workoutPage" class="page active">
-        <div class="container">
-            <div class="workout-card">
-                
-                <!-- Секция начала тренировки -->
-                <div id="startWorkoutSection">
-                    <button id="startWorkout">Начать тренировку</button>
-                </div>
+        <!-- Секция начала тренировки -->
+        <div id="startWorkoutSection">
+            <button id="startWorkout">Начать тренировку</button>
+        </div>
 
-                <!-- Основная форма тренировки (изначально скрыта) -->
-                <div id="workoutContent" class="hidden">
-                    <div id="workoutDateContainer" class="workout-date-display">
-                        <span id="workoutDate"></span>
-                    </div>
-                    
-                    <div id="workoutForm">
-                        <div class="form-inputs">
-                            <select id="exerciseType">
-                                <option value="bodyweight">Без веса</option>
-                                <option value="weighted">С весом</option>
-                            </select>
-                            
-                            <select id="exerciseName">
-                                <option value="" disabled selected>Выберите упражнение</option>
-                            </select>
-                            
-                            <div id="repsInput" class="input-field">
-                                <input type="number" id="exerciseReps" placeholder="Количество повторений">
-                            </div>
-                            
-                            <div id="weightInput" class="input-field hidden">
-                                <input type="number" id="exerciseWeight" placeholder="Вес (кг)">
-                            </div>
+        <!-- Основная форма тренировки (изначально скрыта) -->
+        <div id="workoutContent" class="hidden">
+            <!-- Лог упражнений (теперь сверху) -->
+            <div id="exerciseLog"></div>
+
+            <!-- Фиксированная панель управления -->
+            <div id="workoutControls">
+                <div id="workoutForm">
+                    <div class="form-inputs">
+                        <select id="exerciseType">
+                            <option value="bodyweight">Без веса</option>
+                            <option value="weighted">С весом</option>
+                        </select>
+                        
+                        <select id="exerciseName">
+                            <option value="" disabled selected>Выберите упражнение</option>
+                        </select>
+                        
+                        <div id="repsInput" class="input-field">
+                            <input type="number" id="exerciseReps" placeholder="Количество повторений">
                         </div>
-                        <button id="addExercise">Добавить в лог</button>
+                        
+                        <div id="weightInput" class="input-field hidden">
+                            <input type="number" id="exerciseWeight" placeholder="Вес (кг)">
+                        </div>
                     </div>
-
-                    <div id="exerciseLog"></div>
-                    <button id="saveWorkout">Сохранить тренировку</button>
+                    <div class="workout-buttons">
+                        <button id="addExercise">Добавить в лог</button>
+                        <button id="saveWorkout">Сохранить тренировку</button>
+                    </div>
                 </div>
             </div>
         </div>

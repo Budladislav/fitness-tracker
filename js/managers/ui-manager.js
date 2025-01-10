@@ -32,8 +32,6 @@ export class UIManager {
             exerciseLog: document.querySelector(DOM_SELECTORS.WORKOUT.LOG),
             workoutForm: document.querySelector(DOM_SELECTORS.WORKOUT.FORM),
             startWorkoutSection: document.querySelector(DOM_SELECTORS.WORKOUT.START_SECTION),
-            workoutDate: document.querySelector(DOM_SELECTORS.WORKOUT.DATE),
-            workoutDateContainer: document.querySelector(DOM_SELECTORS.WORKOUT.DATE_CONTAINER),
             workoutContent: document.querySelector(DOM_SELECTORS.WORKOUT.CONTENT),
             repsInput: document.querySelector(DOM_SELECTORS.INPUTS.REPS.CONTAINER),
             weightInput: document.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
@@ -104,19 +102,17 @@ export class UIManager {
 
     showWorkoutForm(date) {
         console.log('Showing workout form for date:', date);
-        
-        this.elements.workoutDate.textContent = DateFormatter.formatWorkoutDate(date);
+    
         this.elements.startWorkoutSection.classList.add('hidden');
         this.elements.workoutContent.classList.remove('hidden');
-        this.elements.workoutDateContainer.classList.remove('hidden');
         this.elements.workoutForm.classList.remove('hidden');
-
+    
         // Сохраняем состояние активной тренировки
         this.storage.setActiveWorkout({
             date: date,
             exercises: this.getExercisesFromLog()
         });
-
+    
         this.clearInputs(true);
     }
 
