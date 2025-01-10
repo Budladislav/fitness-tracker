@@ -7,6 +7,8 @@ import { Utils } from '../utils/utils.js';
 export class WorkoutStorage {
     constructor() {
         this.storageAvailable = this.checkStorageAvailability();
+        this.STORAGE_KEY = 'workouts';
+        this.ACTIVE_WORKOUT_KEY = 'activeWorkout';
     }
 
     checkStorageAvailability() {
@@ -93,5 +95,38 @@ export class WorkoutStorage {
         const savedWorkouts = this.getWorkoutHistory();
         savedWorkouts.push(workout);
         return this.saveToStorage('exercises', savedWorkouts);
+    }
+
+    /**
+     * Получает активную тренировку из хранилища
+     * @returns {Object|null} Активная тренировка или null
+     */
+    getActiveWorkout() {
+        try {
+            const activeWorkoutJson = localStorage.getItem(this.ACTIVE_WORKOUT_KEY);
+            return activeWorkoutJson ? JSON.parse(activeWorkoutJson) : null;
+        } catch (error) {
+            console.error('Error getting active workout:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Сохраняет активную тренировку
+     * @param {Object} workout - Тренировка для сохранения
+     */
+    setActiveWorkout(workout) {
+        try {
+            localStorage.setItem(this.ACTIVE_WORKOUT_KEY, JSON.stringify(workout));
+        } catch (error) {
+            console.error('Error saving active workout:', error);
+        }
+    }
+
+    /**
+     * Удаляет активную тренировку
+     */
+    clearActiveWorkout() {
+        localStorage.removeItem(this.ACTIVE_WORKOUT_KEY);
     }
 } 

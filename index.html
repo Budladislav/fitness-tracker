@@ -8,10 +8,11 @@
 </head>
 <body>
     <!-- Навигация -->
-    <nav class="nav-tabs">
+    <div class="nav-tabs">
+        <button class="nav-tab" data-page="statistics">Статистика</button>
         <button class="nav-tab" data-page="history">История</button>
-        <button class="nav-tab active" data-page="workout">Тренировка</button>
-    </nav>
+        <button class="nav-tab" data-page="workout">Тренировка</button>
+    </div>
 
     <!-- Страница тренировки -->
     <div id="workoutPage" class="page active">
@@ -62,6 +63,15 @@
     <div id="historyPage" class="page">
         <div class="history-container">
             <div id="workoutHistory"></div>
+        </div>
+    </div>
+
+    <!-- Добавляем новую страницу -->
+    <div id="statisticsPage" class="page">
+        <div class="container">
+            <div class="coming-soon">
+                В разработке...
+            </div>
         </div>
     </div>
 

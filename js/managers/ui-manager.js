@@ -3,6 +3,7 @@ import { ExerciseFormatter } from '../utils/exercise-formatter.js';
 import { Utils } from '../utils/utils.js';
 import { ExercisePool } from '../models/exercise-pool.js';
 import { DOM_SELECTORS } from '../constants/selectors.js';
+import { WorkoutStorage } from './storage-manager.js';
 
 /**
  * Управляет пользовательским интерфейсом
@@ -11,12 +12,15 @@ import { DOM_SELECTORS } from '../constants/selectors.js';
 export class UIManager {
     /**
      * @param {NotificationManager} notifications - Менеджер уведомлений
+     * @param {WorkoutStorage} storage - Менеджер хранилища
      */
-    constructor(notifications) {
+    constructor(notifications, storage) {
         this.notifications = notifications;
+        this.storage = storage;
         this.elements = this.initializeElements();
         this.setupEventListeners();
         this.initializeExercisesList();
+        this.initializeNavigation();
     }
 
     initializeElements() {
@@ -34,7 +38,8 @@ export class UIManager {
             repsInput: document.querySelector(DOM_SELECTORS.INPUTS.REPS.CONTAINER),
             weightInput: document.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
             addExercise: document.querySelector(DOM_SELECTORS.WORKOUT.ADD_BUTTON),
-            saveWorkout: document.querySelector(DOM_SELECTORS.WORKOUT.SAVE_BUTTON)
+            saveWorkout: document.querySelector(DOM_SELECTORS.WORKOUT.SAVE_BUTTON),
+            navTabs: document.querySelector(DOM_SELECTORS.NAVIGATION.TABS)
         };
     }
 
@@ -53,6 +58,19 @@ export class UIManager {
                 this.elements.exerciseReps.value = '';
                 this.elements.exerciseWeight.value = '';
             }
+        });
+
+        this.elements.navTabs.addEventListener('click', (e) => {
+            const tab = e.target.closest('.nav-tab');
+            if (!tab) return;
+
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            tab.classList.add('active');
+            
+            const targetPage = tab.dataset.page;
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(`${targetPage}Page`).classList.add('active');
         });
     }
 
@@ -93,6 +111,12 @@ export class UIManager {
         this.elements.workoutDateContainer.classList.remove('hidden');
         this.elements.workoutForm.classList.remove('hidden');
 
+        // Сохраняем состояние активной тренировки
+        this.storage.setActiveWorkout({
+            date: date,
+            exercises: this.getExercisesFromLog()
+        });
+
         this.clearInputs(true);
     }
 
@@ -109,6 +133,9 @@ export class UIManager {
             if (this.elements.startWorkoutSection) {
                 this.elements.startWorkoutSection.classList.remove('hidden');
             }
+            
+            // Очищаем активную тренировку при сбросе формы
+            this.storage.clearActiveWorkout();
             
             this.clearInputs(true);
             
@@ -294,5 +321,45 @@ export class UIManager {
             option.textContent = exercise.name;
             exerciseNameSelect.appendChild(option);
         });
+    }
+
+    initializeNavigation() {
+        // Проверяем активную тренировку в хранилище
+        const activeWorkout = this.storage.getActiveWorkout();
+        
+        if (activeWorkout) {
+            // Если есть активная тренировка:
+            // 1. Показываем форму тренировки
+            this.showWorkoutForm(activeWorkout.date);
+            
+            // 2. Восстанавливаем упражнения в лог
+            if (activeWorkout.exercises) {
+                activeWorkout.exercises.forEach(exercise => {
+                    this.addExerciseToLog(exercise);
+                });
+            }
+            
+            // 3. Активируем таб тренировки
+            const workoutTab = document.querySelector('[data-page="workout"]');
+            if (workoutTab) {
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                workoutTab.dispatchEvent(clickEvent);
+            }
+        } else {
+            // Если активной тренировки нет, показываем историю
+            const historyTab = document.querySelector('[data-page="history"]');
+            if (historyTab) {
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                historyTab.dispatchEvent(clickEvent);
+            }
+        }
     }
 } 

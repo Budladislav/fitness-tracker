@@ -376,25 +376,28 @@ input[type="number"]::-webkit-outer-spin-button {
     display: flex;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
-    padding: 2px 10px;
+    padding: 0;
     z-index: 100;
-    justify-content: center;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .nav-tab {
     flex: 1;
-    max-width: 200px;
-    padding: 8px 15px;
+    padding: 12px 0;
     border: none;
     background: none;
     color: #666;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     transition: var(--transition);
+    position: relative;
+    margin: 0;
+    border-radius: 0;
 }
 
 .nav-tab:hover {
     background: rgba(33, 150, 243, 0.05);
+    color: var(--primary-color);
 }
 
 .nav-tab.active {
@@ -405,7 +408,7 @@ input[type="number"]::-webkit-outer-spin-button {
 .nav-tab.active::after {
     content: '';
     position: absolute;
-    bottom: 0;
+    bottom: -1px;
     left: 0;
     right: 0;
     height: 2px;
