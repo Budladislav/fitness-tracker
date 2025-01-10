@@ -6,14 +6,17 @@
     font-size: 1em;
     font-weight: normal;
     color: var(--text-color);
-    margin: var(--spacing-md) 0;
-    padding-bottom: var(--spacing-sm);
-    border-bottom: 1px solid var(--border-color);
+    margin: var(--spacing-sm) 0;
+    padding: var(--spacing-sm) 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     text-align: center;
+    background-color: white;
+    box-shadow: var(--shadow-sm);
 }
 
 .workout-exercises {
-    margin-top: var(--spacing-lg);
+    margin-top: var(--spacing-sm);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -24,7 +27,6 @@
     color: var(--text-color);
     width: 70%;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
 }
 
 @media (max-width: 768px) {
@@ -33,7 +35,28 @@
     }
 }
 
-/* Первый элемент истории */
-.page.active > *:first-child {
-    margin-top: var(--spacing-md);
+.history-container {
+    max-height: calc(100vh - var(--nav-height) - var(--spacing-sm));
+    overflow-y: auto;
+    padding-right: var(--spacing-sm); /* Чтобы скролл не прилипал к краю */
+}
+
+/* Для более плавного скролла можно добавить */
+.history-container {
+    scrollbar-width: thin; /* Для Firefox */
+    scrollbar-color: var(--border-color) transparent; /* Для Firefox */
+}
+
+/* Стили скроллбара для Chrome/Safari */
+.history-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.history-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 3px;
 }

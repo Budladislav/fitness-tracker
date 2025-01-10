@@ -123,18 +123,15 @@ export class UIManager {
             }
             
             if (this.elements.workoutContent) {
-                this.elements.workoutContent.classList.add('hidinitializeNavigationden');
+                this.elements.workoutContent.classList.add('hidden');
             }
             
             if (this.elements.startWorkoutSection) {
                 this.elements.startWorkoutSection.classList.remove('hidden');
             }
             
-            // Очищаем активную тренировку при сбросе формы
             this.storage.clearActiveWorkout();
-            
             this.clearInputs(true);
-            
             this.initializeExercisesList();
         } catch (error) {
             console.error('Error in resetWorkoutForm:', error);
@@ -320,59 +317,36 @@ export class UIManager {
     }
 
     initializeNavigation() {
-    // Добавляем наблюдатель перед получением данных
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            console.log('Changed element:', mutation.target);
-            console.log('Type of change:', mutation.type);
-            console.log('Old value:', mutation.oldValue);
-            console.log('Added nodes:', mutation.addedNodes);
-            console.log('Removed nodes:', mutation.removedNodes);
-            console.log('-------------------');
-        });
-    });
-
-    // Наблюдаем за всеми изменениями в навигации
-    observer.observe(this.elements.navTabs, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-        attributeOldValue: true
-    });
-
-    const activeWorkout = this.storage.getActiveWorkout();
-    
-    if (activeWorkout) {
-        this.showWorkoutForm(activeWorkout.date);
+        const activeWorkout = this.storage.getActiveWorkout();
         
-        if (activeWorkout.exercises) {
-            activeWorkout.exercises.forEach(exercise => {
-                this.addExerciseToLog(exercise);
-            });
-        }
-        
-        const workoutTab = document.querySelector('[data-page="workout"]');
-        if (workoutTab) {
-            const clickEvent = new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                view: window
-            });
-            workoutTab.dispatchEvent(clickEvent);
-        }
-    } else {
-        const historyTab = document.querySelector('[data-page="history"]');
-        if (historyTab) {
-            const clickEvent = new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                view: window
-            });
-            historyTab.dispatchEvent(clickEvent);
+        if (activeWorkout) {
+            this.showWorkoutForm(activeWorkout.date);
+            
+            if (activeWorkout.exercises) {
+                activeWorkout.exercises.forEach(exercise => {
+                    this.addExerciseToLog(exercise);
+                });
+            }
+            
+            const workoutTab = document.querySelector('[data-page="workout"]');
+            if (workoutTab) {
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                workoutTab.dispatchEvent(clickEvent);
+            }
+        } else {
+            const historyTab = document.querySelector('[data-page="history"]');
+            if (historyTab) {
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                historyTab.dispatchEvent(clickEvent);
+            }
         }
     }
-
-    // В конце метода отключаем наблюдатель
-    observer.disconnect();
-}
 } 

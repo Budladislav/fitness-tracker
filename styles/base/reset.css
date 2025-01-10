@@ -59,6 +59,10 @@ button {
     outline: none;
 }
 
+html body{
+    padding: 0;
+}
+
 /* Убираем обводку фокуса для всех элементов */
 :focus {
     outline: none;

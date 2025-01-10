@@ -28,8 +28,8 @@
 .workout-entry {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: var(--border-radius);
-    margin: var(--spacing-md) 0;
-    padding: var(--spacing-md);
+    margin: var(--spacing-sm) 0;
+    padding: var(--spacing-sm);
     background: var(--card-background);
     box-shadow: var(--shadow);
 }

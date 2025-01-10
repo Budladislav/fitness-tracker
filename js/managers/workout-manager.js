@@ -124,6 +124,18 @@ export class WorkoutManager {
             
             this.storage.removeFromStorage('currentWorkout', sessionStorage);
             this.ui.resetWorkoutForm();
+            
+            // Активируем вкладку истории
+            const historyTab = document.querySelector('[data-page="history"]');
+            if (historyTab) {
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                historyTab.dispatchEvent(clickEvent);
+            }
+            
             this.displayWorkoutHistory();
             this.notifications.success('Тренировка сохранена!');
         });

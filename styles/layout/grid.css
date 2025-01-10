@@ -23,7 +23,7 @@
 
 /* Exercise Log Container */
 #exerciseLog {
-    margin-top: var(--spacing-md);
+    
 }
 
 /* Page Layout */
@@ -45,8 +45,8 @@
 #workoutContent {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-md);
-    padding-bottom: 250px;
+    padding: var(--spacing-sm);
+    padding-bottom: 300px;
 }
 
 @media (max-width: 768px) {
