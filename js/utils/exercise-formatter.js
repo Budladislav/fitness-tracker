@@ -12,7 +12,7 @@ export class ExerciseFormatter {
         const { type, name, sets } = exercise;
         
         if (type === 'bodyweight') {
-            return `${name} - ${sets.map(set => set.reps).join(', ')}`;
+            return `${name}: ${sets.map(set => set.reps).join(', ')}`;
         }
 
         // Группируем подходы по весу
@@ -30,6 +30,6 @@ export class ExerciseFormatter {
             .map(([weight, reps]) => `${weight}кг ${reps.join(', ')}`)
             .join(' | ');
 
-        return `${name} - ${setsStr}`;
+        return `${name}: ${setsStr}`;
     }
 } 

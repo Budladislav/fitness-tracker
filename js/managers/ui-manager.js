@@ -1,8 +1,8 @@
-import { DOM_SELECTORS } from '../constants/selectors.js';
 import { DateFormatter } from '../utils/date-formatter.js';
 import { ExerciseFormatter } from '../utils/exercise-formatter.js';
 import { Utils } from '../utils/utils.js';
 import { ExercisePool } from '../models/exercise-pool.js';
+import { DOM_SELECTORS } from '../constants/selectors.js';
 
 /**
  * Управляет пользовательским интерфейсом
@@ -21,20 +21,20 @@ export class UIManager {
 
     initializeElements() {
         return {
-            exerciseType: document.getElementById('exerciseType'),
-            exerciseName: document.getElementById('exerciseName'),
-            exerciseReps: document.getElementById('exerciseReps'),
-            exerciseWeight: document.getElementById('exerciseWeight'),
-            exerciseLog: document.getElementById('exerciseLog'),
-            workoutForm: document.getElementById('workoutForm'),
-            startWorkoutSection: document.getElementById('startWorkoutSection'),
-            workoutDate: document.getElementById('workoutDate'),
-            workoutDateContainer: document.getElementById('workoutDateContainer'),
-            workoutContent: document.getElementById('workoutContent'),
-            repsInput: document.getElementById('repsInput'),
-            weightInput: document.getElementById('weightInput'),
-            addExercise: document.getElementById('addExercise'),
-            saveWorkout: document.getElementById('saveWorkout')
+            exerciseType: document.querySelector(DOM_SELECTORS.INPUTS.TYPE),
+            exerciseName: document.querySelector(DOM_SELECTORS.INPUTS.NAME),
+            exerciseReps: document.querySelector(DOM_SELECTORS.INPUTS.REPS.INPUT),
+            exerciseWeight: document.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.INPUT),
+            exerciseLog: document.querySelector(DOM_SELECTORS.WORKOUT.LOG),
+            workoutForm: document.querySelector(DOM_SELECTORS.WORKOUT.FORM),
+            startWorkoutSection: document.querySelector(DOM_SELECTORS.WORKOUT.START_SECTION),
+            workoutDate: document.querySelector(DOM_SELECTORS.WORKOUT.DATE),
+            workoutDateContainer: document.querySelector(DOM_SELECTORS.WORKOUT.DATE_CONTAINER),
+            workoutContent: document.querySelector(DOM_SELECTORS.WORKOUT.CONTENT),
+            repsInput: document.querySelector(DOM_SELECTORS.INPUTS.REPS.CONTAINER),
+            weightInput: document.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
+            addExercise: document.querySelector(DOM_SELECTORS.WORKOUT.ADD_BUTTON),
+            saveWorkout: document.querySelector(DOM_SELECTORS.WORKOUT.SAVE_BUTTON)
         };
     }
 

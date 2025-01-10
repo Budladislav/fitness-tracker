@@ -114,8 +114,6 @@ button:hover {
     color: var(--primary-color);
     font-weight: bold;
     margin: 0 auto 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
 }
 
 #workoutDate {
@@ -291,11 +289,6 @@ input[type="number"]::-webkit-outer-spin-button {
         padding: 8px;
     }
     
-    h2 {
-        font-size: 1.2em;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-    }
 }
 
 /* В конец файла добавим стили для уведомлений */

@@ -13,6 +13,7 @@ export const DOM_SELECTORS = {
         START_SECTION: '#startWorkoutSection',
         START_BUTTON: '#startWorkout',
         SAVE_BUTTON: '#saveWorkout',
+        ADD_BUTTON: '#addExercise',
         LOG: '#exerciseLog',
         DATE_CONTAINER: '#workoutDateContainer',
         DATE: '#workoutDate'

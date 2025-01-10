@@ -8,6 +8,6 @@ export class DateFormatter {
     }
 
     static formatWorkoutDate(date) {
-        return `Тренировка от ${date || 'неизвестной даты'}`;
+        return `${date || 'неизвестной даты'}`;
     }
 } 
