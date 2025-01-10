@@ -1,0 +1,43 @@
+/* Notification Components
+-------------------------------------------------- */
+/* Styles for toast notifications and alerts */
+
+#notification-container {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    padding-top: calc(var(--nav-height) + var(--spacing-sm));
+}
+
+.notification {
+    max-width: 300px;
+    width: 90%;
+    padding: 8px 16px;
+    margin: 0 auto var(--spacing-sm) auto;
+    border-radius: var(--border-radius);
+    opacity: 0;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    pointer-events: auto;
+    text-align: center;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification-error { background-color: var(--error-color); color: white; }
+.notification-success { background-color: var(--success-color); color: white; }
+.notification-info { background-color: var(--info-color); color: white; }
+
+@media (max-width: 768px) {
+    #notification-container {
+        top: var(--spacing-md);
+    }
+}

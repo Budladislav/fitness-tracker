@@ -1,0 +1,39 @@
+/* History Page Styles
+-------------------------------------------------- */
+/* Displays workout history entries with consistent spacing and formatting */
+
+.workout-date {
+    font-size: 1em;
+    font-weight: normal;
+    color: var(--text-color);
+    margin: var(--spacing-md) 0;
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.workout-exercises {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.workout-exercises div {
+    margin: var(--spacing-sm) 0;
+    color: var(--text-color);
+    width: 70%;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .workout-exercises {
+        margin-left: 0;
+    }
+}
+
+/* Первый элемент истории */
+.page.active > *:first-child {
+    margin-top: var(--spacing-md);
+}

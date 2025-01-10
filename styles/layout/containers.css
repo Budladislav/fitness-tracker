@@ -1,0 +1,42 @@
+/* Container Layouts
+-------------------------------------------------- */
+/* Basic layout containers and card structures */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-sm);
+}
+
+.card {
+    background: var(--card-background);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    width: 100%;
+    box-sizing: border-box;
+    transition: var(--transition);
+}
+
+.workout-card {
+    composes: card;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+.workout-entry {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-md);
+    background: var(--card-background);
+    box-shadow: var(--shadow);
+}
+
+#workoutForm {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+    box-sizing: border-box;
+}

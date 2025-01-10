@@ -1,0 +1,32 @@
+/* CSS Variables
+-------------------------------------------------- */
+/* Global variables for colors, spacing, and other common values */
+
+:root {
+    /* Colors */
+    --primary-color: #2196F3;
+    --primary-hover: #1976D2;
+    --background-color: #F5F7FA;
+    --card-background: white;
+    --border-color: #E1E4E8;
+    --text-color: #2C3E50;
+    --success-color: #4CAF50;
+    --error-color: #F44336;
+    --info-color: #2196F3;
+
+    /* Effects */
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --transition: all 0.3s ease;
+
+    /* Border Radius */
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+
+    /* Spacing */
+    --spacing-sm: 5px;
+    --spacing-md: 10px;
+    --spacing-lg: 20px;
+
+    /* Layout dimensions */
+    --nav-height: 40px;
+}

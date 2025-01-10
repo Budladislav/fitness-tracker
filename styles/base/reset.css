@@ -1,0 +1,71 @@
+/* CSS Reset & Base Styles
+-------------------------------------------------- */
+/* Basic reset and default styles for HTML elements */
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Reset для number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.removing {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.page {
+    display: none;
+    margin-top: 35px;
+    padding: var(--spacing-sm);
+}
+
+.page.active {
+    display: block;
+}
+
+/* Reset button styles */
+button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Убираем обводку фокуса для всех элементов */
+:focus {
+    outline: none;
+}
+
+/* Добавляем кастомную обводку фокуса */
+:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}

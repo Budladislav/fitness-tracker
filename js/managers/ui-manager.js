@@ -123,7 +123,7 @@ export class UIManager {
             }
             
             if (this.elements.workoutContent) {
-                this.elements.workoutContent.classList.add('hidden');
+                this.elements.workoutContent.classList.add('hidinitializeNavigationden');
             }
             
             if (this.elements.startWorkoutSection) {
@@ -320,42 +320,59 @@ export class UIManager {
     }
 
     initializeNavigation() {
-        // Проверяем активную тренировку в хранилище
-        const activeWorkout = this.storage.getActiveWorkout();
+    // Добавляем наблюдатель перед получением данных
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            console.log('Changed element:', mutation.target);
+            console.log('Type of change:', mutation.type);
+            console.log('Old value:', mutation.oldValue);
+            console.log('Added nodes:', mutation.addedNodes);
+            console.log('Removed nodes:', mutation.removedNodes);
+            console.log('-------------------');
+        });
+    });
+
+    // Наблюдаем за всеми изменениями в навигации
+    observer.observe(this.elements.navTabs, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        attributeOldValue: true
+    });
+
+    const activeWorkout = this.storage.getActiveWorkout();
+    
+    if (activeWorkout) {
+        this.showWorkoutForm(activeWorkout.date);
         
-        if (activeWorkout) {
-            // Если есть активная тренировка:
-            // 1. Показываем форму тренировки
-            this.showWorkoutForm(activeWorkout.date);
-            
-            // 2. Восстанавливаем упражнения в лог
-            if (activeWorkout.exercises) {
-                activeWorkout.exercises.forEach(exercise => {
-                    this.addExerciseToLog(exercise);
-                });
-            }
-            
-            // 3. Активируем таб тренировки
-            const workoutTab = document.querySelector('[data-page="workout"]');
-            if (workoutTab) {
-                const clickEvent = new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                });
-                workoutTab.dispatchEvent(clickEvent);
-            }
-        } else {
-            // Если активной тренировки нет, показываем историю
-            const historyTab = document.querySelector('[data-page="history"]');
-            if (historyTab) {
-                const clickEvent = new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                });
-                historyTab.dispatchEvent(clickEvent);
-            }
+        if (activeWorkout.exercises) {
+            activeWorkout.exercises.forEach(exercise => {
+                this.addExerciseToLog(exercise);
+            });
+        }
+        
+        const workoutTab = document.querySelector('[data-page="workout"]');
+        if (workoutTab) {
+            const clickEvent = new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            workoutTab.dispatchEvent(clickEvent);
+        }
+    } else {
+        const historyTab = document.querySelector('[data-page="history"]');
+        if (historyTab) {
+            const clickEvent = new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            historyTab.dispatchEvent(clickEvent);
         }
     }
+
+    // В конце метода отключаем наблюдатель
+    observer.disconnect();
+}
 } 
