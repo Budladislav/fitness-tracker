@@ -48,20 +48,27 @@ body {
     backdrop-filter: blur(10px);
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
+    height: 40px;
 }
 
 .nav-tab {
     flex: 1;
-    padding: 12px 0;
+    height: 100%;
     border: none;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
     background: none;
     color: #666;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
     position: relative;
     margin: 0;
     border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
 }
 
 .nav-tab:hover {
@@ -84,6 +91,10 @@ body {
     background-color: var(--primary-color);
 }
 
+.nav-tab:last-child {
+    border-right: none;
+}
+
 /* 4. Cards & Containers
 -------------------------------------------------- */
 .card {
@@ -104,8 +115,12 @@ body {
 }
 
 .workout-entry {
-    composes: card;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
     margin: var(--spacing-md) 0;
+    padding: var(--spacing-md);
+    background: var(--card-background);
+    box-shadow: var(--shadow);
 }
 
 /* 5. Forms & Inputs
@@ -211,9 +226,9 @@ input[type="number"]::-webkit-outer-spin-button {
 /* 7. Workout History
 -------------------------------------------------- */
 .workout-date {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: var(--primary-color);
+    font-size: 1em;
+    font-weight: normal;
+    color: var(--text-color);
     margin-bottom: var(--spacing-md);
     padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid var(--border-color);
@@ -222,11 +237,17 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .workout-exercises {
     margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .workout-exercises div {
     margin: var(--spacing-sm) 0;
     color: var(--text-color);
+    width: 80%;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
 }
 
 /* 8. Utility Classes
@@ -242,7 +263,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .page {
     display: none;
-    margin-top: 45px; /* Увеличили отступ для фиксированной навигации */
+    margin-top: 35px;
     padding: var(--spacing-sm);
 }
 
@@ -294,8 +315,9 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .nav-tab {
-        padding: 6px 10px;
+        flex: 1;
         font-size: 13px;
+        padding: 8px 0;
     }
 
     button {
