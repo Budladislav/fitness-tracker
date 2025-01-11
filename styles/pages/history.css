@@ -34,29 +34,3 @@
         margin-left: 0;
     }
 }
-
-.history-container {
-    max-height: calc(100vh - var(--nav-height) - var(--spacing-sm));
-    overflow-y: auto;
-    padding: var(--spacing-sm); /* Чтобы скролл не прилипал к краю */
-}
-
-/* Для более плавного скролла можно добавить */
-.history-container {
-    scrollbar-width: thin; /* Для Firefox */
-    scrollbar-color: var(--border-color) transparent; /* Для Firefox */
-}
-
-/* Стили скроллбара для Chrome/Safari */
-.history-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.history-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.history-container::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 3px;
-}

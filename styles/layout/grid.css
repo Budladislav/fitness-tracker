@@ -54,3 +54,44 @@
         padding: var(--spacing-md);
     }
 }
+
+/* Content Container */
+.content-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+    padding-bottom: var(--controls-height, var(--spacing-md));
+}
+
+.content-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.content-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.content-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 3px;
+}
+
+/* Специфичные стили для exerciseLog внутри content-container */
+.content-container #exerciseLog {
+    padding-bottom: var(--spacing-md); /* Отступ для формы внизу */
+}
+
+/* Общие стили для страниц */
+.page {
+    display: none;
+    height: calc(100vh - var(--nav-height));
+    margin-top: var(--nav-height);
+    position: relative;
+}
+
+.page.active {
+    display: flex;
+    flex-direction: column;
+}

@@ -102,33 +102,44 @@ export class UIManager {
 
     showWorkoutForm(date) {
         console.log('Showing workout form for date:', date);
-    
-        this.elements.startWorkoutSection.classList.add('hidden');
+
+        // Переключаем видимость внутри workoutControls
+        const startSection = this.elements.startWorkoutSection;
+        const workoutForm = this.elements.workoutForm;
+        
+        startSection.classList.add('hidden');
+        workoutForm.classList.remove('hidden');
+        
+        // Показываем контент
         this.elements.workoutContent.classList.remove('hidden');
-        this.elements.workoutForm.classList.remove('hidden');
-    
+
         // Сохраняем состояние активной тренировки
         this.storage.setActiveWorkout({
             date: date,
             exercises: this.getExercisesFromLog()
         });
-    
+
         this.clearInputs(true);
     }
 
     resetWorkoutForm() {
         try {
+            // Очищаем лог
             if (this.elements.exerciseLog) {
                 this.elements.exerciseLog.innerHTML = '';
             }
             
+            // Скрываем контент
             if (this.elements.workoutContent) {
                 this.elements.workoutContent.classList.add('hidden');
             }
             
-            if (this.elements.startWorkoutSection) {
-                this.elements.startWorkoutSection.classList.remove('hidden');
-            }
+            // Переключаем видимость внутри workoutControls
+            const startSection = this.elements.startWorkoutSection;
+            const workoutForm = this.elements.workoutForm;
+            
+            workoutForm.classList.add('hidden');
+            startSection.classList.remove('hidden');
             
             this.storage.clearActiveWorkout();
             this.clearInputs(true);

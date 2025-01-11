@@ -33,3 +33,24 @@
         max-width: 300px;
     }
 }
+
+#workoutPage {
+    display: none;
+    height: calc(100vh - 40px);
+    margin-top: 40px;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+#workoutPage.active {
+    display: flex;
+    flex-direction: column;
+}
+
+#workoutContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    padding-bottom: 300px;
+}

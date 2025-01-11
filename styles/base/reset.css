@@ -34,15 +34,6 @@ input[type="number"]::-webkit-outer-spin-button {
     transform: translateX(100%);
 }
 
-.page {
-    display: none;
-    margin-top: var(--nav-height);
-}
-
-.page.active {
-    display: block;
-}
-
 /* Reset button styles */
 button {
     -webkit-appearance: none;
