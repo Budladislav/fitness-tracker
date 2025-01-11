@@ -40,11 +40,17 @@
             <div id="workoutForm" class="hidden">
                 <div class="form-inputs">                    
                     <div id="weightInput" class="input-field" data-visible="false">
-                        <input type="number" id="exerciseWeight" placeholder="Вес (кг)">
+                        <div class="input-group">
+                            <input type="number" id="exerciseWeight" placeholder="Вес">
+                            <span class="input-suffix">кг</span>
+                        </div>
                     </div>
                 </div>
                 <div id="repsInput" class="input-field">
-                    <input type="number" id="exerciseReps" placeholder="Количество повторений">
+                    <div class="input-group">
+                        <input type="number" id="exerciseReps" placeholder="Количество повторений">
+                        <span class="input-suffix">раз</span>
+                    </div>
                 </div>
                 <select id="exerciseName">
                     <option value="" disabled selected>Выберите упражнение</option>

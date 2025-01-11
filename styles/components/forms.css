@@ -194,3 +194,24 @@ select option[value=""] {
 select option[disabled] {
     display: none;
 }
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-suffix {
+    position: absolute;
+    right: 12px;
+    color: var(--text-color-secondary);
+    pointer-events: none;
+    min-width: 30px;
+    text-align: left;
+}
+
+/* Разные отступы для разных суффиксов */
+.input-group input {
+    padding-right: 50px;
+}

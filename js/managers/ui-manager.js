@@ -55,8 +55,10 @@ export class UIManager {
         this.elements.exerciseName.addEventListener('change', () => {
             const isWeighted = this.elements.exerciseType.checked;
             if (isWeighted) {
+                const selectedExercise = this.elements.exerciseName.value;
+                const defaultWeight = ExercisePool.getDefaultWeight(selectedExercise);
+                this.elements.exerciseWeight.value = defaultWeight;
                 this.elements.exerciseReps.value = '';
-                this.elements.exerciseWeight.value = '';
             }
         });
 

@@ -40,17 +40,20 @@ const DEFAULT_EXERCISES = {
         {
             id: 'deadlift',
             name: 'Тяга',
-            type: 'weighted'
+            type: 'weighted',
+            defaultWeight: 100
         },
         {
             id: 'bench-press',
             name: 'Жим',
-            type: 'weighted'
+            type: 'weighted',
+            defaultWeight: 80
         },
         {
             id: 'squat',
             name: 'Присяд',
-            type: 'weighted'
+            type: 'weighted',
+            defaultWeight: 115
         }
     ]
 };
@@ -66,5 +69,10 @@ export class ExercisePool {
 
     static getExerciseById(id) {
         return this.getAllExercises().find(exercise => exercise.id === id);
+    }
+
+    static getDefaultWeight(exerciseName) {
+        const exercise = DEFAULT_EXERCISES.weighted.find(ex => ex.name === exerciseName);
+        return exercise ? exercise.defaultWeight : '';
     }
 } 
