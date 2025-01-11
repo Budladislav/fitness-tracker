@@ -86,7 +86,7 @@ export class UIManager {
             const weightInput = document.querySelector('#weightInput');
             if (!weightInput) return;
             
-            weightInput.style.display = isWeighted ? 'block' : 'none';
+            weightInput.setAttribute('data-visible', isWeighted);
         } catch (error) {
             console.error('Error in toggleWeightInput:', error);
         }

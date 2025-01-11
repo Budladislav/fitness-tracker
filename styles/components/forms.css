@@ -14,7 +14,6 @@
     flex-direction: column;
     gap: 8px;
     width: 100%;
-    margin-bottom: var(--spacing-md);
 }
 
 select, 
@@ -27,6 +26,7 @@ input {
     box-sizing: border-box;
     font-size: 14px;
     transition: var(--transition);
+    text-align: right;
 }
 
 select:focus, 
@@ -170,5 +170,27 @@ input:focus + .toggle-slider {
 }
 
 .input-field[data-visible="false"] {
+    display: none;
+}
+
+/* Для placeholder в инпутах */
+input::placeholder {
+    text-align: right;
+}
+
+/* Для текста в select */
+select option {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Для placeholder в select */
+select option[value=""] {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Скрываем disabled option в select */
+select option[disabled] {
     display: none;
 }

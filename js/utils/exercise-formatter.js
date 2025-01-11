@@ -25,9 +25,9 @@ export class ExerciseFormatter {
             return groups;
         }, {});
 
-        // Форматируем каждую группу
+        // Форматируем каждую группу с разделителем между весом и повторениями
         const setsStr = Object.entries(setsByWeight)
-            .map(([weight, reps]) => `${weight}кг ${reps.join(', ')}`)
+            .map(([weight, reps]) => `${weight}кг - ${reps.join(', ')}`)
             .join(' | ');
 
         return `${name}: ${setsStr}`;
