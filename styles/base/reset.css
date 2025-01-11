@@ -36,8 +36,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .page {
     display: none;
-    margin-top: 35px;
-    padding: var(--spacing-sm);
+    margin-top: var(--nav-height);
 }
 
 .page.active {

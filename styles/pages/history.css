@@ -38,7 +38,7 @@
 .history-container {
     max-height: calc(100vh - var(--nav-height) - var(--spacing-sm));
     overflow-y: auto;
-    padding-right: var(--spacing-sm); /* Чтобы скролл не прилипал к краю */
+    padding: var(--spacing-sm); /* Чтобы скролл не прилипал к краю */
 }
 
 /* Для более плавного скролла можно добавить */
