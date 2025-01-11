@@ -2,7 +2,7 @@
 -------------------------------------------------- */
 /* Specific styles for the workout tracking page */
 
-/* Workout Form Specific Styles */
+/* Workout Form */
 #workoutForm {
     max-width: 1200px;
     margin: 0 auto;
@@ -14,43 +14,9 @@
     margin: 0;
 }
 
-/* Workout Controls */
-#workoutControls {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--card-background);
-    border-top: 1px solid var(--border-color);
-    padding: var(--spacing-md);
-    z-index: 100;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-}
-
 @media (max-width: 768px) {
     #startWorkout {
         width: 100%;
         max-width: 300px;
     }
-}
-
-#workoutPage {
-    display: none;
-    height: calc(100vh - 40px);
-    margin-top: 40px;
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-}
-
-#workoutPage.active {
-    display: flex;
-    flex-direction: column;
-}
-
-#workoutContent {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--spacing-sm);
-    padding-bottom: 300px;
 }

@@ -3,25 +3,32 @@
 /* Main navigation tabs and mobile menu components.
    Includes styles for tab indicators and active states */
 
-.nav-tabs {
+.nav-container {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    display: flex;
+    height: var(--nav-height);
+    z-index: 100;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
-    z-index: 100;
     border-bottom: 1px solid var(--border-color);
-    height: var(--nav-height);
     overflow: hidden;
+}
+
+.nav-tabs {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .nav-tab {
     flex: 1;
     height: 100%;
     border: none;
-    border-right: none;
+    border-radius: 0;
     background: none;
     color: #666;
     font-size: 14px;
@@ -30,12 +37,10 @@
     transition: var(--transition);
     position: relative;
     margin: 0;
-    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 var(--spacing-md);
-    min-width: auto;
 }
 
 .nav-tab:not(:last-child) {
@@ -64,8 +69,20 @@
 
 @media (max-width: 768px) {
     .nav-tab {
-        flex: 1;
         font-size: 13px;
         padding: 8px 0;
     }
 }
+
+@media (min-width: 900px) {
+    .nav-container {
+        display: flex;
+        justify-content: center; /* Центрируем содержимое */
+    }
+    
+    .nav-tabs {
+        width: 900px; /* Фиксированная максимальная ширина */
+        margin: 0 auto;
+    }
+}
+
