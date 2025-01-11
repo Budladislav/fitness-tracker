@@ -101,8 +101,6 @@ export class UIManager {
     }
 
     showWorkoutForm(date) {
-        console.log('Showing workout form for date:', date);
-
         // Переключаем видимость внутри workoutControls
         const startSection = this.elements.startWorkoutSection;
         const workoutForm = this.elements.workoutForm;

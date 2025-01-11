@@ -80,17 +80,14 @@ export class WorkoutManager {
         const startWorkoutBtn = document.getElementById('startWorkout');
         if (startWorkoutBtn) {
             startWorkoutBtn.addEventListener('click', () => {
-                console.log('Start workout clicked');
                 const currentDate = DateFormatter.getCurrentFormattedDate();
                 this.ui.showWorkoutForm(currentDate);
                 
-                if (!this.storage.saveCurrentWorkout({
+                this.storage.saveCurrentWorkout({
                     date: currentDate,
                     exercises: []
-                })) {
-                    this.notifications.error('Не удалось начать тренировку');
-                    return;
-                }
+                });
+                
                 this.notifications.info('Начата новая тренировка');
             });
         }
