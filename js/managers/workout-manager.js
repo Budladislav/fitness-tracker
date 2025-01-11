@@ -56,11 +56,6 @@ export class WorkoutManager {
     }
 
     initializeFormEvents() {
-        this.ui.elements.exerciseType.addEventListener('change', () => {
-            const isBodyweight = this.ui.elements.exerciseType.value === 'bodyweight';
-            this.ui.toggleWeightInput(isBodyweight);
-        });
-
         this.ui.elements.addExercise.addEventListener('click', () => {
             const formData = this.ui.getFormData();
             const validatedData = this.validator.validate(formData);

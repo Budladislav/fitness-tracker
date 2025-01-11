@@ -43,15 +43,17 @@ export class UIManager {
 
     setupEventListeners() {
         this.elements.exerciseType.addEventListener('change', () => {
-            const isBodyweight = this.elements.exerciseType.value === 'bodyweight';
-            this.toggleWeightInput(isBodyweight);
-            this.clearInputs(true, true);
+            const isWeighted = this.elements.exerciseType.checked;
+            this.toggleWeightInput(isWeighted);
+            this.elements.exerciseName.value = '';
+            this.elements.exerciseReps.value = '';
+            this.elements.exerciseWeight.value = '';
             
             this.updateExercisesList();
         });
 
         this.elements.exerciseName.addEventListener('change', () => {
-            const isWeighted = this.elements.exerciseType.value === 'weighted';
+            const isWeighted = this.elements.exerciseType.checked;
             if (isWeighted) {
                 this.elements.exerciseReps.value = '';
                 this.elements.exerciseWeight.value = '';
@@ -79,22 +81,12 @@ export class UIManager {
                (formData.type === 'bodyweight' || formData.weight);
     }
 
-    toggleWeightInput(isBodyweight) {
+    toggleWeightInput(isWeighted) {
         try {
-            const weightInput = document.getElementById('weightInput');
-            const repsInput = document.getElementById('repsInput');
+            const weightInput = document.querySelector('#weightInput');
+            if (!weightInput) return;
             
-            if (!weightInput || !repsInput) {
-                console.error('Weight or reps input not found');
-                return;
-            }
-
-            if (isBodyweight) {
-                weightInput.classList.add('hidden');
-            } else {
-                weightInput.classList.remove('hidden');
-            }
-            repsInput.classList.remove('hidden');
+            weightInput.style.display = isWeighted ? 'block' : 'none';
         } catch (error) {
             console.error('Error in toggleWeightInput:', error);
         }
@@ -152,7 +144,7 @@ export class UIManager {
             name: Utils.sanitizeInput(this.elements.exerciseName.value),
             reps: this.elements.exerciseReps.value,
             weight: this.elements.exerciseWeight.value,
-            type: this.elements.exerciseType.value
+            type: this.elements.exerciseType.checked ? 'weighted' : 'bodyweight'
         };
     }
 
@@ -227,14 +219,10 @@ export class UIManager {
 
     clearInputs(fullReset = false) {
         if (fullReset) {
-            // Сбрасываем все поля кроме типа упражнения
+            // Только очищаем значения полей
             this.elements.exerciseName.value = '';
             this.elements.exerciseReps.value = '';
             this.elements.exerciseWeight.value = '';
-            
-            // Обновляем видимость поля веса в соответствии с текущим типом
-            const isBodyweight = this.elements.exerciseType.value === 'bodyweight';
-            this.toggleWeightInput(isBodyweight);
         }
     }
 
@@ -312,7 +300,7 @@ export class UIManager {
 
     updateExercisesList() {
         const exerciseNameSelect = this.elements.exerciseName;
-        const type = this.elements.exerciseType.value;
+        const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
         const exercises = ExercisePool.getExercisesByType(type);
         
         exerciseNameSelect.innerHTML = '<option value="" disabled selected>Выберите упражнение</option>';
@@ -339,22 +327,20 @@ export class UIManager {
             
             const workoutTab = document.querySelector('[data-page="workout"]');
             if (workoutTab) {
-                const clickEvent = new MouseEvent('click', {
+                workoutTab.dispatchEvent(new MouseEvent('click', {
                     bubbles: true,
                     cancelable: true,
                     view: window
-                });
-                workoutTab.dispatchEvent(clickEvent);
+                }));
             }
         } else {
             const historyTab = document.querySelector('[data-page="history"]');
             if (historyTab) {
-                const clickEvent = new MouseEvent('click', {
+                historyTab.dispatchEvent(new MouseEvent('click', {
                     bubbles: true,
                     cancelable: true,
                     view: window
-                });
-                historyTab.dispatchEvent(clickEvent);
+                }));
             }
         }
     }
