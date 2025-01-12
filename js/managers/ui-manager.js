@@ -319,7 +319,7 @@ export class UIManager {
                 ${index === 0 ? `<td rowspan="${weightEntries.length}">${exercise.name}</td>` : ''}
                 <td>${reps.join(', ')}</td>
                 ${index === 0 ? `<td rowspan="${weightEntries.length}">${totalReps}</td>` : ''}
-                ${index === 0 ? `<td rowspan="${weightEntries.length}">${weight}</td>` : ''}
+                <td>${weight}</td>
                 ${index === 0 ? `<td rowspan="${weightEntries.length}">${weight === '—' ? '—' : totalWeight}</td>` : ''}
             `;
             rows.push(row);
@@ -336,10 +336,18 @@ export class UIManager {
         const totalReps = workout.exercises.reduce((sum, ex) => sum + ex.sets.reduce((s, set) => s + set.reps, 0), 0);
         const totalWeight = workout.exercises.reduce((sum, ex) => sum + ex.sets.reduce((s, set) => s + (set.weight || 0) * set.reps, 0), 0);
 
-        const summary = document.createElement('div');
-        summary.className = 'workout-summary';
-        summary.textContent = `${workout.date} | Σ повторов: ${totalReps} | Тоннаж: ${totalWeight}`;
-        workoutEntry.appendChild(summary);
+        const summaryTable = document.createElement('table');
+        summaryTable.className = 'summary-table';
+
+        const summaryRow = document.createElement('tr');
+        summaryRow.innerHTML = `
+            <td>${workout.date}</td>
+            <td>Σ повторов: ${totalReps} раз</td>
+            <td>Тоннаж: ${totalWeight} кг</td>
+            <td><button class="toggle-workout">⇕</button></td>
+        `;
+        summaryTable.appendChild(summaryRow);
+        workoutEntry.appendChild(summaryTable);
 
         const details = document.createElement('div');
         details.className = 'workout-details';
@@ -354,10 +362,10 @@ export class UIManager {
             const headerRow = document.createElement('tr');
             headerRow.innerHTML = `
                 <th>Упражнение</th>
-                <th>Повторения</th>
-                <th>Σ повторений</th>
-                <th>Вес</th>
-                <th>Тоннаж</th>
+                <th>Повторы</th>
+                <th>Σ</th>
+                <th>кг</th>
+                <th>Σ кг</th>
             `;
             exerciseTable.appendChild(headerRow);
 
@@ -374,6 +382,14 @@ export class UIManager {
 
         const state = this.workoutStates[workout.id] || 'expanded';
         this.updateWorkoutEntryDisplay(workoutEntry, state);
+
+        // Добавляем обработчик для кнопки
+        summaryTable.querySelector('.toggle-workout').addEventListener('click', () => {
+            const newState = this.workoutStates[workout.id] === 'collapsed' ? 'expanded' : 'collapsed';
+            this.workoutStates[workout.id] = newState;
+            this.updateWorkoutEntryDisplay(workoutEntry, newState);
+            this.saveWorkoutStates();
+        });
 
         return workoutEntry;
     }
@@ -450,11 +466,10 @@ export class UIManager {
     }
 
     updateWorkoutEntryDisplay(entry, state) {
-        const details = entry.querySelector('.workout-details');
         if (state === 'collapsed') {
-            details.style.display = 'none';
+            entry.classList.remove('expanded');
         } else {
-            details.style.display = 'block';
+            entry.classList.add('expanded');
         }
     }
 

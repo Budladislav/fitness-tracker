@@ -78,5 +78,49 @@
 }
 
 .workout-details {
-    display: block; /* или none для свёрнутого состояния */
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 1s ease-out;
+}
+
+.workout-entry.expanded .workout-details {
+    max-height: 1000px;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.summary-table td {
+    border-bottom: 1px solid #ddd;
+    font-size: 1em;
+    padding: 2px 4px;
+    line-height: 1.2;
+}
+
+.summary-table td:last-child {
+    width: 50px;
+}
+
+.summary-table td:not(:last-child) {
+    width: auto;
+}
+
+.toggle-workout {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+    margin: 0;
+}
+
+.toggle-workout:hover {
+    background-color: #1e5884;
 }
