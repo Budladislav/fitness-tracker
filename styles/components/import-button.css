@@ -1,0 +1,17 @@
+#importButton {
+    position: fixed;
+    top: 50px;
+    right: 10px;
+    padding: 8px 16px;
+    background-color: var(--success-color);
+    color: var(--button-text);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    z-index: 9999;
+    transition: background-color 0.2s;
+}
+
+#importButton:hover {
+    background-color: var(--success-hover-color);
+} 

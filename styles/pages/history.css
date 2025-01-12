@@ -56,15 +56,15 @@
 }
 
 .exercise-table th:nth-child(3), .exercise-table td:nth-child(3) {
-    width: 10%;
-}
-
-.exercise-table th:nth-child(4), .exercise-table td:nth-child(4) {
     width: 5%;
 }
 
-.exercise-table th:nth-child(5), .exercise-table td:nth-child(5) {
+.exercise-table th:nth-child(4), .exercise-table td:nth-child(4) {
     width: 7%;
+}
+
+.exercise-table th:nth-child(5), .exercise-table td:nth-child(5) {
+    width: 5%;
 }
 
 @media (max-width: 768px) {
@@ -124,3 +124,32 @@
 .toggle-workout:hover {
     background-color: #1e5884;
 }
+
+.history-header {
+    display: flex;
+    justify-content: right;
+}
+
+#toggleAllWorkouts {
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin: var(--spacing-sm);
+    margin-bottom: 0;
+    height: 40px;
+}
+
+#toggleAllWorkouts:hover {
+   background-color: var(--primary-hover);
+}
+
+#toggleAllWorkouts:active {
+    transform: scale(0.98);
+}   

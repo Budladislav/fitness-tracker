@@ -29,4 +29,7 @@
 
     /* Layout dimensions */
     --nav-height: 40px;
+
+    /* Success colors */
+    --success-hover-color: #45a049;
 }

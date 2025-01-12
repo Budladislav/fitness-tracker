@@ -75,11 +75,13 @@ export class WorkoutManager {
         const startWorkoutBtn = document.getElementById('startWorkout');
         if (startWorkoutBtn) {
             startWorkoutBtn.addEventListener('click', () => {
-                const currentDate = DateFormatter.getCurrentFormattedDate();
-                this.ui.showWorkoutForm(currentDate);
+                const displayDate = DateFormatter.getCurrentFormattedDate();
+                const storageDate = DateFormatter.toStorageFormat('current');
+                
+                this.ui.showWorkoutForm(displayDate);
                 
                 this.storage.saveCurrentWorkout({
-                    date: currentDate,
+                    date: storageDate,
                     exercises: []
                 });
                 
@@ -108,7 +110,8 @@ export class WorkoutManager {
 
             if (!this.storage.saveWorkoutToHistory({
                 date: currentWorkout.date,
-                exercises: exercises
+                exercises: exercises,
+                id: Date.now()
             })) {
                 this.notifications.error('Не удалось сохранить тренировку');
                 return;

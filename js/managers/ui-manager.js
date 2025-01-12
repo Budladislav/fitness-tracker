@@ -113,7 +113,7 @@ export class UIManager {
 
         // Сохраняем состояние активной тренировки
         this.storage.setActiveWorkout({
-            date: date,
+            date: DateFormatter.toStorageFormat(date),
             exercises: this.getExercisesFromLog()
         });
 
@@ -341,7 +341,7 @@ export class UIManager {
 
         const summaryRow = document.createElement('tr');
         summaryRow.innerHTML = `
-            <td>${workout.date}</td>
+            <td>${DateFormatter.formatWorkoutDate(workout.date)}</td>
             <td>Σ повторов: ${totalReps} раз</td>
             <td>Тоннаж: ${totalWeight} кг</td>
             <td><button class="toggle-workout">⇕</button></td>

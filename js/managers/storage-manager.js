@@ -1,4 +1,5 @@
 import { Utils } from '../utils/utils.js';
+import { DateFormatter } from '../utils/date-formatter.js';
 
 /**
  * Управляет хранением данных
@@ -88,12 +89,25 @@ export class WorkoutStorage {
     }
 
     getWorkoutHistory() {
-        return this.getFromStorage('exercises') || [];
+        const workouts = this.getFromStorage('exercises') || [];
+        
+        // Преобразуем даты при чтении
+        return workouts.map(workout => ({
+            ...workout,
+            displayDate: DateFormatter.formatWorkoutDate(workout.date)
+        }));
     }
 
     saveWorkoutToHistory(workout) {
         const savedWorkouts = this.getWorkoutHistory();
-        savedWorkouts.push(workout);
+        
+        // Преобразуем дату в формат хранения, если она есть
+        const processedWorkout = {
+            ...workout,
+            date: workout.date ? DateFormatter.toStorageFormat(workout.date) : workout.date
+        };
+        
+        savedWorkouts.push(processedWorkout);
         return this.saveToStorage('exercises', savedWorkouts);
     }
 

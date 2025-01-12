@@ -11,6 +11,7 @@
 @import 'components/navigation.css';
 @import 'components/notifications.css';
 @import 'components/exercise-items.css';
+@import './components/import-button.css';
 
 /* Pages */
 @import 'pages/workout.css';
