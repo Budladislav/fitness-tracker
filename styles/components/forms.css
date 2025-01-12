@@ -215,3 +215,15 @@ select option[disabled] {
 .input-group input {
     padding-right: 50px;
 }
+
+.exercise-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.total-weight {
+    font-size: 16px;
+    color: var(--text-color-secondary);
+}

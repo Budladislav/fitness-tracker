@@ -37,7 +37,7 @@
     width: 30px !important;
     height: 30px;
     padding: 0;
-    margin: 0 0 0 15px !important;
+    margin: 0 0 0 5px !important;
     opacity: 0.5;
     transition: var(--transition);
     align-self: flex-start;

@@ -173,6 +173,11 @@ export class UIManager {
             existingItem.dataset.exercise = JSON.stringify(exerciseData);
             existingItem.querySelector('.exercise-content span').textContent = 
                 ExerciseFormatter.formatExercise(exerciseData);
+
+            if (type === 'weighted') {
+                const totalWeight = this.calculateTotalWeight(exerciseData);
+                existingItem.querySelector('.total-weight').textContent = `${totalWeight} кг`;
+            }
         } else {
             // Создаем новое упражнение
             const item = document.createElement('div');
@@ -190,6 +195,14 @@ export class UIManager {
             
             text.textContent = ExerciseFormatter.formatExercise(newExercise);
             
+            const totalWeightElement = document.createElement('div');
+            totalWeightElement.className = 'total-weight';
+
+            if (type === 'weighted') {
+                const totalWeight = this.calculateTotalWeight(newExercise);
+                totalWeightElement.textContent = `Тоннаж: ${totalWeight} кг`;
+            }
+
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-exercise';
             deleteBtn.textContent = '×';
@@ -203,6 +216,10 @@ export class UIManager {
                     data.sets.pop();
                     item.dataset.exercise = JSON.stringify(data);
                     text.textContent = ExerciseFormatter.formatExercise(data);
+                    if (type === 'weighted') {
+                        const totalWeight = this.calculateTotalWeight(data);
+                        item.querySelector('.total-weight').textContent = `${totalWeight} кг`;
+                    }
                 } else {
                     // Удаляем всё упражнение, если остался последний подход
                     item.classList.add('removing');
@@ -211,12 +228,21 @@ export class UIManager {
             };
 
             content.appendChild(text);
+            if (type === 'weighted') {
+                content.appendChild(totalWeightElement);
+            }
             content.appendChild(deleteBtn);
             item.appendChild(content);
             item.dataset.exercise = JSON.stringify(newExercise);
             
             this.elements.exerciseLog.appendChild(item);
         }
+    }
+
+    calculateTotalWeight(exercise) {
+        return exercise.sets.reduce((total, set) => {
+            return total + (set.weight || 0) * set.reps;
+        }, 0);
     }
 
     clearInputs(fullReset = false) {
@@ -305,7 +331,7 @@ export class UIManager {
         const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
         const exercises = ExercisePool.getExercisesByType(type);
         
-        exerciseNameSelect.innerHTML = '<option value="" disabled selected>Выберите упражнение</option>';
+        exerciseNameSelect.innerHTML = '<option value="" disabled selected>Упражнение</option>';
         
         exercises.forEach(exercise => {
             const option = document.createElement('option');
