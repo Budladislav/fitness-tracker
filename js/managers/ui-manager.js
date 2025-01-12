@@ -303,15 +303,18 @@ export class UIManager {
             return total + (set.weight || 0) * set.reps;
         }, 0);
 
+        const totalReps = exercise.sets.reduce((sum, set) => sum + set.reps, 0);
+
         const weightEntries = Object.entries(setsByWeight);
 
         weightEntries.forEach(([weight, reps], index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 ${index === 0 ? `<td rowspan="${weightEntries.length}">${exercise.name}</td>` : ''}
-                <td>${weight}</td>
                 <td>${reps.join(', ')}</td>
-                ${index === 0 ? `<td rowspan="${weightEntries.length}">${totalWeight}</td>` : ''}
+                ${index === 0 ? `<td rowspan="${weightEntries.length}">${totalReps}</td>` : ''}
+                ${index === 0 ? `<td rowspan="${weightEntries.length}">${weight}</td>` : ''}
+                ${index === 0 ? `<td rowspan="${weightEntries.length}">${weight === '—' ? '—' : totalWeight}</td>` : ''}
             `;
             rows.push(row);
         });
@@ -334,9 +337,10 @@ export class UIManager {
         const headerRow = document.createElement('tr');
         headerRow.innerHTML = `
             <th>Упражнение</th>
-            <th>Вес</th>
-            <th>Повторения</th>
-            <th>Тоннаж</th>
+            <th>Повторы</th>
+            <th>Σ</th>
+            <th>кг</th>
+            <th>Σ кг</th>
         `;
         exerciseTable.appendChild(headerRow);
         
