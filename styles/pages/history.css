@@ -72,3 +72,11 @@
         margin-left: 0;
     }
 }
+
+.workout-entry {
+    margin-bottom: 10px;
+}
+
+.workout-details {
+    display: block; /* или none для свёрнутого состояния */
+}

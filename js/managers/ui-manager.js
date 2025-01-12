@@ -21,6 +21,7 @@ export class UIManager {
         this.setupEventListeners();
         this.initializeExercisesList();
         this.initializeNavigation();
+        this.workoutStates = this.loadWorkoutStates();
     }
 
     initializeElements() {
@@ -37,7 +38,8 @@ export class UIManager {
             weightInput: document.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
             addExercise: document.querySelector(DOM_SELECTORS.WORKOUT.ADD_BUTTON),
             saveWorkout: document.querySelector(DOM_SELECTORS.WORKOUT.SAVE_BUTTON),
-            navTabs: document.querySelector(DOM_SELECTORS.NAVIGATION.TABS)
+            navTabs: document.querySelector(DOM_SELECTORS.NAVIGATION.TABS),
+            toggleAllWorkouts: document.getElementById('toggleAllWorkouts'),
         };
     }
 
@@ -73,6 +75,10 @@ export class UIManager {
             const targetPage = tab.dataset.page;
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(`${targetPage}Page`).classList.add('active');
+        });
+
+        this.elements.toggleAllWorkouts.addEventListener('click', () => {
+            this.toggleAllWorkouts();
         });
     }
 
@@ -325,35 +331,50 @@ export class UIManager {
     createWorkoutEntry(workout) {
         const workoutEntry = document.createElement('div');
         workoutEntry.className = 'workout-entry';
-        
-        const dateElement = this.createWorkoutDateElement(workout.date);
-        
+        workoutEntry.dataset.id = workout.id;
+
+        const totalReps = workout.exercises.reduce((sum, ex) => sum + ex.sets.reduce((s, set) => s + set.reps, 0), 0);
+        const totalWeight = workout.exercises.reduce((sum, ex) => sum + ex.sets.reduce((s, set) => s + (set.weight || 0) * set.reps, 0), 0);
+
+        const summary = document.createElement('div');
+        summary.className = 'workout-summary';
+        summary.textContent = `${workout.date} | Σ повторов: ${totalReps} | Тоннаж: ${totalWeight}`;
+        workoutEntry.appendChild(summary);
+
+        const details = document.createElement('div');
+        details.className = 'workout-details';
+
         const exercises = document.createElement('div');
         exercises.className = 'workout-exercises';
-    
-        const exerciseTable = document.createElement('table');
-        exerciseTable.className = 'exercise-table';
-    
-        const headerRow = document.createElement('tr');
-        headerRow.innerHTML = `
-            <th>Упражнение</th>
-            <th>Повторы</th>
-            <th>Σ</th>
-            <th>кг</th>
-            <th>Σ кг</th>
-        `;
-        exerciseTable.appendChild(headerRow);
-        
+
         if (workout.exercises && Array.isArray(workout.exercises)) {
+            const exerciseTable = document.createElement('table');
+            exerciseTable.className = 'exercise-table';
+
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `
+                <th>Упражнение</th>
+                <th>Повторения</th>
+                <th>Σ повторений</th>
+                <th>Вес</th>
+                <th>Тоннаж</th>
+            `;
+            exerciseTable.appendChild(headerRow);
+
             workout.exercises.forEach(exercise => {
                 const exerciseRows = this.createExerciseElement(exercise);
                 exerciseRows.forEach(row => exerciseTable.appendChild(row));
             });
+
+            exercises.appendChild(exerciseTable);
         }
-    
-        exercises.appendChild(exerciseTable);
-        workoutEntry.appendChild(dateElement);
-        workoutEntry.appendChild(exercises);
+
+        details.appendChild(exercises);
+        workoutEntry.appendChild(details);
+
+        const state = this.workoutStates[workout.id] || 'expanded';
+        this.updateWorkoutEntryDisplay(workoutEntry, state);
+
         return workoutEntry;
     }
 
@@ -413,5 +434,35 @@ export class UIManager {
                 }));
             }
         }
+    }
+
+    toggleAllWorkouts() {
+        const allCollapsed = Object.values(this.workoutStates).every(state => state === 'collapsed');
+        const newState = allCollapsed ? 'expanded' : 'collapsed';
+
+        document.querySelectorAll('.workout-entry').forEach(entry => {
+            const workoutId = entry.dataset.id;
+            this.workoutStates[workoutId] = newState;
+            this.updateWorkoutEntryDisplay(entry, newState);
+        });
+
+        this.saveWorkoutStates();
+    }
+
+    updateWorkoutEntryDisplay(entry, state) {
+        const details = entry.querySelector('.workout-details');
+        if (state === 'collapsed') {
+            details.style.display = 'none';
+        } else {
+            details.style.display = 'block';
+        }
+    }
+
+    loadWorkoutStates() {
+        return JSON.parse(localStorage.getItem('workoutStates') || '{}');
+    }
+
+    saveWorkoutStates() {
+        localStorage.setItem('workoutStates', JSON.stringify(this.workoutStates));
     }
 } 
