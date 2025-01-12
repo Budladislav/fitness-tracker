@@ -228,3 +228,23 @@ select option[disabled] {
     color: var(--text-color-secondary);
     padding-left: var(--spacing-sm);
 }
+
+.delete-button {
+    background: none !important;
+    border: none;
+    color: var(--error-color);
+    font-size: 24px;
+    min-width: 30px;
+    width: 30px !important;
+    height: 30px;
+    padding: 0;
+    margin: 0 0 0 5px !important;
+    opacity: 0.5;
+    transition: var(--transition);
+    align-self: flex-start;
+}
+
+.delete-button:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}

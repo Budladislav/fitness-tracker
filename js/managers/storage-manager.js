@@ -111,6 +111,12 @@ export class WorkoutStorage {
         return this.saveToStorage('exercises', savedWorkouts);
     }
 
+    deleteWorkoutFromHistory(workoutId) {
+        const workouts = this.getWorkoutHistory();
+        const filteredWorkouts = workouts.filter(workout => workout.id !== workoutId);
+        return this.saveToStorage('exercises', filteredWorkouts);
+    }
+
     /**
      * Получает активную тренировку из хранилища
      * @returns {Object|null} Активная тренировка или null

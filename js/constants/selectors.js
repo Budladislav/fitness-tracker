@@ -29,6 +29,7 @@ export const DOM_SELECTORS = {
         }
     },
     HISTORY: {
-        CONTAINER: '#workoutHistory'
+        CONTAINER: '#workoutHistory',
+        TOGGLE_ALL: '#toggleAllWorkouts'
     }
 }; 

@@ -39,7 +39,7 @@ export class UIManager {
             addExercise: document.querySelector(DOM_SELECTORS.WORKOUT.ADD_BUTTON),
             saveWorkout: document.querySelector(DOM_SELECTORS.WORKOUT.SAVE_BUTTON),
             navTabs: document.querySelector(DOM_SELECTORS.NAVIGATION.TABS),
-            toggleAllWorkouts: document.getElementById('toggleAllWorkouts'),
+            toggleAllWorkouts: document.querySelector(DOM_SELECTORS.HISTORY.TOGGLE_ALL),
         };
     }
 
@@ -210,7 +210,7 @@ export class UIManager {
             }
 
             const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-exercise';
+            deleteBtn.className = 'delete-button';
             deleteBtn.textContent = '×';
             deleteBtn.setAttribute('title', 'Удалить последний подход');
             deleteBtn.onclick = (e) => {
@@ -344,7 +344,7 @@ export class UIManager {
             <td>${DateFormatter.formatWorkoutDate(workout.date)}</td>
             <td>Σ повторов: ${totalReps} раз</td>
             <td>Тоннаж: ${totalWeight} кг</td>
-            <td><button class="toggle-workout">⇕</button></td>
+            <td><button class="delete-button" title="Удалить тренировку">×</button></td>
         `;
         summaryTable.appendChild(summaryRow);
         workoutEntry.appendChild(summaryTable);
@@ -383,12 +383,36 @@ export class UIManager {
         const state = this.workoutStates[workout.id] || 'expanded';
         this.updateWorkoutEntryDisplay(workoutEntry, state);
 
-        // Добавляем обработчик для кнопки
-        summaryTable.querySelector('.toggle-workout').addEventListener('click', () => {
-            const newState = this.workoutStates[workout.id] === 'collapsed' ? 'expanded' : 'collapsed';
-            this.workoutStates[workout.id] = newState;
-            this.updateWorkoutEntryDisplay(workoutEntry, newState);
-            this.saveWorkoutStates();
+        // Обработчик для сворачивания/разворачивания по клику на таблицу
+        summaryTable.addEventListener('click', (e) => {
+            // Игнорируем клик по кнопке удаления
+            if (!e.target.closest('.delete-button')) {
+                const newState = this.workoutStates[workout.id] === 'collapsed' ? 'expanded' : 'collapsed';
+                this.workoutStates[workout.id] = newState;
+                this.updateWorkoutEntryDisplay(workoutEntry, newState);
+                this.saveWorkoutStates();
+            }
+        });
+
+        // Обработчик для удаления
+        summaryTable.querySelector('.delete-button').addEventListener('click', (e) => {
+            e.stopPropagation(); // Предотвращаем всплытие события
+            if (confirm('Вы уверены, что хотите удалить эту тренировку?')) {
+                if (this.storage.deleteWorkoutFromHistory(workout.id)) {
+                    workoutEntry.classList.add('removing');
+                    setTimeout(() => {
+                        workoutEntry.remove();
+                        // Если это была последняя тренировка, показываем сообщение
+                        if (!document.querySelector('.workout-entry')) {
+                            const historyContainer = document.getElementById('workoutHistory');
+                            historyContainer.innerHTML = '<p>История тренировок пуста</p>';
+                        }
+                    }, 300);
+                    this.notifications.success('Тренировка удалена');
+                } else {
+                    this.notifications.error('Не удалось удалить тренировку');
+                }
+            }
         });
 
         return workoutEntry;
@@ -453,10 +477,15 @@ export class UIManager {
     }
 
     toggleAllWorkouts() {
-        const allCollapsed = Object.values(this.workoutStates).every(state => state === 'collapsed');
-        const newState = allCollapsed ? 'expanded' : 'collapsed';
+        // Проверяем фактическое состояние элементов в DOM
+        const entries = document.querySelectorAll('.workout-entry');
+        const allExpanded = Array.from(entries).every(entry => entry.classList.contains('expanded'));
+        
+        // Выбираем новое состояние на основе текущего
+        const newState = allExpanded ? 'collapsed' : 'expanded';
 
-        document.querySelectorAll('.workout-entry').forEach(entry => {
+        // Применяем новое состояние
+        entries.forEach(entry => {
             const workoutId = entry.dataset.id;
             this.workoutStates[workoutId] = newState;
             this.updateWorkoutEntryDisplay(entry, newState);

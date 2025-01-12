@@ -92,6 +92,8 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
+    cursor: pointer;
+    user-select: none;
 }
 
 .summary-table td {
@@ -107,22 +109,6 @@
 
 .summary-table td:not(:last-child) {
     width: auto;
-}
-
-.toggle-workout {
-    width: 40px;
-    height: 40px;
-    border: 1px solid #ddd;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s;
-    margin: 0;
-}
-
-.toggle-workout:hover {
-    background-color: #1e5884;
 }
 
 .history-header {
@@ -144,6 +130,7 @@
     margin: var(--spacing-sm);
     margin-bottom: 0;
     height: 40px;
+    width: 70%;
 }
 
 #toggleAllWorkouts:hover {
@@ -152,4 +139,9 @@
 
 #toggleAllWorkouts:active {
     transform: scale(0.98);
+}
+
+/* Чтобы кнопка удаления не наследовала cursor: pointer */
+.summary-table .delete-button {
+    cursor: pointer;
 }   
