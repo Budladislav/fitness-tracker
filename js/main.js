@@ -3,6 +3,7 @@ import { WorkoutStorage } from './managers/storage-manager.js';
 import { ExerciseValidator } from './managers/exercise-validator.js';
 import { UIManager } from './managers/ui-manager.js';
 import { WorkoutManager } from './managers/workout-manager.js';
+import { ImportModule } from './modules/import-module.js';
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,4 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Создаем основной менеджер приложения
     const workoutManager = new WorkoutManager(notifications, storage, ui, validator);
+
+    // Инициализируем модуль импорта
+    const importModule = new ImportModule(workoutManager, notifications);
+    importModule.init();
+
+    // Добавляем методы активации/деактивации импорта в глобальную область
+    window.activateImport = () => importModule.activate();
+    window.deactivateImport = () => importModule.deactivate();
 }); 

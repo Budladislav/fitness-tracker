@@ -129,4 +129,4 @@ export class WorkoutStorage {
     clearActiveWorkout() {
         localStorage.removeItem(this.ACTIVE_WORKOUT_KEY);
     }
-} 
+}
