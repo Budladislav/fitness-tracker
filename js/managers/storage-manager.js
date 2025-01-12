@@ -149,4 +149,30 @@ export class WorkoutStorage {
     clearActiveWorkout() {
         localStorage.removeItem(this.ACTIVE_WORKOUT_KEY);
     }
+
+    getExerciseHistory(exerciseName, limit = 3) {
+        const workouts = this.getWorkoutHistory();
+        const exerciseHistory = [];
+        
+        // Перебираем тренировки в обратном порядке
+        for (let i = workouts.length - 1; i >= 0 && exerciseHistory.length < limit; i--) {
+            const workout = workouts[i];
+            const exercise = workout.exercises.find(e => e.name === exerciseName);
+            
+            if (exercise) {
+                exerciseHistory.push({
+                    date: workout.date,
+                    totalWeight: this.calculateTotalWeight(exercise)
+                });
+            }
+        }
+        
+        return exerciseHistory;
+    }
+
+    calculateTotalWeight(exercise) {
+        return exercise.sets.reduce((total, set) => {
+            return total + (set.weight || 0) * set.reps;
+        }, 0);
+    }
 }

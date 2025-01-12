@@ -215,36 +215,3 @@ select option[disabled] {
 .input-group input {
     padding-right: 50px;
 }
-
-.exercise-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.total-weight {
-    font-size: 16px;
-    color: var(--text-color-secondary);
-    padding-left: var(--spacing-sm);
-}
-
-.delete-button {
-    background: none !important;
-    border: none;
-    color: var(--error-color);
-    font-size: 24px;
-    min-width: 30px;
-    width: 30px !important;
-    height: 30px;
-    padding: 0;
-    margin: 0 0 0 5px !important;
-    opacity: 0.5;
-    transition: var(--transition);
-    align-self: flex-start;
-}
-
-.delete-button:hover {
-    opacity: 1;
-    transform: scale(1.1);
-}

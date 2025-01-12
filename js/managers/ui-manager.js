@@ -182,7 +182,12 @@ export class UIManager {
 
             if (type === 'weighted') {
                 const totalWeight = this.calculateTotalWeight(exerciseData);
-                existingItem.querySelector('.total-weight').textContent = `${totalWeight} кг`;
+                const avgWeight = this.calculateAverageWeight(name);
+                
+                existingItem.querySelector('.total-weight').innerHTML = `
+                    <div>Тоннаж: ${totalWeight} кг</div>
+                    ${avgWeight ? `<div class="avg-weight">Ср: ${avgWeight} кг</div>` : ''}
+                `;
             }
         } else {
             // Создаем новое упражнение
@@ -206,7 +211,12 @@ export class UIManager {
 
             if (type === 'weighted') {
                 const totalWeight = this.calculateTotalWeight(newExercise);
-                totalWeightElement.textContent = `Тоннаж: ${totalWeight} кг`;
+                const avgWeight = this.calculateAverageWeight(name);
+                
+                totalWeightElement.innerHTML = `
+                    <div>Тоннаж: ${totalWeight} кг</div>
+                    ${avgWeight ? `<div class="avg-weight">Ср: ${avgWeight} кг</div>` : ''}
+                `;
             }
 
             const deleteBtn = document.createElement('button');
@@ -224,7 +234,12 @@ export class UIManager {
                     text.textContent = ExerciseFormatter.formatExercise(data);
                     if (type === 'weighted') {
                         const totalWeight = this.calculateTotalWeight(data);
-                        item.querySelector('.total-weight').textContent = `${totalWeight} кг`;
+                        const avgWeight = this.calculateAverageWeight(name);
+                        
+                        item.querySelector('.total-weight').innerHTML = `
+                            <div>Тоннаж: ${totalWeight} кг</div>
+                            ${avgWeight ? `<div class="avg-weight">Ср: ${avgWeight} кг</div>` : ''}
+                        `;
                     }
                 } else {
                     // Удаляем всё упражнение, если остался последний подход
@@ -508,5 +523,13 @@ export class UIManager {
 
     saveWorkoutStates() {
         localStorage.setItem('workoutStates', JSON.stringify(this.workoutStates));
+    }
+
+    calculateAverageWeight(exerciseName) {
+        const history = this.storage.getExerciseHistory(exerciseName);
+        if (history.length === 0) return null;
+        
+        const sum = history.reduce((total, entry) => total + entry.totalWeight, 0);
+        return Math.round(sum / history.length);
     }
 } 
