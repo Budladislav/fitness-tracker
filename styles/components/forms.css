@@ -226,4 +226,5 @@ select option[disabled] {
 .total-weight {
     font-size: 16px;
     color: var(--text-color-secondary);
+    padding-left: var(--spacing-sm);
 }

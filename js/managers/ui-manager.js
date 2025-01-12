@@ -288,11 +288,35 @@ export class UIManager {
     }
 
     createExerciseElement(exercise) {
-        const exerciseDiv = document.createElement('div');
-        if (exercise && exercise.name) {
-            exerciseDiv.textContent = ExerciseFormatter.formatExercise(exercise);
-        }
-        return exerciseDiv;
+        const rows = [];
+
+        const setsByWeight = exercise.sets.reduce((groups, set) => {
+            const weight = set.weight || '—';
+            if (!groups[weight]) {
+                groups[weight] = [];
+            }
+            groups[weight].push(set.reps);
+            return groups;
+        }, {});
+
+        const totalWeight = exercise.sets.reduce((total, set) => {
+            return total + (set.weight || 0) * set.reps;
+        }, 0);
+
+        const weightEntries = Object.entries(setsByWeight);
+
+        weightEntries.forEach(([weight, reps], index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                ${index === 0 ? `<td rowspan="${weightEntries.length}">${exercise.name}</td>` : ''}
+                <td>${weight}</td>
+                <td>${reps.join(', ')}</td>
+                ${index === 0 ? `<td rowspan="${weightEntries.length}">${totalWeight}</td>` : ''}
+            `;
+            rows.push(row);
+        });
+
+        return rows;
     }
 
     createWorkoutEntry(workout) {
@@ -303,13 +327,27 @@ export class UIManager {
         
         const exercises = document.createElement('div');
         exercises.className = 'workout-exercises';
+    
+        const exerciseTable = document.createElement('table');
+        exerciseTable.className = 'exercise-table';
+    
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = `
+            <th>Упражнение</th>
+            <th>Вес</th>
+            <th>Повторения</th>
+            <th>Тоннаж</th>
+        `;
+        exerciseTable.appendChild(headerRow);
         
         if (workout.exercises && Array.isArray(workout.exercises)) {
             workout.exercises.forEach(exercise => {
-                exercises.appendChild(this.createExerciseElement(exercise));
+                const exerciseRows = this.createExerciseElement(exercise);
+                exerciseRows.forEach(row => exerciseTable.appendChild(row));
             });
         }
-        
+    
+        exercises.appendChild(exerciseTable);
         workoutEntry.appendChild(dateElement);
         workoutEntry.appendChild(exercises);
         return workoutEntry;
