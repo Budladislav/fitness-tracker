@@ -134,18 +134,18 @@ button:active {
 .toggle-label::before {
     content: attr(data-off);
     position: absolute;
-    right: 8px;
-    font-size: 14px;
-    transition: .4s;
+    right: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    transition: var(--transition);
 }
 
 .toggle-label::after {
     content: attr(data-on);
     position: absolute;
-    left: 8px;
-    font-size: 14px;
+    left: var(--spacing-sm);
+    font-size: var(--font-size-sm);
     opacity: 0;
-    transition: .4s;
+    transition: var(--transition);
 }
 
 input:checked + .toggle-slider {

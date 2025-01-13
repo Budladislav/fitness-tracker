@@ -30,8 +30,8 @@
     border: none;
     border-radius: 0;
     background: none;
-    color: #666;
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
@@ -44,7 +44,7 @@
 }
 
 .nav-tab:not(:last-child) {
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--border-color);
 }
 
 .nav-tab:hover {

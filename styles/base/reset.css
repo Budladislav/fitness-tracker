@@ -5,7 +5,7 @@ html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    min-width: 375px;
+    min-width: var(--breakpoint-mobile);
 }
 
 body {
@@ -48,9 +48,9 @@ button {
 
 /* Base Container */
 .base-container {
-    min-width: 375px;
+    min-width: var(--breakpoint-mobile);
     width: 100%;
-    max-width: 900px;
+    max-width: var(--container-max-width);
     margin-left: auto;
     margin-right: auto;
     box-sizing: border-box;

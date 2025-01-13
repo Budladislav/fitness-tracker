@@ -33,8 +33,14 @@
 
     /* Navigation */
     .nav-tab {
-        font-size: 13px;
-        padding: 8px 0;
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-sm) 0;
+    }
+
+    /* Exercise Items */
+    .exercise-item {
+        padding: var(--spacing-xs) var(--spacing-md);
+        margin: var(--spacing-xs) 0;
     }
 
     /* Notifications */

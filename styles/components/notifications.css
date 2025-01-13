@@ -18,12 +18,12 @@
 .notification {
     max-width: 300px;
     width: 90%;
-    padding: 8px 16px;
+    padding: var(--spacing-sm) var(--spacing-md);
     margin: 0 auto var(--spacing-sm) auto;
     border-radius: var(--border-radius);
     opacity: 0;
     transition: var(--transition);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow);
     pointer-events: auto;
     text-align: center;
 }
@@ -33,6 +33,6 @@
     transform: translateY(0);
 }
 
-.notification-error { background-color: var(--error-color); color: white; }
-.notification-success { background-color: var(--success-color); color: white; }
-.notification-info { background-color: var(--info-color); color: white; }
+.notification-error { background-color: var(--error-color); color: var(--card-background); }
+.notification-success { background-color: var(--success-color); color: var(--card-background); }
+.notification-info { background-color: var(--info-color); color: var(--card-background); }

@@ -8,7 +8,7 @@
     align-items: center;
     height: 100%;
     color: var(--text-secondary);
-    font-size: 1.2em;
+    font-size: var(--font-size-lg);
 }
 
 /* Future Statistics Components */
@@ -17,7 +17,7 @@
 }
 
 .statistics-card {
-    background: white;
+    background: var(--card-background);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
     padding: var(--spacing-md);
