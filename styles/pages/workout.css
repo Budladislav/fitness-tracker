@@ -1,22 +1,40 @@
 /* Workout Page Styles
 -------------------------------------------------- */
-/* Specific styles for the workout tracking page */
 
 /* Workout Form */
 #workoutForm {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
 }
 
-#startWorkout {
-    max-width: 300px;
-    margin: 0;
+/* Form Sections */
+.form-inputs {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
-    #startWorkout {
-        width: 100%;
-        max-width: 300px;
-    }
+.input-field {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Exercise Log Area */
+#exerciseLog {
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Toggle Area */
+.toggle-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: var(--spacing-sm) 0;
+}
+
+/* Workout Controls */
+.workout-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
 }

@@ -1,3 +1,32 @@
 /* Statistics Page Styles
 -------------------------------------------------- */
-/* Specific styles for the statistics and analytics page */
+
+/* Coming Soon Message */
+.coming-soon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: var(--text-secondary);
+    font-size: 1.2em;
+}
+
+/* Future Statistics Components */
+.statistics-container {
+    padding: var(--spacing-md);
+}
+
+.statistics-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Charts Area - для будущего использования */
+.chart-container {
+    width: 100%;
+    height: 300px;
+    margin: var(--spacing-md) 0;
+}
