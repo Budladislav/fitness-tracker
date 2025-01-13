@@ -81,11 +81,33 @@ export class WorkoutStorage {
     }
 
     getCurrentWorkout() {
-        return this.getFromStorage('currentWorkout', sessionStorage) || {};
+        // Пробуем получить из sessionStorage
+        const currentWorkout = this.getFromStorage('currentWorkout', sessionStorage);
+        if (currentWorkout) return currentWorkout;
+
+        // Если нет в sessionStorage, проверяем activeWorkout
+        const activeWorkout = this.getFromStorage('activeWorkout');
+        if (activeWorkout) {
+            // Сохраняем в sessionStorage и возвращаем
+            this.saveToStorage('currentWorkout', activeWorkout, sessionStorage);
+            return activeWorkout;
+        }
+
+        // Если нигде нет, возвращаем объект с текущей датой
+        return {
+            date: new Date().toISOString().split('T')[0],
+            exercises: []
+        };
     }
 
     saveCurrentWorkout(workout) {
-        return this.saveToStorage('currentWorkout', workout, sessionStorage);
+        // Убедимся, что у тренировки есть дата
+        if (!workout.date) {
+            workout.date = new Date().toISOString().split('T')[0];
+        }
+        
+        this.saveToStorage('currentWorkout', workout, sessionStorage);
+        this.setActiveWorkout(workout);
     }
 
     getWorkoutHistory() {
@@ -136,11 +158,12 @@ export class WorkoutStorage {
      * @param {Object} workout - Тренировка для сохранения
      */
     setActiveWorkout(workout) {
-        try {
-            localStorage.setItem(this.ACTIVE_WORKOUT_KEY, JSON.stringify(workout));
-        } catch (error) {
-            console.error('Error saving active workout:', error);
+        // Убедимся, что у тренировки есть дата
+        if (!workout.date) {
+            workout.date = new Date().toISOString().split('T')[0];
         }
+        
+        this.saveToStorage('activeWorkout', workout);
     }
 
     /**

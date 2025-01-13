@@ -75,15 +75,14 @@ export class WorkoutManager {
         const startWorkoutBtn = document.getElementById('startWorkout');
         if (startWorkoutBtn) {
             startWorkoutBtn.addEventListener('click', () => {
+                // Очищаем предыдущую активную тренировку
+                this.storage.removeFromStorage('activeWorkout');
+                this.storage.removeFromStorage('currentWorkout', sessionStorage);
+                
                 const displayDate = DateFormatter.getCurrentFormattedDate();
                 const storageDate = DateFormatter.toStorageFormat('current');
                 
-                this.ui.showWorkoutForm(displayDate);
-                
-                this.storage.saveCurrentWorkout({
-                    date: storageDate,
-                    exercises: []
-                });
+                this.ui.showWorkoutForm(storageDate);
                 
                 this.notifications.info('Начата новая тренировка');
             });
@@ -117,19 +116,15 @@ export class WorkoutManager {
                 return;
             }
             
+            // Очищаем текущую тренировку
             this.storage.removeFromStorage('currentWorkout', sessionStorage);
+            this.storage.removeFromStorage('activeWorkout');
+            
+            // Сбрасываем форму
             this.ui.resetWorkoutForm();
             
-            // Активируем вкладку истории
-            const historyTab = document.querySelector('[data-page="history"]');
-            if (historyTab) {
-                const clickEvent = new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                });
-                historyTab.dispatchEvent(clickEvent);
-            }
+            // Переключаемся на вкладку истории
+            this.ui.navigation.switchToTab('history');
             
             this.displayWorkoutHistory();
             this.notifications.success('Тренировка сохранена!');
