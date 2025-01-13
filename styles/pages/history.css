@@ -16,7 +16,6 @@
 }
 
 .workout-exercises {
-    margin-top: var(--spacing-sm);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -29,52 +28,61 @@
     text-align: left;
 }
 
-.exercise-table {
+/* Tables */
+.exercise-table,
+.summary-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 10px;
     table-layout: fixed;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
 }
 
-.exercise-table th, .exercise-table td {
-    border: 1px solid #ddd;
+.exercise-table th,
+.exercise-table td,
+.summary-table td {
+    border: 1px solid var(--border-color);
     padding: 8px;
     text-align: center;
 }
 
 .exercise-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
+    font-weight: normal;
+    border-bottom: 2px solid var(--border-color);
+    background: none;
+    font-size: 0.7em;
+    font-weight: 600;
+    color: var(--text-secondary);
 }
 
-.exercise-table th:nth-child(1), .exercise-table td:nth-child(1) {
-    width: 25%;
+.summary-table td {
+    font-weight: 600;
 }
 
-.exercise-table th:nth-child(2), .exercise-table td:nth-child(2) {
-    width: 20%;
+.summary-table .delete-btn {
+    font-weight: normal;
 }
 
-.exercise-table th:nth-child(3), .exercise-table td:nth-child(3) {
-    width: 5%;
-}
+/* Column widths */
+.exercise-table th:nth-child(1), .exercise-table td:nth-child(1) { width: 25%; }
+.exercise-table th:nth-child(2), .exercise-table td:nth-child(2) { width: 20%; }
+.exercise-table th:nth-child(3), .exercise-table td:nth-child(3) { width: 5%; }
+.exercise-table th:nth-child(4), .exercise-table td:nth-child(4) { width: 7%; }
+.exercise-table th:nth-child(5), .exercise-table td:nth-child(5) { width: 5%; }
 
-.exercise-table th:nth-child(4), .exercise-table td:nth-child(4) {
-    width: 7%;
-}
-
-.exercise-table th:nth-child(5), .exercise-table td:nth-child(5) {
-    width: 5%;
-}
-
-@media (max-width: 768px) {
-    .workout-exercises {
-        margin-left: 0;
-    }
-}
-
+/* Workout Entry */
 .workout-entry {
-    margin-bottom: 10px;
+    margin: var(--spacing-sm) 0;
+}
+
+.summary-table {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
 }
 
 .workout-details {
@@ -88,32 +96,15 @@
     max-height: 1000px;
 }
 
-.summary-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    cursor: pointer;
-    user-select: none;
-}
+/* Summary Table */
+.summary-table td:last-child { width: 50px; }
+.summary-table td:not(:last-child) { width: auto; }
 
-.summary-table td {
-    border-bottom: 1px solid #ddd;
-    font-size: 1em;
-    padding: 2px 4px;
-    line-height: 1.2;
-}
-
-.summary-table td:last-child {
-    width: 50px;
-}
-
-.summary-table td:not(:last-child) {
-    width: auto;
-}
-
+/* History Header */
 .history-header {
     display: flex;
     justify-content: center;
+    margin-bottom: var(--spacing-md);
 }
 
 #toggleAllWorkouts {
