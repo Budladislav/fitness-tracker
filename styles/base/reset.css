@@ -1,7 +1,5 @@
 /* CSS Reset & Base Styles
 -------------------------------------------------- */
-/* Basic reset and default styles for HTML elements */
-
 html, body {
     height: 100%;
     margin: 0;
@@ -18,24 +16,13 @@ body {
     overflow-x: auto;
 }
 
-/* Reset для number inputs */
+/* Form Elements Reset */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
-.removing {
-    opacity: 0;
-    transform: translateX(100%);
-}
-
-/* Reset button styles */
 button {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -47,34 +34,34 @@ button {
     font: inherit;
     color: inherit;
     cursor: pointer;
-    outline: none;
 }
 
-html body{
-    padding: 0;
-}
-
-/* Убираем обводку фокуса для всех элементов */
+/* Focus States */
 :focus {
     outline: none;
 }
 
-/* Добавляем кастомную обводку фокуса */
 :focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
 
-/* Базовый контейнер для всех основных блоков */
-.nav-container,
-#workoutForm,
-.content-container,
-#workoutControls,
-#startWorkoutSection {
+/* Base Container */
+.base-container {
     min-width: 375px;
     width: 100%;
     max-width: 900px;
     margin-left: auto;
     margin-right: auto;
     box-sizing: border-box;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.removing {
+    opacity: 0;
+    transform: translateX(100%);
 }

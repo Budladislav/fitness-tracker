@@ -80,7 +80,7 @@ export class ExerciseLogManager extends BaseComponent {
     }
 
     createDeleteButton(item) {
-        const deleteBtn = this.createElement('button', 'delete-button');
+        const deleteBtn = this.createElement('button', 'delete-btn');
         deleteBtn.textContent = '×';
         deleteBtn.setAttribute('title', 'Удалить последний подход');
         

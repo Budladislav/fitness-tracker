@@ -1,0 +1,74 @@
+/* Button Components
+-------------------------------------------------- */
+
+/* Base Button */
+.btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    width: 100%;
+    max-width: 300px;
+    margin: var(--spacing-md) auto;
+    box-sizing: border-box;
+}
+
+.btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Delete Button */
+.delete-btn {
+    background: none !important;
+    border: none;
+    color: var(--error-color);
+    font-size: 24px;
+    min-width: 30px;
+    width: 30px !important;
+    height: 30px;
+    padding: 0;
+    margin: 0 0 0 5px !important;
+    opacity: 0.5;
+    transition: var(--transition);
+    align-self: flex-start;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Import Button */
+.import-btn {
+    position: fixed;
+    top: 50px;
+    right: 10px;
+    padding: 8px 16px;
+    background-color: var(--success-color);
+    color: white;
+    border-radius: var(--border-radius);
+    z-index: 9999;
+    transition: background-color 0.2s;
+}
+
+.import-btn:hover {
+    background-color: var(--success-hover-color);
+}
+
+/* Workout Controls */
+.workout-btn {
+    flex: 1;
+    margin: 0;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+} 

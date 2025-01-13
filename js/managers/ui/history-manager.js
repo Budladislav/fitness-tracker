@@ -73,7 +73,7 @@ export class HistoryManager extends BaseComponent {
             <td>${DateFormatter.formatWorkoutDate(workout.date)}</td>
             <td>Σ повторов: ${totalReps} раз</td>
             <td>Тоннаж: ${totalWeight} кг</td>
-            <td><button class="delete-button" title="Удалить тренировку">×</button></td>
+            <td><button class="delete-btn" title="Удалить тренировку">×</button></td>
         `;
 
         this.setupSummaryTableListeners(summaryRow, workout);
@@ -85,7 +85,7 @@ export class HistoryManager extends BaseComponent {
     setupSummaryTableListeners(summaryRow, workout) {
         // Обработчик для сворачивания/разворачивания
         summaryRow.addEventListener('click', (e) => {
-            if (!e.target.closest('.delete-button')) {
+            if (!e.target.closest('.delete-btn')) {
                 const workoutEntry = summaryRow.closest('.workout-entry');
                 const newState = this.workoutStates[workout.id] === 'collapsed' ? 'expanded' : 'collapsed';
                 this.workoutStates[workout.id] = newState;
@@ -95,7 +95,7 @@ export class HistoryManager extends BaseComponent {
         });
 
         // Обработчик для удаления
-        const deleteButton = summaryRow.querySelector('.delete-button');
+        const deleteButton = summaryRow.querySelector('.delete-btn');
         deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
             this.handleWorkoutDeletion(workout);

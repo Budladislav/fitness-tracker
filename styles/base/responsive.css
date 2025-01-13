@@ -1,0 +1,57 @@
+/* Responsive Breakpoints
+-------------------------------------------------- */
+
+/* Desktop and large screens */
+@media (min-width: 900px) {
+    .nav-container {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .nav-tabs {
+        max-width: 900px;
+        width: 100%;
+        margin: 0 auto;
+    }
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+    /* Layout */
+    body {
+        padding: var(--spacing-md);
+    }
+
+    .workout-exercises {
+        margin-left: 0;
+    }
+
+    #startWorkout {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    /* Navigation */
+    .nav-tab {
+        font-size: 13px;
+        padding: 8px 0;
+    }
+
+    /* Notifications */
+    #notification-container {
+        top: var(--spacing-md);
+    }
+}
+
+/* Mobile */
+@media (max-width: 375px) {
+    .content-container,
+    #workoutControls,
+    #startWorkoutSection {
+        padding: var(--spacing-sm);
+    }
+    
+    body {
+        padding: 0;
+    }
+} 
