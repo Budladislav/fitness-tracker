@@ -44,6 +44,14 @@
     #notification-container {
         top: var(--spacing-md);
     }
+
+    /* Buttons */
+    .btn,
+    .workout-btn {
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        letter-spacing: 0.2px;
+    }
 }
 
 /* Mobile */

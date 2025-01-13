@@ -146,14 +146,17 @@ export class HistoryManager extends BaseComponent {
         
         // Выбираем новое состояние на основе текущего
         const newState = allExpanded ? 'collapsed' : 'expanded';
-
+    
+        // Обновляем текст кнопки
+        this.elements.toggleAllButton.textContent = allExpanded ? 'Развернуть всё' : 'Свернуть всё';
+    
         // Применяем новое состояние
         entries.forEach(entry => {
             const workoutId = entry.dataset.id;
             this.workoutStates[workoutId] = newState;
             this.updateWorkoutEntryDisplay(entry, newState);
         });
-
+    
         this.saveWorkoutStates();
     }
 

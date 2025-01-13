@@ -11,8 +11,10 @@
 
 select, 
 input {
+    height: 36px;
     width: 100%;
     padding: 4px var(--spacing-sm);
+    margin: 2px 0;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-sizing: border-box;
