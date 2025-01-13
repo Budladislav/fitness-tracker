@@ -8,11 +8,11 @@
     border: none;
     cursor: pointer;
     transition: var(--transition);
-    padding: var(--spacing-md) var(--spacing-lg);
     border-radius: var(--border-radius);
     font-weight: 500;
     letter-spacing: 0.3px;
     width: 100%;
+    height: 40px;
     max-width: 300px;
     margin: var(--spacing-md) auto;
     box-sizing: border-box;
@@ -45,6 +45,7 @@
 .delete-btn:hover {
     opacity: 1;
     transform: scale(1.1);
+    background-color: transparent;
 }
 
 /* Import Button */

@@ -18,9 +18,6 @@
 /* Tablet */
 @media (max-width: 768px) {
     /* Layout */
-    body {
-        padding: var(--spacing-md);
-    }
 
     .workout-exercises {
         margin-left: 0;

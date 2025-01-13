@@ -5,13 +5,16 @@
 #workoutForm {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+    max-width: 900px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 /* Form Sections */
 .form-inputs {
     display: flex;
-    gap: var(--spacing-md);
+    gap: var(--spacing-xs);
     flex-wrap: wrap;
 }
 
@@ -29,12 +32,10 @@
 .toggle-wrapper {
     display: flex;
     justify-content: center;
-    margin: var(--spacing-sm) 0;
 }
 
 /* Workout Controls */
 .workout-buttons {
     display: flex;
     gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
 }

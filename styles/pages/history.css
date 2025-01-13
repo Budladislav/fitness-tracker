@@ -50,7 +50,7 @@
 .exercise-table th {
     font-weight: normal;
     border-bottom: 2px solid var(--border-color);
-    background: none;
+    background: var(--background-color);
     font-size: 0.7em;
     font-weight: 600;
     color: var(--text-secondary);
@@ -104,7 +104,6 @@
 .history-header {
     display: flex;
     justify-content: center;
-    margin-bottom: var(--spacing-md);
 }
 
 #toggleAllWorkouts {

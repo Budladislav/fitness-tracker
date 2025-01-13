@@ -4,7 +4,7 @@
 
 .exercise-item {
     display: flex;
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-xs);
     border-radius: var(--border-radius);
     margin: var(--spacing-xs) 0;
     background: rgba(245, 247, 250, 0.5);

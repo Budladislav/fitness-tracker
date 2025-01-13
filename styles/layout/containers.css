@@ -37,21 +37,14 @@
     overflow-y: auto;
     padding: var(--spacing-sm);
     padding-top: 0;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    box-sizing: border-box;
 }
 
+/* Webkit (Chrome, Safari, etc) */
 .content-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.content-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.content-container::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 3px;
+    display: none;  /* Chrome, Safari, Opera */
 }
 
 /* Fixed Control Panels */
@@ -62,7 +55,7 @@
     right: 0;
     background: var(--card-background);
     border-top: 1px solid var(--border-color);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     z-index: 100;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }

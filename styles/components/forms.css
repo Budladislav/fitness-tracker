@@ -2,29 +2,21 @@
 -------------------------------------------------- */
 /* Styles for form elements, inputs, and buttons */
 
-#workoutForm {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 var(--spacing-md);
-    box-sizing: border-box;
-}
-
 .form-inputs {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 2px;
     width: 100%;
 }
 
 select, 
 input {
     width: 100%;
-    padding: var(--spacing-md);
-    margin: var(--spacing-sm) 0;
+    padding: 4px var(--spacing-sm);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-sizing: border-box;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
     transition: var(--transition);
     text-align: right;
 }
@@ -63,7 +55,6 @@ button:active {
 .workout-buttons {
     display: flex;
     gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
     width: 100%;
     box-sizing: border-box;
 }
@@ -78,7 +69,6 @@ button:active {
 
 /* Toggle Switch */
 .toggle-wrapper {
-    margin-bottom: var(--spacing-sm);
     display: flex;
     justify-content: flex-end;
 }
