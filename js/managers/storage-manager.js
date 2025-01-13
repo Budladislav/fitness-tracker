@@ -1,5 +1,6 @@
 import { Utils } from '../utils/utils.js';
 import { DateFormatter } from '../utils/date-formatter.js';
+import { ExerciseCalculatorService } from '../services/exercise-calculator.service.js';
 
 /**
  * Управляет хранением данных
@@ -93,11 +94,8 @@ export class WorkoutStorage {
             return activeWorkout;
         }
 
-        // Если нигде нет, возвращаем объект с текущей датой
-        return {
-            date: new Date().toISOString().split('T')[0],
-            exercises: []
-        };
+        // Если нигде нет, возвращаем null вместо нового объекта
+        return null;
     }
 
     saveCurrentWorkout(workout) {
@@ -185,17 +183,11 @@ export class WorkoutStorage {
             if (exercise) {
                 exerciseHistory.push({
                     date: workout.date,
-                    totalWeight: this.calculateTotalWeight(exercise)
+                    totalWeight: ExerciseCalculatorService.calculateTotalWeight(exercise)
                 });
             }
         }
         
         return exerciseHistory;
-    }
-
-    calculateTotalWeight(exercise) {
-        return exercise.sets.reduce((total, set) => {
-            return total + (set.weight || 0) * set.reps;
-        }, 0);
     }
 }

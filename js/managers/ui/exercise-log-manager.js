@@ -1,6 +1,8 @@
 import { BaseComponent } from '../../components/base-component.js';
 import { DOM_SELECTORS } from '../../constants/selectors.js';
-import { ExerciseFormatter } from '../../utils/exercise-formatter.js';
+import { ExerciseFormatterService } from '../../services/exercise-formatter.service.js';
+import { ExerciseCalculatorService } from '../../services/exercise-calculator.service.js';
+import { WorkoutFactory } from '../../factories/workout.factory.js';
 
 export class ExerciseLogManager extends BaseComponent {
     constructor(notifications, storage) {
@@ -16,10 +18,7 @@ export class ExerciseLogManager extends BaseComponent {
 
     addExerciseToLog(exerciseData) {
         const { type, name } = exerciseData;
-        const newSet = {
-            reps: parseInt(exerciseData.reps, 10),
-            ...(type === 'weighted' && { weight: parseFloat(exerciseData.weight) })
-        };
+        const newSet = WorkoutFactory.createSet(exerciseData.reps, exerciseData.weight);
 
         const existingItem = this.findExistingExercise(name);
 
@@ -44,7 +43,7 @@ export class ExerciseLogManager extends BaseComponent {
         
         existingItem.dataset.exercise = JSON.stringify(exerciseInfo);
         existingItem.querySelector('.exercise-content span').textContent = 
-            ExerciseFormatter.formatExercise(exerciseInfo);
+            ExerciseFormatterService.formatExercise(exerciseInfo);
 
         if (exerciseData.type === 'weighted') {
             this.updateWeightInfo(existingItem, exerciseInfo, exerciseData.name);
@@ -56,13 +55,10 @@ export class ExerciseLogManager extends BaseComponent {
         const content = this.createElement('div', 'exercise-content');
         
         const text = this.createElement('span');
-        const newExercise = {
-            name: exerciseData.name,
-            type: exerciseData.type,
-            sets: [newSet]
-        };
+        const newExercise = WorkoutFactory.createExercise(exerciseData.name, exerciseData.type);
+        newExercise.sets = [newSet];
         
-        text.textContent = ExerciseFormatter.formatExercise(newExercise);
+        text.textContent = ExerciseFormatterService.formatExercise(newExercise);
         
         const totalWeightElement = this.createElement('div', 'total-weight');
 
@@ -96,7 +92,7 @@ export class ExerciseLogManager extends BaseComponent {
                 data.sets.pop();
                 item.dataset.exercise = JSON.stringify(data);
                 item.querySelector('.exercise-content span').textContent = 
-                    ExerciseFormatter.formatExercise(data);
+                    ExerciseFormatterService.formatExercise(data);
                 
                 if (data.type === 'weighted') {
                     this.updateWeightInfo(item, data, data.name);
@@ -111,28 +107,15 @@ export class ExerciseLogManager extends BaseComponent {
     }
 
     updateWeightInfo(item, exercise, exerciseName, element = null) {
-        const totalWeight = this.calculateTotalWeight(exercise);
-        const avgWeight = this.calculateAverageWeight(exerciseName);
+        const totalWeight = ExerciseCalculatorService.calculateTotalWeight(exercise);
+        const history = this.storage.getExerciseHistory(exerciseName);
+        const avgWeight = ExerciseCalculatorService.calculateAverageWeight(history);
         
         const weightElement = element || item.querySelector('.total-weight');
         weightElement.innerHTML = `
             <div>Тоннаж: ${totalWeight} кг</div>
             ${avgWeight ? `<div class="avg-weight">Ср: ${avgWeight} кг</div>` : ''}
         `;
-    }
-
-    calculateTotalWeight(exercise) {
-        return exercise.sets.reduce((total, set) => {
-            return total + (set.weight || 0) * set.reps;
-        }, 0);
-    }
-
-    calculateAverageWeight(exerciseName) {
-        const history = this.storage.getExerciseHistory(exerciseName);
-        if (history.length === 0) return null;
-        
-        const sum = history.reduce((total, entry) => total + entry.totalWeight, 0);
-        return Math.round(sum / history.length);
     }
 
     getExercisesFromLog() {

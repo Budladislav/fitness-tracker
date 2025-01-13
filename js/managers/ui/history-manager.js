@@ -1,6 +1,7 @@
 import { BaseComponent } from '../../components/base-component.js';
 import { DOM_SELECTORS } from '../../constants/selectors.js';
 import { DateFormatter } from '../../utils/date-formatter.js';
+import { ExerciseCalculatorService } from '../../services/exercise-calculator.service.js';
 
 export class HistoryManager extends BaseComponent {
     constructor(notifications, storage) {
@@ -52,8 +53,8 @@ export class HistoryManager extends BaseComponent {
         const workoutEntry = this.createElement('div', 'workout-entry');
         workoutEntry.dataset.id = workout.id;
 
-        const totalReps = this.calculateTotalReps(workout);
-        const totalWeight = this.calculateTotalWeight(workout);
+        const totalReps = ExerciseCalculatorService.calculateWorkoutTotalReps(workout);
+        const totalWeight = ExerciseCalculatorService.calculateWorkoutTotalWeight(workout);
 
         workoutEntry.appendChild(this.createSummaryTable(workout, totalReps, totalWeight));
         workoutEntry.appendChild(this.createDetailsSection(workout));
@@ -136,16 +137,6 @@ export class HistoryManager extends BaseComponent {
         }
     }
 
-    calculateTotalReps(workout) {
-        return workout.exercises.reduce((sum, ex) => 
-            sum + ex.sets.reduce((s, set) => s + set.reps, 0), 0);
-    }
-
-    calculateTotalWeight(workout) {
-        return workout.exercises.reduce((sum, ex) => 
-            sum + ex.sets.reduce((s, set) => s + (set.weight || 0) * set.reps, 0), 0);
-    }
-
     toggleAllWorkouts() {
         // Проверяем фактическое состояние элементов в DOM
         const entries = document.querySelectorAll('.workout-entry');
@@ -208,11 +199,8 @@ export class HistoryManager extends BaseComponent {
             return groups;
         }, {});
 
-        const totalWeight = exercise.sets.reduce((total, set) => {
-            return total + (set.weight || 0) * set.reps;
-        }, 0);
-
-        const totalReps = exercise.sets.reduce((sum, set) => sum + set.reps, 0);
+        const totalWeight = ExerciseCalculatorService.calculateTotalWeight(exercise);
+        const totalReps = ExerciseCalculatorService.calculateTotalReps(exercise);
 
         const weightEntries = Object.entries(setsByWeight);
 
