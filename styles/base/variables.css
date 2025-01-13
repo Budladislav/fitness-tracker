@@ -4,32 +4,45 @@
 
 :root {
     /* Colors */
-    --primary-color: #2196F3;
-    --primary-hover: #1976D2;
-    --background-color: #F5F7FA;
+    --primary-color: #2196f3;
+    --primary-hover: #1976d2;
+    --error-color: #f44336;
+    --success-color: #4caf50;
+    --success-hover-color: #388e3c;
+    --info-color: #2196f3;
+    --text-color: #333;
+    --text-secondary: #666;
+    --border-color: #ddd;
+    --background-color: #f5f5f5;
     --card-background: white;
-    --border-color: #E1E4E8;
-    --text-color: #2C3E50;
-    --success-color: #4CAF50;
-    --error-color: #F44336;
-    --info-color: #2196F3;
 
-    /* Effects */
-    --shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --transition: all 0.3s ease;
-
-    /* Border Radius */
-    --border-radius: 8px;
-    --border-radius-lg: 12px;
+    /* Typography */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-md: 1rem;       /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
 
     /* Spacing */
-    --spacing-sm: 5px;
-    --spacing-md: 10px;
-    --spacing-lg: 20px;
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
 
-    /* Layout dimensions */
-    --nav-height: 40px;
+    /* Layout */
+    --nav-height: 50px;
+    --border-radius: 4px;
+    --border-radius-lg: 8px;
+    --container-max-width: 1200px;
 
-    /* Success colors */
-    --success-hover-color: #45a049;
+    /* Breakpoints */
+    --breakpoint-mobile: 375px;
+    --breakpoint-tablet: 768px;
+    --breakpoint-desktop: 900px;
+
+    /* Effects */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
 }
