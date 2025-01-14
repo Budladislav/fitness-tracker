@@ -21,6 +21,7 @@ export class WorkoutManager {
             // Проверяем наличие активной тренировки
             const currentWorkout = this.storage.getCurrentWorkout();
             if (currentWorkout) {
+                // Восстанавливаем только если есть активная тренировка
                 this.restoreWorkoutState();
             } else {
                 // Если нет активной тренировки, показываем историю
@@ -39,23 +40,26 @@ export class WorkoutManager {
         const currentWorkout = this.storage.getCurrentWorkout();
         
         if (currentWorkout && currentWorkout.date) {
-            this.ui.showWorkoutForm(currentWorkout.date);
-            
-            if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
-                currentWorkout.exercises.forEach(exercise => {
-                    exercise.sets.forEach(set => {
-                        const exerciseData = {
-                            name: exercise.name,
-                            type: exercise.type,
-                            reps: set.reps,
-                            weight: set.weight
-                        };
-                        this.ui.addExerciseToLog(exerciseData);
+            if (!this._formShown) {
+                this._formShown = true;
+                this.ui.showWorkoutForm(currentWorkout.date);
+                
+                if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
+                    currentWorkout.exercises.forEach(exercise => {
+                        exercise.sets.forEach(set => {
+                            const exerciseData = {
+                                name: exercise.name,
+                                type: exercise.type,
+                                reps: set.reps,
+                                weight: set.weight
+                            };
+                            this.ui.addExerciseToLog(exerciseData);
+                        });
                     });
-                });
+                }
+                
+                this.notifications.info('Восстановлена текущая тренировка');
             }
-            
-            this.notifications.info('Восстановлена текущая тренировка');
         }
     }
 

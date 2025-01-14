@@ -57,7 +57,6 @@ export class WorkoutFormManager extends BaseComponent {
         this.elements.exerciseType.addEventListener('change', () => {
             const isWeighted = this.elements.exerciseType.checked;
             this.toggleWeightInput(isWeighted);
-            this.clearInputs();
             this.updateExercisesList();
         });
 
@@ -69,12 +68,24 @@ export class WorkoutFormManager extends BaseComponent {
                 this.elements.exerciseWeight.value = defaultWeight;
                 this.elements.exerciseReps.value = '';
             }
+            this.saveFormState();
+        });
+
+        // Добавляем слушатели на input для всех полей
+        ['exerciseName', 'exerciseReps', 'exerciseWeight'].forEach(fieldName => {
+            const element = this.elements[fieldName];
+            ['input', 'blur'].forEach(eventType => {
+                element.addEventListener(eventType, () => this.saveFormState());
+            });
         });
     }
 
-    toggleWeightInput(isWeighted) {
+    toggleWeightInput(isWeighted, skipSave = false) {
         try {
             this.elements.weightInput.setAttribute('data-visible', isWeighted);
+            if (!skipSave) {
+                this.saveFormState();
+            }
         } catch (error) {
             console.error('Error in toggleWeightInput:', error);
         }
@@ -84,9 +95,11 @@ export class WorkoutFormManager extends BaseComponent {
         this.elements.exerciseName.value = '';
         this.elements.exerciseReps.value = '';
         this.elements.exerciseWeight.value = '';
+        this.saveFormState();
     }
 
     showWorkoutForm(date) {
+        
         // Очищаем предыдущий лог упражнений
         const exerciseLog = this.querySelector(DOM_SELECTORS.WORKOUT.LOG);
         if (exerciseLog) {
@@ -96,8 +109,6 @@ export class WorkoutFormManager extends BaseComponent {
         // Переключаем видимость
         this.elements.startWorkoutSection.classList.add('hidden');
         this.elements.workoutForm.classList.remove('hidden');
-        
-        // Показываем контент
         this.elements.workoutContent.classList.remove('hidden');
 
         // Сохраняем состояние активной тренировки
@@ -106,8 +117,17 @@ export class WorkoutFormManager extends BaseComponent {
             exercises: []
         });
 
-        // Очищаем форму
-        this.clearInputs();
+        // Проверяем, новая ли это тренировка
+        const isNewWorkout = !this.storage.getFromStorage('workoutFormState', sessionStorage);
+        
+        if (isNewWorkout) {
+            this.clearInputs();
+        } else {
+            const formState = this.storage.getFromStorage('workoutFormState', sessionStorage);
+            if (formState) {
+                this.restoreFormState(formState);
+            }
+        }
     }
 
     resetWorkoutForm() {
@@ -127,6 +147,43 @@ export class WorkoutFormManager extends BaseComponent {
             }
         } catch (error) {
             console.error('Error in resetWorkoutForm:', error);
+        }
+    }
+
+    saveFormState() {
+        const formState = {
+            exerciseName: this.elements.exerciseName.value,
+            exerciseReps: this.elements.exerciseReps.value,
+            exerciseWeight: this.elements.exerciseWeight.value,
+            exerciseType: this.elements.exerciseType.checked,
+            isFormVisible: !this.elements.workoutForm.classList.contains('hidden')
+        };
+        
+        return this.storage.saveToStorage('workoutFormState', formState, sessionStorage);
+    }
+
+    restoreFormState() {
+        const formState = this.storage.getFromStorage('workoutFormState', sessionStorage);
+        
+        if (formState) {
+            // Сначала устанавливаем тип упражнения без сохранения состояния
+            this.elements.exerciseType.checked = formState.exerciseType;
+            this.toggleWeightInput(formState.exerciseType, true);
+            
+            this.updateExercisesList();
+            
+            this.elements.exerciseName.value = formState.exerciseName || '';
+            this.elements.exerciseReps.value = formState.exerciseReps || '';
+            this.elements.exerciseWeight.value = formState.exerciseWeight || '';
+            
+            if (formState.isFormVisible) {
+                this.elements.workoutForm.classList.remove('hidden');
+                this.elements.startWorkoutSection.classList.add('hidden');
+                this.elements.workoutContent.classList.remove('hidden');
+            }
+            
+            // Сохраняем состояние только один раз в конце
+            this.saveFormState();
         }
     }
 } 
