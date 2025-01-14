@@ -203,9 +203,15 @@ select option[disabled] {
     padding-right: 45px; /* Уменьшаем отступ справа */
 }
 
+.input-group input#exerciseWeight {
+    text-align: center;
+    padding-right: 45px; /* Отступ для суффикса */
+}
+
 .input-suffix {
     position: absolute;
     left: 50%;
+    transform: translateX(10px); /* Центрируем суффикс */
     color: var(--text-color-secondary);
     pointer-events: none;
 }
@@ -255,4 +261,10 @@ select option[disabled] {
     .input-group .reps-slider {
         display: block;
     }
+}
+
+select#exerciseName {
+    text-align: center;
+    text-align-last: center; /* Для современных браузеров */
+    -moz-text-align-last: center; /* Для Firefox */
 }

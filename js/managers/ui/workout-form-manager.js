@@ -182,6 +182,9 @@ export class WorkoutFormManager extends BaseComponent {
             this.elements.exerciseReps.value = formState.exerciseReps || '';
             this.elements.exerciseWeight.value = formState.exerciseWeight || '';
             
+            this.elements.repsSlider.querySelector('.reps-value').textContent = 
+                this.elements.exerciseReps.value || '10';
+            
             if (formState.isFormVisible) {
                 this.elements.workoutForm.classList.remove('hidden');
                 this.elements.startWorkoutSection.classList.add('hidden');
@@ -203,7 +206,10 @@ export class WorkoutFormManager extends BaseComponent {
             // Определяем направление изменения
             const direction = newValue > initialValue ? 1 : -1;
             // Ограничиваем изменение максимум 5 единицами в любую сторону
-            currentValue = initialValue + (direction * Math.min(5, Math.abs(newValue - initialValue)));
+            currentValue = initialValue + (direction * Math.min(10, Math.abs(newValue - initialValue)));
+            
+            // Ограничиваем значение минимум 1
+            currentValue = Math.max(1, currentValue);
             
             this.elements.repsSlider.querySelector('.reps-value').textContent = currentValue;
             this.elements.exerciseReps.value = currentValue;
