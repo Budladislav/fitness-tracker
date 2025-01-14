@@ -3,6 +3,7 @@ import { DOM_SELECTORS } from '../../constants/selectors.js';
 import { ExercisePool } from '../../models/exercise-pool.js';
 import { Utils } from '../../utils/utils.js';
 import { DateFormatter } from '../../utils/date-formatter.js';
+import { CustomSlider } from '../../components/custom-slider.js';
 
 export class WorkoutFormManager extends BaseComponent {
     constructor(notifications, storage) {
@@ -10,6 +11,7 @@ export class WorkoutFormManager extends BaseComponent {
         this.elements = this.initializeElements();
         this.setupEventListeners();
         this.initializeExercisesList();
+        this.setupSliders();
     }
 
     initializeElements() {
@@ -22,7 +24,8 @@ export class WorkoutFormManager extends BaseComponent {
             startWorkoutSection: this.querySelector(DOM_SELECTORS.WORKOUT.START_SECTION),
             weightInput: this.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
             workoutContent: this.querySelector(DOM_SELECTORS.WORKOUT.CONTENT),
-            repsSlider: this.querySelector('.reps-slider')
+            repsSlider: this.querySelector(DOM_SELECTORS.WORKOUT.REPS_SLIDER),
+            weightSlider: this.querySelector(DOM_SELECTORS.WORKOUT.WEIGHT_SLIDER)
         };
     }
 
@@ -82,7 +85,7 @@ export class WorkoutFormManager extends BaseComponent {
 
         // Добавляем обработчики для слайдера
         if (this.elements.repsSlider) {
-            this.setupRepsSlider();
+            this.setupSliders();
         }
     }
 
@@ -182,8 +185,15 @@ export class WorkoutFormManager extends BaseComponent {
             this.elements.exerciseReps.value = formState.exerciseReps || '';
             this.elements.exerciseWeight.value = formState.exerciseWeight || '';
             
-            this.elements.repsSlider.querySelector('.reps-value').textContent = 
-                this.elements.exerciseReps.value || '10';
+            if (this.elements.repsSlider) {
+                this.elements.repsSlider.querySelector('.slider-value').textContent = 
+                    formState.exerciseReps || '10';
+            }
+            
+            if (this.elements.weightSlider) {
+                this.elements.weightSlider.querySelector('.slider-value').textContent = 
+                    formState.exerciseWeight || '100';
+            }
             
             if (formState.isFormVisible) {
                 this.elements.workoutForm.classList.remove('hidden');
@@ -196,66 +206,26 @@ export class WorkoutFormManager extends BaseComponent {
         }
     }
 
-    setupRepsSlider() {
-        let startY = 0;
-        let currentValue = 10;
-        let isActive = false;
-        let initialValue = 0;
-
-        const updateSliderValue = (newValue) => {
-            // Определяем направление изменения
-            const direction = newValue > initialValue ? 1 : -1;
-            // Ограничиваем изменение максимум 5 единицами в любую сторону
-            currentValue = initialValue + (direction * Math.min(10, Math.abs(newValue - initialValue)));
-            
-            // Ограничиваем значение минимум 1
-            currentValue = Math.max(1, currentValue);
-            
-            this.elements.repsSlider.querySelector('.reps-value').textContent = currentValue;
-            this.elements.exerciseReps.value = currentValue;
-            this.saveFormState();
-        };
-
-        this.elements.repsSlider.querySelector('.reps-value').textContent = 
-            this.elements.exerciseReps.value || '10';
-
-        this.elements.repsSlider.addEventListener('touchstart', (e) => {
-            isActive = true;
-            startY = e.touches[0].clientY;
-            initialValue = parseInt(this.elements.exerciseReps.value) || 10;
-            currentValue = initialValue;
-            this.elements.repsSlider.classList.add('active');
-            e.preventDefault();
+    setupSliders() {
+        // Слайдер для повторений
+        new CustomSlider({
+            element: this.elements.repsSlider,
+            input: this.elements.exerciseReps,
+            step: 1,
+            maxChange: 10,
+            minValue: 1,
+            initialValue: 10
         });
 
-        this.elements.repsSlider.addEventListener('touchmove', (e) => {
-            if (!isActive) return;
-
-            const deltaY = startY - e.touches[0].clientY;
-            const sensitivity = 0.2;
-            const proposedChange = Math.round(deltaY * sensitivity);
-            const newValue = initialValue + proposedChange;
-            
-            updateSliderValue(newValue);
-            e.preventDefault();
-        });
-
-        const endTouch = () => {
-            if (isActive) {
-                isActive = false;
-                this.elements.repsSlider.classList.remove('active');
-                this.saveFormState();
-            }
-        };
-
-        this.elements.repsSlider.addEventListener('touchend', endTouch);
-        this.elements.repsSlider.addEventListener('touchcancel', endTouch);
-
-        this.elements.exerciseReps.addEventListener('input', () => {
-            const value = this.elements.exerciseReps.value;
-            if (value) {
-                this.elements.repsSlider.querySelector('.reps-value').textContent = value;
-            }
+        // Слайдер для веса
+        new CustomSlider({
+            element: this.elements.weightSlider,
+            input: this.elements.exerciseWeight,
+            step: 2.5,
+            maxChange: 20,
+            minValue: 0,
+            sensitivity: 0.1,
+            initialValue: 0
         });
     }
 } 

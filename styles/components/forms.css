@@ -199,68 +199,17 @@ select option[disabled] {
     width: 100%;
 }
 
-.input-group input#exerciseReps {
-    padding-right: 45px; /* Уменьшаем отступ справа */
-}
-
+.input-group input#exerciseReps,
 .input-group input#exerciseWeight {
-    text-align: center;
     padding-right: 45px; /* Отступ для суффикса */
 }
 
 .input-suffix {
     position: absolute;
     left: 50%;
-    transform: translateX(10px); /* Центрируем суффикс */
+    transform: translateX(10px);
     color: var(--text-color-secondary);
     pointer-events: none;
-}
-
-.input-group .reps-slider {
-    display: none;
-    position: absolute;
-    right: 0; /* Прижимаем к правому краю */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 36px;
-    flex-shrink: 0;
-}
-
-.input-group .reps-slider.active {
-    height: 120px;
-    transform: translateY(-50%); /* Сохраняем центрирование */
-}
-
-/* Добавляем стрелки для активного состояния */
-.input-group .reps-slider.active::before,
-.input-group .reps-slider.active::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-left: 2px solid var(--primary-color);
-    border-top: 2px solid var(--primary-color);
-}
-
-/* Верхняя стрелка */
-.input-group .reps-slider.active::before {
-    top: 10px;
-    transform: translateX(-50%) rotate(45deg);
-}
-
-/* Нижняя стрелка */
-.input-group .reps-slider.active::after {
-    bottom: 10px;
-    transform: translateX(-50%) rotate(225deg);
-}
-
-/* Медиа-запрос для мобильных устройств */
-@media (max-width: 768px) {
-    .input-group .reps-slider {
-        display: block;
-    }
 }
 
 select#exerciseName {

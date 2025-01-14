@@ -73,7 +73,8 @@
     max-width: none;
 }
 
-.reps-slider {
+/* Custom Slider Button */
+.custom-slider {
     background: var(--background-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -84,17 +85,17 @@
     max-width: none;
 }
 
-.reps-slider .reps-value {
+.custom-slider .slider-value {
     color: var(--text-color);
     font-size: var(--font-size-sm);
     font-weight: 500;
 }
 
-.reps-slider.active {
-    background: var(--background-hover);
+.custom-slider.active {
+    background: transparent;
     border-color: var(--primary-color);
 }
 
-.reps-slider:active {
+.custom-slider:active {
     transform: none;
 } 

@@ -14,7 +14,11 @@ export const DOM_SELECTORS = {
         START_BUTTON: '#startWorkout',
         SAVE_BUTTON: '#saveWorkout',
         ADD_BUTTON: '#addExercise',
-        LOG: '#exerciseLog'
+        LOG: '#exerciseLog',
+        REPS_SLIDER: '.custom-slider[aria-label="Изменить количество повторений"]',
+        WEIGHT_SLIDER: '.custom-slider[aria-label="Изменить вес"]',
+        REPS_VALUE: '.slider-value',
+        WEIGHT_VALUE: '.slider-value'
     },
     INPUTS: {
         TYPE: '#exerciseType',
