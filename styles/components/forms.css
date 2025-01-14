@@ -191,7 +191,13 @@ select option[disabled] {
     position: relative;
     display: flex;
     align-items: center;
+    gap: var(--spacing-sm);
     width: 100%;
+}
+
+.input-group input {
+    text-align: center;
+    padding: 4px 45px;
 }
 
 .input-suffix {
@@ -203,7 +209,27 @@ select option[disabled] {
     text-align: left;
 }
 
-/* Разные отступы для разных суффиксов */
-.input-group input {
-    padding-right: 50px;
+.input-group .reps-slider {
+    display: none;
+    position: static;
+    transform: none;
+    width: 40px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.reps-slider.active {
+    height: 120px;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .input-group .reps-slider {
+        display: block;
+    }
+    
+    /* Убираем дополнительный отступ справа у инпута */
+    .input-group input#exerciseReps {
+        padding-right: 45px;
+    }
 }

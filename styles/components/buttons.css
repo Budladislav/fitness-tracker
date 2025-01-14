@@ -71,4 +71,30 @@
     min-width: 0;
     width: auto;
     max-width: none;
+}
+
+.reps-slider {
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+
+.reps-slider .reps-value {
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.reps-slider.active {
+    background: var(--background-hover);
+    border-color: var(--primary-color);
+}
+
+.reps-slider:active {
+    transform: none;
 } 

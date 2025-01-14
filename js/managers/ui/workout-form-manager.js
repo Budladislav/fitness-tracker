@@ -21,7 +21,8 @@ export class WorkoutFormManager extends BaseComponent {
             workoutForm: this.querySelector(DOM_SELECTORS.WORKOUT.FORM),
             startWorkoutSection: this.querySelector(DOM_SELECTORS.WORKOUT.START_SECTION),
             weightInput: this.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
-            workoutContent: this.querySelector(DOM_SELECTORS.WORKOUT.CONTENT)
+            workoutContent: this.querySelector(DOM_SELECTORS.WORKOUT.CONTENT),
+            repsSlider: this.querySelector('.reps-slider')
         };
     }
 
@@ -78,6 +79,11 @@ export class WorkoutFormManager extends BaseComponent {
                 element.addEventListener(eventType, () => this.saveFormState());
             });
         });
+
+        // Добавляем обработчики для слайдера
+        if (this.elements.repsSlider) {
+            this.setupRepsSlider();
+        }
     }
 
     toggleWeightInput(isWeighted, skipSave = false) {
@@ -185,5 +191,63 @@ export class WorkoutFormManager extends BaseComponent {
             // Сохраняем состояние только один раз в конце
             this.saveFormState();
         }
+    }
+
+    setupRepsSlider() {
+        let startY = 0;
+        let currentValue = 10;
+        let isActive = false;
+
+        const updateSliderValue = (value) => {
+            currentValue = Math.max(1, Math.min(100, value)); // Ограничиваем значения
+            this.elements.repsSlider.querySelector('.reps-value').textContent = currentValue;
+            this.elements.exerciseReps.value = currentValue;
+            this.saveFormState();
+        };
+
+        // Инициализация значения
+        this.elements.repsSlider.querySelector('.reps-value').textContent = 
+            this.elements.exerciseReps.value || '10';
+
+        // Обработчик начала касания
+        this.elements.repsSlider.addEventListener('touchstart', (e) => {
+            isActive = true;
+            startY = e.touches[0].clientY;
+            currentValue = parseInt(this.elements.exerciseReps.value) || 10;
+            this.elements.repsSlider.classList.add('active');
+            e.preventDefault(); // Предотвращаем скролл
+        });
+
+        // Обработчик движения пальца
+        this.elements.repsSlider.addEventListener('touchmove', (e) => {
+            if (!isActive) return;
+
+            const deltaY = startY - e.touches[0].clientY;
+            const sensitivity = 0.5; // Настройка чувствительности
+            const newValue = currentValue + Math.round(deltaY * sensitivity);
+            
+            updateSliderValue(newValue);
+            e.preventDefault();
+        });
+
+        // Обработчик окончания касания
+        const endTouch = () => {
+            if (isActive) {
+                isActive = false;
+                this.elements.repsSlider.classList.remove('active');
+                this.saveFormState();
+            }
+        };
+
+        this.elements.repsSlider.addEventListener('touchend', endTouch);
+        this.elements.repsSlider.addEventListener('touchcancel', endTouch);
+
+        // Синхронизация значений при ручном вводе в input
+        this.elements.exerciseReps.addEventListener('input', () => {
+            const value = this.elements.exerciseReps.value;
+            if (value) {
+                this.elements.repsSlider.querySelector('.reps-value').textContent = value;
+            }
+        });
     }
 } 

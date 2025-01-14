@@ -20,12 +20,12 @@ export const DOM_SELECTORS = {
         TYPE: '#exerciseType',
         NAME: '#exerciseName',
         REPS: {
-            CONTAINER: '#repsInput',
-            INPUT: '#exerciseReps'
+            INPUT: '#exerciseReps',
+            SLIDER: '.reps-slider'
         },
         WEIGHT: {
-            CONTAINER: '#weightInput',
-            INPUT: '#exerciseWeight'
+            INPUT: '#exerciseWeight',
+            CONTAINER: '#weightInput'
         }
     },
     HISTORY: {
