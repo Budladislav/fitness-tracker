@@ -6,7 +6,8 @@ export class WorkoutFactory {
             id: Date.now(),
             date: DateFormatter.toStorageFormat(date),
             exercises: exercises,
-            created: new Date()
+            created: new Date(),
+            startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
     }
 
@@ -33,4 +34,4 @@ export class WorkoutFactory {
             weight: set.weight
         };
     }
-} 
+}

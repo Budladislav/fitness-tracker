@@ -114,7 +114,8 @@ export class WorkoutStorage {
         // Преобразуем даты при чтении
         return workouts.map(workout => ({
             ...workout,
-            displayDate: DateFormatter.formatWorkoutDate(workout.date)
+            displayDate: DateFormatter.formatWorkoutDate(workout.date),
+            startTime: workout.startTime || '' // Добавляем время старта, если оно есть
         }));
     }
 

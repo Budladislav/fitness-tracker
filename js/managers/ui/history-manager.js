@@ -69,8 +69,11 @@ export class HistoryManager extends BaseComponent {
         const summaryTable = this.createElement('table', 'summary-table');
         const summaryRow = this.createElement('tr');
         
+        const formattedDate = DateFormatter.formatWorkoutDate(workout.date);
+        const startTime = workout.startTime ? `${workout.startTime}` : '';
+
         summaryRow.innerHTML = `
-            <td>${DateFormatter.formatWorkoutDate(workout.date)}</td>
+            <td>${formattedDate} <small>${startTime}</small></td>
             <td>Σ повторов: ${totalReps} раз</td>
             <td>Тоннаж: ${totalWeight} кг</td>
             <td><button class="delete-btn" title="Удалить тренировку">×</button></td>
