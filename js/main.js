@@ -4,9 +4,13 @@ import { ExerciseValidator } from './managers/exercise-validator.js';
 import { UIManager } from './managers/ui-manager.js';
 import { WorkoutManager } from './managers/workout-manager.js';
 import { ImportModule } from './modules/import-module.js';
+import { DeviceDetector } from './utils/device-detector.js';
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
+    // Определяем тип устройства
+    DeviceDetector.addDeviceClass();
+    
     // Создаем все необходимые менеджеры
     const notifications = new NotificationManager();
     const storage = new WorkoutStorage();

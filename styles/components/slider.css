@@ -43,8 +43,6 @@
     transform: translateX(-50%) rotate(225deg);
 }
 
-@media (max-width: 768px) {
-    .input-group .custom-slider {
-        display: block;
-    }
+.mobile-device .input-group .custom-slider {
+    display: block;
 } 
