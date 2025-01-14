@@ -45,7 +45,7 @@ button {
     margin: var(--spacing-md) auto;
     box-sizing: border-box;
 }
-
+S
 button:hover {
     background-color: var(--primary-hover);
 }
@@ -216,4 +216,9 @@ select#exerciseName {
     text-align: center;
     text-align-last: center; /* Для современных браузеров */
     -moz-text-align-last: center; /* Для Firefox */
+}
+
+/* Общий стиль для значения слайдера */
+.custom-slider .slider-value {
+    font-size: 12px;
 }

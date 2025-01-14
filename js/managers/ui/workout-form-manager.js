@@ -2,7 +2,6 @@ import { BaseComponent } from '../../components/base-component.js';
 import { DOM_SELECTORS } from '../../constants/selectors.js';
 import { ExercisePool } from '../../models/exercise-pool.js';
 import { Utils } from '../../utils/utils.js';
-import { DateFormatter } from '../../utils/date-formatter.js';
 import { CustomSlider } from '../../components/custom-slider.js';
 
 export class WorkoutFormManager extends BaseComponent {
@@ -70,7 +69,13 @@ export class WorkoutFormManager extends BaseComponent {
                 const selectedExercise = this.elements.exerciseName.value;
                 const defaultWeight = ExercisePool.getDefaultWeight(selectedExercise);
                 this.elements.exerciseWeight.value = defaultWeight;
-                this.elements.exerciseReps.value = '';
+                this.elements.weightSlider.querySelector('.slider-value').textContent = defaultWeight;
+                // Генерируем событие input для обновления слайдера
+                const inputEvent = new Event('input', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                this.elements.exerciseWeight.dispatchEvent(inputEvent);
             }
             this.saveFormState();
         });
