@@ -7,7 +7,36 @@ export class TouchSelect {
         this.longPressDelay = 200; // 200ms для определения долгого нажатия
         this.optionHeight = 40; // Примерная высота option в пикселях
         
+        this.createPreviewElement();
         this.setupEventListeners();
+    }
+
+    createPreviewElement() {
+        this.preview = document.createElement('div');
+        this.preview.className = 'select-preview';
+        document.body.appendChild(this.preview);
+    }
+
+    updatePreview() {
+        const options = Array.from(this.select.options)
+            .filter(option => !option.disabled); // Фильтруем disabled опции (в том числе placeholder)
+        
+        this.preview.innerHTML = options
+            .map((option, index) => `
+                <div class="preview-option ${this.select.selectedIndex === index + 1 ? 'selected' : ''}">
+                    ${option.text}
+                </div>
+            `)
+            .join('');
+    }
+
+    showPreview() {
+        this.updatePreview();
+        this.preview.classList.add('active');
+    }
+
+    hidePreview() {
+        this.preview.classList.remove('active');
     }
 
     setupEventListeners() {
@@ -27,6 +56,10 @@ export class TouchSelect {
 
     handleTouchMove(e) {
         if (Date.now() - this.touchStartTime > this.longPressDelay) {
+            if (!this.isScrolling) {
+                this.showPreview();
+            }
+            
             this.isScrolling = true;
             e.preventDefault();
 
@@ -37,17 +70,19 @@ export class TouchSelect {
             let newIndex = this.currentIndex + optionsToMove;
             newIndex = Math.max(1, Math.min(newIndex, this.select.options.length - 1));
             
-            // Визуальная обратная связь
-            this.select.selectedIndex = newIndex;
+            if (this.select.selectedIndex !== newIndex) {
+                this.select.selectedIndex = newIndex;
+                this.updatePreview();
+            }
         }
     }
 
     handleTouchEnd(e) {
         if (this.isScrolling) {
             e.preventDefault();
-            // Применяем выбранное значение и генерируем событие change
             const event = new Event('change', { bubbles: true });
             this.select.dispatchEvent(event);
+            this.hidePreview();
         }
         
         this.isScrolling = false;

@@ -14,6 +14,7 @@
 @import 'components/notifications.css';
 @import 'components/exercise-items.css';
 @import 'components/slider.css';
+@import 'components/select-preview.css';
 
 /* Pages */
 @import 'pages/workout.css';
