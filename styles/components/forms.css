@@ -191,45 +191,68 @@ select option[disabled] {
     position: relative;
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
     width: 100%;
 }
 
 .input-group input {
     text-align: center;
-    padding: 4px 45px;
+    width: 100%;
+}
+
+.input-group input#exerciseReps {
+    padding-right: 45px; /* Уменьшаем отступ справа */
 }
 
 .input-suffix {
     position: absolute;
-    right: 12px;
+    left: 50%;
     color: var(--text-color-secondary);
     pointer-events: none;
-    min-width: 30px;
-    text-align: left;
 }
 
 .input-group .reps-slider {
     display: none;
-    position: static;
-    transform: none;
+    position: absolute;
+    right: 0; /* Прижимаем к правому краю */
+    top: 50%;
+    transform: translateY(-50%);
     width: 40px;
     height: 36px;
     flex-shrink: 0;
 }
 
-.reps-slider.active {
+.input-group .reps-slider.active {
     height: 120px;
+    transform: translateY(-50%); /* Сохраняем центрирование */
+}
+
+/* Добавляем стрелки для активного состояния */
+.input-group .reps-slider.active::before,
+.input-group .reps-slider.active::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    border-left: 2px solid var(--primary-color);
+    border-top: 2px solid var(--primary-color);
+}
+
+/* Верхняя стрелка */
+.input-group .reps-slider.active::before {
+    top: 10px;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+/* Нижняя стрелка */
+.input-group .reps-slider.active::after {
+    bottom: 10px;
+    transform: translateX(-50%) rotate(225deg);
 }
 
 /* Медиа-запрос для мобильных устройств */
 @media (max-width: 768px) {
     .input-group .reps-slider {
         display: block;
-    }
-    
-    /* Убираем дополнительный отступ справа у инпута */
-    .input-group input#exerciseReps {
-        padding-right: 45px;
     }
 }
