@@ -38,23 +38,31 @@
 
             <!-- Форма управления тренировкой (изначально скрыта) -->
             <div id="workoutForm" class="hidden">
-                <div class="form-inputs">                    
+                <div class="workout-buttons">
+                    <button id="saveWorkout" class="btn workout-btn">Сохранить</button>
+                    <button id="addExercise" class="btn workout-btn">Добавить</button>
+                </div>
+                
+                <select id="exerciseName">
+                    <option value="" disabled selected>Выберите упражнение</option>
+                </select>
+                
+                <div class="form-inputs">
                     <div id="weightInput" class="input-field" data-visible="false">
                         <div class="input-group">
                             <input type="number" id="exerciseWeight" placeholder="Вес">
                             <span class="input-suffix">кг</span>
                         </div>
                     </div>
-                </div>
-                <div id="repsInput" class="input-field">
-                    <div class="input-group">
-                        <input type="number" id="exerciseReps" placeholder="Количество повторений">
-                        <span class="input-suffix">раз</span>
+                    
+                    <div id="repsInput" class="input-field">
+                        <div class="input-group">
+                            <input type="number" id="exerciseReps" placeholder="Количество повторений">
+                            <span class="input-suffix">раз</span>
+                        </div>
                     </div>
                 </div>
-                <select id="exerciseName">
-                    <option value="" disabled selected>Выберите упражнение</option>
-                </select>
+                
                 <div class="toggle-wrapper">
                     <label class="toggle">
                         <input type="checkbox" id="exerciseType">
@@ -62,10 +70,6 @@
                             <span class="toggle-label" data-on="С весом" data-off="Без веса"></span>
                         </span>
                     </label>
-                </div>
-                <div class="workout-buttons">
-                    <button id="saveWorkout" class="btn workout-btn">Сохранить тренировку</button>
-                    <button id="addExercise" class="btn workout-btn">Добавить в лог</button>
                 </div>
             </div>
         </div>
