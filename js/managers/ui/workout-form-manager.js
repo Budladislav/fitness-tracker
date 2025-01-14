@@ -197,40 +197,43 @@ export class WorkoutFormManager extends BaseComponent {
         let startY = 0;
         let currentValue = 10;
         let isActive = false;
+        let initialValue = 0;
 
-        const updateSliderValue = (value) => {
-            currentValue = Math.max(1, Math.min(100, value)); // Ограничиваем значения
+        const updateSliderValue = (newValue) => {
+            // Определяем направление изменения
+            const direction = newValue > initialValue ? 1 : -1;
+            // Ограничиваем изменение максимум 5 единицами в любую сторону
+            currentValue = initialValue + (direction * Math.min(5, Math.abs(newValue - initialValue)));
+            
             this.elements.repsSlider.querySelector('.reps-value').textContent = currentValue;
             this.elements.exerciseReps.value = currentValue;
             this.saveFormState();
         };
 
-        // Инициализация значения
         this.elements.repsSlider.querySelector('.reps-value').textContent = 
             this.elements.exerciseReps.value || '10';
 
-        // Обработчик начала касания
         this.elements.repsSlider.addEventListener('touchstart', (e) => {
             isActive = true;
             startY = e.touches[0].clientY;
-            currentValue = parseInt(this.elements.exerciseReps.value) || 10;
+            initialValue = parseInt(this.elements.exerciseReps.value) || 10;
+            currentValue = initialValue;
             this.elements.repsSlider.classList.add('active');
-            e.preventDefault(); // Предотвращаем скролл
+            e.preventDefault();
         });
 
-        // Обработчик движения пальца
         this.elements.repsSlider.addEventListener('touchmove', (e) => {
             if (!isActive) return;
 
             const deltaY = startY - e.touches[0].clientY;
-            const sensitivity = 0.5; // Настройка чувствительности
-            const newValue = currentValue + Math.round(deltaY * sensitivity);
+            const sensitivity = 0.2;
+            const proposedChange = Math.round(deltaY * sensitivity);
+            const newValue = initialValue + proposedChange;
             
             updateSliderValue(newValue);
             e.preventDefault();
         });
 
-        // Обработчик окончания касания
         const endTouch = () => {
             if (isActive) {
                 isActive = false;
@@ -242,7 +245,6 @@ export class WorkoutFormManager extends BaseComponent {
         this.elements.repsSlider.addEventListener('touchend', endTouch);
         this.elements.repsSlider.addEventListener('touchcancel', endTouch);
 
-        // Синхронизация значений при ручном вводе в input
         this.elements.exerciseReps.addEventListener('input', () => {
             const value = this.elements.exerciseReps.value;
             if (value) {
