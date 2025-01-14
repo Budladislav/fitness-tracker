@@ -12,6 +12,7 @@ export class CustomSlider {
         this.currentValue = this.initialValue;
         this.isActive = false;
         
+        this.element.querySelector('.slider-value').textContent = String(this.initialValue);
         this.setupEventListeners();
     }
 
@@ -32,7 +33,7 @@ export class CustomSlider {
     handleTouchStart(e) {
         this.isActive = true;
         this.startY = e.touches[0].clientY;
-        this.initialValue = parseFloat(this.input.value) || 0;
+        this.initialValue = parseFloat(this.input.value) || this.initialValue;
         this.currentValue = this.initialValue;
         this.element.classList.add('active');
         e.preventDefault();
@@ -69,5 +70,12 @@ export class CustomSlider {
         
         this.element.querySelector('.slider-value').textContent = this.currentValue;
         this.input.value = this.currentValue;
+
+        // Генерируем событие input для сохранения состояния
+        const inputEvent = new Event('input', {
+            bubbles: true,
+            cancelable: true
+        });
+        this.input.dispatchEvent(inputEvent);
     }
 } 

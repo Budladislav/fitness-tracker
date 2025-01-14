@@ -225,7 +225,7 @@ export class WorkoutFormManager extends BaseComponent {
             maxChange: 20,
             minValue: 0,
             sensitivity: 0.1,
-            initialValue: 0
+            initialValue: 100
         });
     }
 } 
