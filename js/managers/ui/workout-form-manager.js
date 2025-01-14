@@ -3,6 +3,7 @@ import { DOM_SELECTORS } from '../../constants/selectors.js';
 import { ExercisePool } from '../../models/exercise-pool.js';
 import { Utils } from '../../utils/utils.js';
 import { CustomSlider } from '../../components/custom-slider.js';
+import { TouchSelect } from '../../components/touch-select.js';
 
 export class WorkoutFormManager extends BaseComponent {
     constructor(notifications, storage) {
@@ -11,6 +12,10 @@ export class WorkoutFormManager extends BaseComponent {
         this.setupEventListeners();
         this.initializeExercisesList();
         this.setupSliders();
+        // Инициализируем TouchSelect только на мобильных устройствах
+        if (document.body.classList.contains('mobile-device')) {
+            new TouchSelect(this.elements.exerciseName);
+        }
     }
 
     initializeElements() {
