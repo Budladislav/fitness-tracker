@@ -191,11 +191,28 @@
     text-align: center;
 }
 
+.rating-info-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: var(--spacing-md);
+    padding: 0 var(--spacing-lg);
+}
+
 .rating-info-header h4 {
     margin: 0;
-    font-size: var(--font-size-md);
-    width: 100%;
     text-align: center;
+    width: 100%;
+}
+
+.rating-info-header .delete-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
 }
 
 .rating-info-description {
