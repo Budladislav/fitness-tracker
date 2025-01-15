@@ -16,8 +16,8 @@ export class NotesModal extends BaseComponent {
         modal.innerHTML = `
             <div class="notes-modal-content">
                 <div class="notes-modal-header">
-                    <h3>Заметки к тренировке</h3>
-                    <button class="close-btn">×</button>
+                    <h3 class="modal-title">Заметки</h3>
+                    <button class="delete-btn" title="Закрыть">×</button>
                 </div>
                 <div class="notes-ratings">
                     <div class="rating-group">
@@ -55,7 +55,7 @@ export class NotesModal extends BaseComponent {
 
     setupModalListeners(modal) {
         // Закрытие по клику на крестик
-        modal.querySelector('.close-btn').addEventListener('click', () => this.hide());
+        modal.querySelector('.delete-btn').addEventListener('click', () => this.hide());
         
         // Закрытие по клику вне модального окна
         modal.addEventListener('click', (e) => {

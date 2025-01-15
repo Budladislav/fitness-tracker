@@ -26,28 +26,46 @@
 
 .notes-modal-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    position: relative;
     margin-bottom: var(--spacing-md);
+}
+
+.notes-modal-header h3 {
+    margin: 0;
+    text-align: center;
+}
+
+.notes-modal-header .delete-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .notes-ratings {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-md);
 }
 
 .rating-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
+    flex: 1;
+    min-width: 0;
 }
 
 .rating-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.rating-header label {
+    font-size: var(--font-size-sm);
+    color: var(--text-color);
 }
 
 .rating-slider {
@@ -57,11 +75,13 @@
 .notes-text textarea {
     width: 100%;
     min-height: 100px;
+    max-height: 200px;
     padding: var(--spacing-sm);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     margin-bottom: var(--spacing-md);
     resize: vertical;
+    box-sizing: border-box;
 }
 
 .notes-actions {
@@ -71,16 +91,29 @@
 }
 
 .info-btn {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--background-color);
     border: 1px solid var(--border-color);
     cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-secondary);
+    transition: all 0.2s;
+    padding: 0;
+    margin-left: var(--spacing-xs);
+}
+
+.info-btn:hover {
+    background: var(--border-color);
+    color: var(--text-color);
 }
 
 .rating-value {
-    text-align: center;
     font-size: var(--font-size-sm);
     color: var(--text-color-secondary);
+    margin-top: 2px;
 } 
