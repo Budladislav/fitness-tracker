@@ -210,4 +210,53 @@ export class WorkoutStorage {
         const workouts = this.getWorkoutHistory();
         this.saveToStorage(this.BACKUP_KEY, workouts);
     }
+
+    /**
+     * Обновляет существующую тренировку в истории
+     * @param {Object} workout - Обновленная тренировка
+     * @returns {boolean} Успешность операции
+     */
+    updateWorkout(workout) {
+        try {
+            const history = this.getWorkoutHistory();
+            const index = history.findIndex(w => w.id === workout.id);
+            
+            if (index !== -1) {
+                history[index] = {
+                    ...workout,
+                    date: workout.date ? DateFormatter.toStorageFormat(workout.date) : workout.date
+                };
+                const success = this.saveToStorage('exercises', history);
+                
+                if (success) {
+                    this.createAutoBackup();
+                }
+                
+                return success;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error updating workout:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Получает тренировку по ID
+     * @param {string|number} id - ID тренировки
+     * @returns {Object|null} Тренировка или null, если не найдена
+     */
+    getWorkoutById(id) {
+        const history = this.getWorkoutHistory();
+        const workout = history.find(workout => workout.id === id);
+        
+        if (workout) {
+            return {
+                ...workout,
+                displayDate: DateFormatter.formatWorkoutDate(workout.date)
+            };
+        }
+        
+        return null;
+    }
 }

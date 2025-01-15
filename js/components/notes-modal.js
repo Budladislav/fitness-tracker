@@ -106,25 +106,30 @@ export class NotesModal extends BaseComponent {
     }
 
     setValues(notes) {
-        if (notes.energy) {
+        // Сохраняем текущие значения в состоянии модального окна
+        this.currentNotes = notes;
+
+        if (notes.energy?.score) {
             const energyGroup = this.modal.querySelector('#energyRating').closest('.rating-group');
             const energySlider = energyGroup.querySelector('.rating-slider');
             const energyValue = energyGroup.querySelector('.rating-value');
             
             energySlider.value = notes.energy.score;
-            energyValue.textContent = notes.energy.score;
+            energySlider.dataset.touched = 'true'; // Помечаем как использованный
+            energyValue.textContent = `${notes.energy.score}/5`;
         }
         
-        if (notes.intensity) {
+        if (notes.intensity?.score) {
             const intensityGroup = this.modal.querySelector('#intensityRating').closest('.rating-group');
             const intensitySlider = intensityGroup.querySelector('.rating-slider');
             const intensityValue = intensityGroup.querySelector('.rating-value');
             
             intensitySlider.value = notes.intensity.score;
-            intensityValue.textContent = notes.intensity.score;
+            intensitySlider.dataset.touched = 'true'; // Помечаем как использованный
+            intensityValue.textContent = `${notes.intensity.score}/5`;
         }
         
-        if (notes.text) {
+        if (notes.text?.content) {
             this.modal.querySelector('textarea').value = notes.text.content;
         }
     }
@@ -166,10 +171,11 @@ export class NotesModal extends BaseComponent {
     }
 
     resetValues() {
+        this.currentNotes = null; // Сбрасываем текущие заметки
         const sliders = this.modal.querySelectorAll('.rating-slider');
         sliders.forEach(slider => {
             slider.value = 3;
-            slider.dataset.touched = 'false'; // Сбрасываем флаг использования
+            slider.dataset.touched = 'false';
             const group = slider.closest('.rating-group');
             const valueDisplay = group.querySelector('.rating-value');
             valueDisplay.textContent = '-';

@@ -5,14 +5,18 @@ import { ExerciseLogManager } from './ui/exercise-log-manager.js';
 import { ValidationManager } from './ui/validation-manager.js';
 import { BaseComponent } from '../components/base-component.js';
 import { DOM_SELECTORS } from '../constants/selectors.js';
+import { NotesModal } from '../components/notes-modal.js';
 
 export class UIManager extends BaseComponent {
     constructor(notifications, storage) {
         super(notifications, storage);
         
+        // Создаем модальное окно заметок
+        this.notesModal = new NotesModal(notifications, storage);
+        
         // Добавляем менеджеры
         this.workoutForm = new WorkoutFormManager(notifications, storage);
-        this.history = new HistoryManager(notifications, storage);
+        this.history = new HistoryManager(notifications, storage, this.notesModal);
         this.navigation = new NavigationManager(notifications, storage);
         this.exerciseLog = new ExerciseLogManager(notifications, storage);
         this.validation = new ValidationManager(notifications, storage);

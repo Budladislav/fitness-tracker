@@ -3,10 +3,17 @@ import { DOM_SELECTORS } from '../../constants/selectors.js';
 import { DateFormatter } from '../../utils/date-formatter.js';
 import { ExerciseCalculatorService } from '../../services/exercise-calculator.service.js';
 import { BackupManager } from '../../services/backup-manager.js';
+import { NotesModal } from '../../components/notes-modal.js';
 
 export class HistoryManager extends BaseComponent {
-    constructor(notifications, storage) {
+    /**
+     * @param {NotificationManager} notifications - Менеджер уведомлений
+     * @param {WorkoutStorage} storage - Менеджер хранилища
+     * @param {NotesModal} notesModal - Модальное окно заметок
+     */
+    constructor(notifications, storage, notesModal) {
         super(notifications, storage);
+        this.notesModal = notesModal; // Добавляем ссылку на NotesModal
         this.backupManager = new BackupManager(storage, notifications);
         this.elements = this.initializeElements();
         this.workoutStates = this.loadWorkoutStates();
@@ -215,7 +222,7 @@ export class HistoryManager extends BaseComponent {
         
         // Затем добавляем секцию заметок, если они есть
         if (workout.notes) {
-            const notesSection = this.createNotesSection(workout.notes);
+            const notesSection = this.createNotesSection(workout.notes, workout.id);
             if (notesSection) {
                 details.appendChild(notesSection);
             }
@@ -224,15 +231,14 @@ export class HistoryManager extends BaseComponent {
         return details;
     }
 
-    createNotesSection(notes) {
-        // Проверяем, есть ли какие-либо заметки
+    createNotesSection(notes, workoutId) {
         if (!notes.energy?.score && !notes.intensity?.score && !notes.text?.content) {
             return null;
         }
 
         const section = this.createElement('div', 'workout-notes');
+        section.dataset.workoutId = workoutId;
         
-        // Создаем секцию рейтингов только если есть хотя бы один рейтинг
         if (notes.energy?.score || notes.intensity?.score) {
             const ratings = this.createElement('div', 'notes-ratings');
             
@@ -257,14 +263,42 @@ export class HistoryManager extends BaseComponent {
             section.appendChild(ratings);
         }
         
-        // Добавляем текстовую заметку, если она есть
         if (notes.text?.content) {
             const textNote = this.createElement('div', 'notes-text');
             textNote.textContent = notes.text.content;
             section.appendChild(textNote);
         }
+
+        section.addEventListener('click', () => this.handleNotesEdit(workoutId, notes));
+        section.classList.add('editable');
         
         return section;
+    }
+
+    handleNotesEdit(workoutId, notes) {
+        const workout = this.storage.getWorkoutById(workoutId);
+        if (!workout) return;
+
+        this.notesModal.show(notes);
+
+        const saveButton = this.notesModal.modal.querySelector('.save-notes');
+        const oldHandler = saveButton.onclick;
+        
+        saveButton.onclick = () => {
+            const updatedNotes = this.notesModal.getValues();
+            workout.notes = updatedNotes;
+            
+            if (this.storage.updateWorkout(workout)) {
+                const history = this.storage.getWorkoutHistory();
+                this.displayWorkoutHistory(history);
+                this.notifications.success('Заметки обновлены');
+            } else {
+                this.notifications.error('Ошибка при обновлении заметок');
+            }
+            
+            this.notesModal.hide();
+            saveButton.onclick = oldHandler;
+        };
     }
 
     createExerciseElement(exercise) {
