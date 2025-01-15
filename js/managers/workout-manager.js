@@ -153,7 +153,6 @@ export class WorkoutManager {
             }
 
             const currentWorkout = this.storage.getCurrentWorkout();
-            console.log('Current workout before save:', currentWorkout);
 
             if (!currentWorkout.date) {
                 this.notifications.error('Ошибка: дата тренировки не найдена!');
@@ -171,8 +170,6 @@ export class WorkoutManager {
                     notes: currentWorkout.notes // Явно передаем заметки
                 }
             );
-            
-            console.log('Workout to save:', workoutToSave);
 
             if (!this.storage.saveWorkoutToHistory(workoutToSave)) {
                 this.notifications.error('Не удалось сохранить тренировку');

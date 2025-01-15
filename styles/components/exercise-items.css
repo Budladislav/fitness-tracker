@@ -32,33 +32,3 @@
 .total-weight {
     font-size: var(--font-size-sm);
 }
-
-.workout-notes {
-    margin: var(--spacing-sm) 0;
-    padding: var(--spacing-sm);
-    background: var(--card-background);
-    border-radius: var(--border-radius);
-}
-
-.notes-ratings {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-xs);
-}
-
-.rating-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.rating-value {
-    font-weight: 500;
-    color: var(--primary-color);
-}
-
-.notes-text {
-    color: var(--text-color-secondary);
-    font-size: var(--font-size-sm);
-    line-height: 1.4;
-}

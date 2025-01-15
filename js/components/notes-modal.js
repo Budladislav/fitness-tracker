@@ -1,9 +1,6 @@
 import { BaseComponent } from './base-component.js';
 import { NOTES_CONFIG } from '../constants/notes-config.js';
 
-console.log('BaseComponent:', BaseComponent);
-console.log('NOTES_CONFIG:', NOTES_CONFIG);
-
 export class NotesModal extends BaseComponent {
     constructor(notifications, storage) {
         super(notifications, storage);

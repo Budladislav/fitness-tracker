@@ -134,4 +134,36 @@
 /* Чтобы кнопка удаления не наследовала cursor: pointer */
 .summary-table .delete-button {
     cursor: pointer;
+}
+
+/* Workout Notes Styles
+-------------------------------------------------- */
+.workout-notes {
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-sm);
+}
+
+.notes-ratings {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.rating-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.rating-value {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.notes-text {
+    color: var(--text-color-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+    margin-top: var(--spacing-xs);
 }   

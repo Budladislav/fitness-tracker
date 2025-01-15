@@ -186,12 +186,7 @@ export class HistoryManager extends BaseComponent {
     createDetailsSection(workout) {
         const details = this.createElement('div', 'workout-details');
         
-        // Добавляем секцию заметок, если они есть
-        if (workout.notes) {
-            const notesSection = this.createNotesSection(workout.notes);
-            details.appendChild(notesSection);
-        }
-        
+        // Сначала добавляем упражнения
         const exercises = this.createElement('div', 'workout-exercises');
 
         if (workout.exercises && Array.isArray(workout.exercises)) {
@@ -217,16 +212,31 @@ export class HistoryManager extends BaseComponent {
         }
 
         details.appendChild(exercises);
+        
+        // Затем добавляем секцию заметок, если они есть
+        if (workout.notes) {
+            const notesSection = this.createNotesSection(workout.notes);
+            if (notesSection) {
+                details.appendChild(notesSection);
+            }
+        }
+        
         return details;
     }
 
     createNotesSection(notes) {
+        // Проверяем, есть ли какие-либо заметки
+        if (!notes.energy?.score && !notes.intensity?.score && !notes.text?.content) {
+            return null;
+        }
+
         const section = this.createElement('div', 'workout-notes');
         
-        if (notes.energy || notes.intensity) {
+        // Создаем секцию рейтингов только если есть хотя бы один рейтинг
+        if (notes.energy?.score || notes.intensity?.score) {
             const ratings = this.createElement('div', 'notes-ratings');
             
-            if (notes.energy) {
+            if (notes.energy?.score) {
                 ratings.innerHTML += `
                     <div class="rating-item">
                         <span>Энергия:</span>
@@ -235,7 +245,7 @@ export class HistoryManager extends BaseComponent {
                 `;
             }
             
-            if (notes.intensity) {
+            if (notes.intensity?.score) {
                 ratings.innerHTML += `
                     <div class="rating-item">
                         <span>Интенсивность:</span>
@@ -247,6 +257,7 @@ export class HistoryManager extends BaseComponent {
             section.appendChild(ratings);
         }
         
+        // Добавляем текстовую заметку, если она есть
         if (notes.text?.content) {
             const textNote = this.createElement('div', 'notes-text');
             textNote.textContent = notes.text.content;
