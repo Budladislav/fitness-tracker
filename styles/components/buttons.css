@@ -98,4 +98,30 @@
 
 .custom-slider:active {
     transform: none;
+}
+
+/* Backup Controls */
+.backup-controls {
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+}
+
+.backup-btn {
+    max-width: 200px;
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    font-size: 14px;
+    line-height: 1.2;
+    padding: 6px var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.backup-btn:hover {
+    background-color: var(--primary-hover);
 } 

@@ -11,6 +11,7 @@ export class WorkoutStorage {
         this.storageAvailable = this.checkStorageAvailability();
         this.STORAGE_KEY = 'workouts';
         this.ACTIVE_WORKOUT_KEY = 'activeWorkout';
+        this.BACKUP_KEY = 'workouts_backup';
     }
 
     checkStorageAvailability() {
@@ -129,13 +130,25 @@ export class WorkoutStorage {
         };
         
         savedWorkouts.push(processedWorkout);
-        return this.saveToStorage('exercises', savedWorkouts);
+        const success = this.saveToStorage('exercises', savedWorkouts);
+        
+        if (success) {
+            this.createAutoBackup(); // Создаем автобэкап при успешном сохранении
+        }
+        
+        return success;
     }
 
     deleteWorkoutFromHistory(workoutId) {
         const workouts = this.getWorkoutHistory();
         const filteredWorkouts = workouts.filter(workout => workout.id !== workoutId);
-        return this.saveToStorage('exercises', filteredWorkouts);
+        const success = this.saveToStorage('exercises', filteredWorkouts);
+        
+        if (success) {
+            this.createAutoBackup(); // Создаем автобэкап при успешном удалении
+        }
+        
+        return success;
     }
 
     /**
@@ -190,5 +203,11 @@ export class WorkoutStorage {
         }
         
         return exerciseHistory;
+    }
+
+    // Добавим метод для автоматического бэкапа
+    createAutoBackup() {
+        const workouts = this.getWorkoutHistory();
+        this.saveToStorage(this.BACKUP_KEY, workouts);
     }
 }

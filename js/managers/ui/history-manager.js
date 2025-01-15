@@ -2,10 +2,12 @@ import { BaseComponent } from '../../components/base-component.js';
 import { DOM_SELECTORS } from '../../constants/selectors.js';
 import { DateFormatter } from '../../utils/date-formatter.js';
 import { ExerciseCalculatorService } from '../../services/exercise-calculator.service.js';
+import { BackupManager } from '../../services/backup-manager.js';
 
 export class HistoryManager extends BaseComponent {
     constructor(notifications, storage) {
         super(notifications, storage);
+        this.backupManager = new BackupManager(storage, notifications);
         this.elements = this.initializeElements();
         this.workoutStates = this.loadWorkoutStates();
         this.setupEventListeners();
@@ -14,13 +16,27 @@ export class HistoryManager extends BaseComponent {
     initializeElements() {
         return {
             historyContainer: this.querySelector(DOM_SELECTORS.HISTORY.CONTAINER),
-            toggleAllButton: this.querySelector(DOM_SELECTORS.HISTORY.TOGGLE_ALL)
+            toggleAllButton: this.querySelector(DOM_SELECTORS.HISTORY.TOGGLE_ALL),
+            backupControls: this.createElement('div', 'backup-controls'),
+            createBackupBtn: this.createElement('button', 'btn backup-btn'),
+            restoreBackupBtn: this.createElement('button', 'btn backup-btn')
         };
     }
 
     setupEventListeners() {
         this.elements.toggleAllButton.addEventListener('click', () => {
             this.toggleAllWorkouts();
+        });
+
+        // Добавляем обработчики для кнопок бэкапа
+        this.elements.createBackupBtn.addEventListener('click', async () => {
+            await this.backupManager.createBackup();
+        });
+
+        this.elements.restoreBackupBtn.addEventListener('click', async () => {
+            if (await this.backupManager.restoreFromBackup()) {
+                this.displayWorkoutHistory(this.storage.getWorkoutHistory());
+            }
         });
     }
 
@@ -44,6 +60,10 @@ export class HistoryManager extends BaseComponent {
                     this.elements.historyContainer.appendChild(workoutEntry);
                 }
             });
+
+            // Добавляем контролы бэкапа после истории
+            this.setupBackupControls();
+            this.elements.historyContainer.appendChild(this.elements.backupControls);
         } catch (error) {
             console.error('Error in displayWorkoutHistory:', error);
         }
@@ -223,5 +243,14 @@ export class HistoryManager extends BaseComponent {
         });
 
         return rows;
+    }
+
+    setupBackupControls() {
+        this.elements.createBackupBtn.textContent = 'Резервировать историю';
+        this.elements.restoreBackupBtn.textContent = 'Восстановить историю';
+
+        this.elements.backupControls.innerHTML = ''; // Очищаем на случай повторного вызова
+        this.elements.backupControls.appendChild(this.elements.createBackupBtn);
+        this.elements.backupControls.appendChild(this.elements.restoreBackupBtn);
     }
 } 
