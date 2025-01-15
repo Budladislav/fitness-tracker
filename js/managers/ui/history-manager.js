@@ -185,6 +185,13 @@ export class HistoryManager extends BaseComponent {
 
     createDetailsSection(workout) {
         const details = this.createElement('div', 'workout-details');
+        
+        // Добавляем секцию заметок, если они есть
+        if (workout.notes) {
+            const notesSection = this.createNotesSection(workout.notes);
+            details.appendChild(notesSection);
+        }
+        
         const exercises = this.createElement('div', 'workout-exercises');
 
         if (workout.exercises && Array.isArray(workout.exercises)) {
@@ -211,6 +218,42 @@ export class HistoryManager extends BaseComponent {
 
         details.appendChild(exercises);
         return details;
+    }
+
+    createNotesSection(notes) {
+        const section = this.createElement('div', 'workout-notes');
+        
+        if (notes.energy || notes.intensity) {
+            const ratings = this.createElement('div', 'notes-ratings');
+            
+            if (notes.energy) {
+                ratings.innerHTML += `
+                    <div class="rating-item">
+                        <span>Энергия:</span>
+                        <span class="rating-value">${notes.energy.score}/5</span>
+                    </div>
+                `;
+            }
+            
+            if (notes.intensity) {
+                ratings.innerHTML += `
+                    <div class="rating-item">
+                        <span>Интенсивность:</span>
+                        <span class="rating-value">${notes.intensity.score}/5</span>
+                    </div>
+                `;
+            }
+            
+            section.appendChild(ratings);
+        }
+        
+        if (notes.text?.content) {
+            const textNote = this.createElement('div', 'notes-text');
+            textNote.textContent = notes.text.content;
+            section.appendChild(textNote);
+        }
+        
+        return section;
     }
 
     createExerciseElement(exercise) {

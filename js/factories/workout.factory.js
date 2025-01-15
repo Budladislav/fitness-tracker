@@ -7,7 +7,13 @@ export class WorkoutFactory {
             date: DateFormatter.toStorageFormat(date),
             exercises: exercises,
             created: new Date(),
-            startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            notes: {
+                energy: null,
+                intensity: null,
+                text: null,
+                timestamp: null
+            }
         };
     }
 
@@ -32,6 +38,14 @@ export class WorkoutFactory {
             type: exercise.type,
             reps: set.reps,
             weight: set.weight
+        };
+    }
+
+    static createNote(energy = null, intensity = null, text = null) {
+        return {
+            energy: energy ? { score: energy } : null,
+            intensity: intensity ? { score: intensity } : null,
+            text: text ? { content: text } : null
         };
     }
 }

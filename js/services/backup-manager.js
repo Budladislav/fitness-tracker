@@ -37,7 +37,22 @@ export class BackupManager {
                 }
             }).join('\n');
 
-            return `${dateStr}${timeStr}\n${exercisesStr}\n`;
+            let result = `${dateStr}${timeStr}\n${exercisesStr}\n`;
+            
+            // Добавляем заметки, если они есть
+            if (workout.notes) {
+                if (workout.notes.energy) {
+                    result += `Энергия: ${workout.notes.energy.score}/5\n`;
+                }
+                if (workout.notes.intensity) {
+                    result += `Интенсивность: ${workout.notes.intensity.score}/5\n`;
+                }
+                if (workout.notes.text?.content) {
+                    result += `Заметка: ${workout.notes.text.content}\n`;
+                }
+            }
+            
+            return result;
         }).join('\n');
     }
 
@@ -138,6 +153,25 @@ export class BackupManager {
             const exerciseData = this.parseExerciseLine(line);
             if (exerciseData) {
                 currentWorkout.exercises.push(exerciseData);
+            }
+
+            // Добавим парсинг заметок
+            const noteMatch = line.match(/^(Энергия|Интенсивность): (\d)\/5$/);
+            const textNoteMatch = line.match(/^Заметка: (.+)$/);
+            
+            if (noteMatch) {
+                if (!currentWorkout.notes) currentWorkout.notes = {};
+                const [_, type, score] = noteMatch;
+                if (type === 'Энергия') {
+                    currentWorkout.notes.energy = { score: parseInt(score), timestamp: new Date() };
+                } else {
+                    currentWorkout.notes.intensity = { score: parseInt(score), timestamp: new Date() };
+                }
+            }
+            
+            if (textNoteMatch) {
+                if (!currentWorkout.notes) currentWorkout.notes = {};
+                currentWorkout.notes.text = { content: textNoteMatch[1], timestamp: new Date() };
             }
         }
 

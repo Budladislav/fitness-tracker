@@ -1,5 +1,6 @@
 import { DateFormatter } from '../utils/date-formatter.js';
 import { WorkoutFactory } from '../factories/workout.factory.js';
+import { NotesModal } from '../components/notes-modal.js';
 
 /**
  * Основной класс управления приложением
@@ -15,6 +16,9 @@ export class WorkoutManager {
             this.storage = storage;
             this.ui = ui;
             this.validator = validator;
+            
+            // Передаем зависимости в NotesModal
+            this.notesModal = new NotesModal(notifications, storage);
             
             this.initializeEventListeners();
             
@@ -81,6 +85,37 @@ export class WorkoutManager {
                 );
                 this.storage.saveCurrentWorkout(currentWorkout);
             }
+        });
+
+        // Добавляем обработчик для кнопки заметок
+        document.getElementById('workoutNotes').addEventListener('click', () => {
+            const currentWorkout = this.storage.getCurrentWorkout();
+            
+            if (!currentWorkout) {
+                this.notifications.error('Сначала начните тренировку');
+                return;
+            }
+
+            this.notesModal.show(currentWorkout.notes);
+            
+            // Обработчик сохранения заметок
+            const saveHandler = () => {
+                const notes = this.notesModal.getValues();
+                currentWorkout.notes = notes;
+                this.storage.saveCurrentWorkout(currentWorkout);
+                this.notifications.success('Заметки сохранены');
+            };
+
+            // Добавляем обработчик на кнопку "Сохранить" в модальном окне
+            this.notesModal.modal.querySelector('.save-notes').onclick = () => {
+                saveHandler();
+                this.notesModal.hide();
+            };
+
+            // Добавляем обработчик на кнопку "Отмена"
+            this.notesModal.modal.querySelector('.cancel-notes').onclick = () => {
+                this.notesModal.hide();
+            };
         });
     }
 
