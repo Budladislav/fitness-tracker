@@ -79,9 +79,18 @@ export class WorkoutManager {
             
             if (validatedData) {
                 this.ui.addExerciseToLog(validatedData);
+                const existing = this.storage.getCurrentWorkout();
+                
+                // Создаем новую тренировку, сохраняя существующие данные
                 const currentWorkout = WorkoutFactory.createNewWorkout(
-                    this.storage.getCurrentWorkout().date,
-                    this.ui.getExercisesFromLog()
+                    existing.date,
+                    this.ui.getExercisesFromLog(),
+                    {
+                        id: existing.id,
+                        created: existing.created,
+                        startTime: existing.startTime,
+                        notes: existing.notes
+                    }
                 );
                 this.storage.saveCurrentWorkout(currentWorkout);
             }
@@ -149,13 +158,26 @@ export class WorkoutManager {
             }
 
             const currentWorkout = this.storage.getCurrentWorkout();
+            console.log('Current workout before save:', currentWorkout);
+
             if (!currentWorkout.date) {
                 this.notifications.error('Ошибка: дата тренировки не найдена!');
                 return;
             }
 
-            // Используем фабрику для создания объекта тренировки
-            const workoutToSave = WorkoutFactory.createNewWorkout(currentWorkout.date, exercises);
+            // Передаем все существующие данные в фабрику
+            const workoutToSave = WorkoutFactory.createNewWorkout(
+                currentWorkout.date,
+                exercises,
+                {
+                    id: currentWorkout.id,
+                    created: currentWorkout.created,
+                    startTime: currentWorkout.startTime,
+                    notes: currentWorkout.notes // Явно передаем заметки
+                }
+            );
+            
+            console.log('Workout to save:', workoutToSave);
 
             if (!this.storage.saveWorkoutToHistory(workoutToSave)) {
                 this.notifications.error('Не удалось сохранить тренировку');

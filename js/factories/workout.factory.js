@@ -1,14 +1,22 @@
 import { DateFormatter } from '../utils/date-formatter.js';
 
 export class WorkoutFactory {
-    static createNewWorkout(date, exercises = []) {
+    /**
+     * Создает новую тренировку
+     * @param {string} date - Дата тренировки
+     * @param {Array} exercises - Массив упражнений
+     * @param {Object} options - Дополнительные параметры (notes, id и т.д.)
+     */
+    static createNewWorkout(date, exercises = [], options = {}) {
+        const now = new Date();
+        
         return {
-            id: Date.now(),
-            date: DateFormatter.toStorageFormat(date),
+            id: options.id || Date.now(),
+            date: date,
             exercises: exercises,
-            created: new Date(),
-            startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            notes: {
+            created: options.created || now.toISOString(),
+            startTime: options.startTime || `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`,
+            notes: options.notes || {
                 energy: null,
                 intensity: null,
                 text: null,
