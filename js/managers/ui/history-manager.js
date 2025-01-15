@@ -231,16 +231,29 @@ export class HistoryManager extends BaseComponent {
     }
 
     createEmptyNotesSection(workoutId) {
-        const section = this.createElement('div', 'workout-notes empty editable');
+        const section = this.createElement('div', 'workout-notes editable');
         section.dataset.workoutId = workoutId;
         section.addEventListener('click', () => this.handleNotesEdit(workoutId, {}));
         return section;
     }
 
     createNotesSection(notes, workoutId) {
-        const section = this.createElement('div', 'workout-notes');
+        const section = this.createElement('div', 'workout-notes editable');
         section.dataset.workoutId = workoutId;
         
+        // Проверяем, есть ли какой-то контент
+        const hasContent = notes.energy?.score || notes.intensity?.score || notes.text?.content;
+        
+        if (!hasContent) {
+            // Если контента нет, добавляем текст-подсказку
+            const hintText = this.createElement('span', 'notes-hint');
+            hintText.textContent = 'Добавить заметку';
+            section.appendChild(hintText);
+            section.addEventListener('click', () => this.handleNotesEdit(workoutId, {}));
+            return section;
+        }
+        
+        // Если есть контент, добавляем его
         if (notes.energy?.score || notes.intensity?.score) {
             const ratings = this.createElement('div', 'notes-ratings');
             

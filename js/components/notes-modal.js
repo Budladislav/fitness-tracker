@@ -205,42 +205,4 @@ export class NotesModal extends BaseComponent {
             resetBtn.classList.remove('active');
         }
     }
-
-    createDetailsSection(workout) {
-        const details = this.createElement('div', 'workout-details');
-        
-        // Добавляем упражнения
-        const exercises = this.createElement('div', 'workout-exercises');
-        if (workout.exercises && Array.isArray(workout.exercises)) {
-            const exerciseTable = this.createElement('table', 'exercise-table');
-            // ... существующий код для таблицы упражнений ...
-            exercises.appendChild(exerciseTable);
-        }
-        details.appendChild(exercises);
-        
-        // Секция для заметок (новая логика)
-        const notesSection = workout.notes 
-            ? this.createNotesSection(workout.notes, workout.id)
-            : this.createEmptyNotesSection(workout.id);
-        
-        details.appendChild(notesSection);
-        
-        return details;
-    }
-
-    createEmptyNotesSection(workoutId) {
-        const section = this.createElement('div', 'workout-notes empty');
-        section.dataset.workoutId = workoutId;
-        
-        const emptyState = this.createElement('div', 'notes-empty-state');
-        emptyState.innerHTML = `
-            <span class="add-notes-text">Добавить заметку</span>
-            <button class="add-notes-btn">+</button>
-        `;
-        
-        section.appendChild(emptyState);
-        section.addEventListener('click', () => this.handleNotesEdit(workoutId, {}));
-        
-        return section;
-    }
 } 

@@ -51,7 +51,6 @@
 .exercise-table th {
     font-weight: normal;
     border-bottom: 2px solid var(--border-color);
-    background: var(--background-color);
     font-size: 0.7em;
     font-weight: 600;
     color: var(--text-secondary);
@@ -182,21 +181,13 @@
     background-color: var(--card-hover-background);
 }
 
-.workout-notes.empty {
+/* Стили для пустой заметки с текстом-подсказкой */
+.notes-hint {
+    color: var(--text-color-secondary);
+    font-size: var(--font-size-sm);
+    opacity: 0.7;
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding: var(--spacing-xs);
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius);
-    margin-top: var(--spacing-md);
-    cursor: pointer;
-    transition: all 0.2s;
-    background: transparent;
-    min-height: 40px;
-}
-
-.workout-notes.empty:hover {
-    background: var(--card-hover-background);
-    border-color: var(--text-color-secondary);
+    align-items: center;
+    width: 100%;
 }
