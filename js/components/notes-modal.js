@@ -97,6 +97,7 @@ export class NotesModal extends BaseComponent {
 
     hide() {
         this.modal.classList.add('hidden');
+        this.resetValues();
     }
 
     getValues() {
@@ -132,19 +133,22 @@ export class NotesModal extends BaseComponent {
     }
 
     showRatingInfo(ratingType) {
-        const descriptions = NOTES_CONFIG.ratings[ratingType].description;
+        const ratingConfig = NOTES_CONFIG.ratings[ratingType];
+        const descriptions = ratingConfig.description;
         const content = Object.entries(descriptions)
             .map(([score, desc]) => `<p><strong>${score}:</strong> ${desc}</p>`)
             .join('');
             
-        // Создаем и добавляем информационное окно
         const infoModal = document.createElement('div');
         infoModal.className = 'rating-info-modal';
         infoModal.innerHTML = `
             <div class="rating-info-content">
                 <div class="rating-info-header">
-                    <h4>${NOTES_CONFIG.ratings[ratingType].title}</h4>
+                    <h4>${ratingConfig.title}</h4>
                     <button class="delete-btn" title="Закрыть">×</button>
+                </div>
+                <div class="rating-info-description">
+                    ${ratingConfig.shortDescription}
                 </div>
                 <div class="rating-info-body">
                     ${content}
@@ -162,5 +166,20 @@ export class NotesModal extends BaseComponent {
         });
 
         document.body.appendChild(infoModal);
+    }
+
+    resetValues() {
+        // Сброс слайдеров
+        const sliders = this.modal.querySelectorAll('.rating-slider');
+        sliders.forEach(slider => {
+            slider.value = 3;
+            // Обновляем отображаемое значение
+            const group = slider.closest('.rating-group');
+            const valueDisplay = group.querySelector('.rating-value');
+            valueDisplay.textContent = '3';
+        });
+
+        // Очистка текстового поля
+        this.modal.querySelector('textarea').value = '';
     }
 } 
