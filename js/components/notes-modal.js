@@ -9,79 +9,75 @@ export class NotesModal extends BaseComponent {
     }
 
     createModal() {
-        const modal = this.createElement('div', 'notes-modal hidden');
+        const modal = document.createElement('div');
+        modal.className = 'modal notes-modal hidden';
         modal.innerHTML = `
-            <div class="notes-modal-content">
-                <div class="notes-modal-header">
-                    <h3 class="modal-title">Заметки</h3>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Заметки к тренировке</h3>
                     <button class="delete-btn" title="Закрыть">×</button>
                 </div>
-                <div class="notes-ratings">
-                    <div class="rating-group">
-                        <div class="rating-header">
-                            <div class="rating-title">
-                                <div class="rating-label-wrapper">
+                <div class="modal-body">
+                    <div class="ratings-section">
+                        <div class="rating-group">
+                            <div class="rating-header">
+                                <div class="rating-title">
                                     <label>${NOTES_CONFIG.ratings.energy.title}</label>
-                                    <span class="rating-value">3</span>
+                                    <span class="rating-value">-</span>
                                 </div>
                                 <button class="info-btn" data-rating="energy">?</button>
                             </div>
+                            <input type="range" class="rating-slider" id="energyRating" 
+                                   min="1" max="5" value="3" data-touched="false">
                         </div>
-                        <input type="range" class="rating-slider" id="energyRating" 
-                               min="1" max="5" value="3">
-                    </div>
-                    <div class="rating-group">
-                        <div class="rating-header">
-                            <div class="rating-title">
-                                <div class="rating-label-wrapper">
+                        <div class="rating-group">
+                            <div class="rating-header">
+                                <div class="rating-title">
                                     <label>${NOTES_CONFIG.ratings.intensity.title}</label>
-                                    <span class="rating-value">3</span>
+                                    <span class="rating-value">-</span>
                                 </div>
                                 <button class="info-btn" data-rating="intensity">?</button>
                             </div>
+                            <input type="range" class="rating-slider" id="intensityRating" 
+                                   min="1" max="5" value="">
                         </div>
-                        <input type="range" class="rating-slider" id="intensityRating" 
-                               min="1" max="5" value="3">
                     </div>
-                </div>
-                <div class="notes-text">
-                    <textarea placeholder="Добавьте заметку к тренировке..."></textarea>
-                </div>
-                <div class="notes-actions">
-                    <button class="btn save-notes">Сохранить</button>
+                    <div class="notes-text">
+                        <textarea placeholder="Добавьте заметку к тренировке..."></textarea>
+                    </div>
+                    <div class="notes-actions">
+                        <button class="btn save-notes">Сохранить</button>
+                    </div>
                 </div>
             </div>
         `;
-
+        
         this.setupModalListeners(modal);
         return modal;
     }
 
     setupModalListeners(modal) {
-        // Закрытие по клику на крестик
-        modal.querySelector('.delete-btn').addEventListener('click', () => this.hide());
-        
-        // Закрытие по клику вне модального окна
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) this.hide();
-        });
+        // Обработчик закрытия
+        modal.querySelector('.delete-btn').onclick = () => this.hide();
 
-        // Обновляем обработчик слайдеров
-        modal.querySelectorAll('.rating-slider').forEach(slider => {
+        // Обработчики для слайдеров
+        const sliders = modal.querySelectorAll('.rating-slider');
+        sliders.forEach(slider => {
             slider.addEventListener('input', (e) => {
-                // Находим значение в той же группе, что и слайдер
                 const group = e.target.closest('.rating-group');
-                const valueEl = group.querySelector('.rating-value');
-                valueEl.textContent = e.target.value;
+                const valueDisplay = group.querySelector('.rating-value');
+                e.target.dataset.touched = 'true'; // Помечаем слайдер как использованный
+                valueDisplay.textContent = `${e.target.value}/5`;
             });
         });
 
-        // Обработка информационных кнопок
-        modal.querySelectorAll('.info-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const ratingType = e.target.dataset.rating;
+        // Обработчики для кнопок информации
+        const infoButtons = modal.querySelectorAll('.info-btn');
+        infoButtons.forEach(button => {
+            button.onclick = () => {
+                const ratingType = button.dataset.rating;
                 this.showRatingInfo(ratingType);
-            });
+            };
         });
     }
 
@@ -98,10 +94,14 @@ export class NotesModal extends BaseComponent {
     }
 
     getValues() {
+        const energySlider = this.modal.querySelector('#energyRating');
+        const intensitySlider = this.modal.querySelector('#intensityRating');
+        const textArea = this.modal.querySelector('textarea');
+
         return {
-            energy: { score: parseInt(this.modal.querySelector('#energyRating').value) },
-            intensity: { score: parseInt(this.modal.querySelector('#intensityRating').value) },
-            text: { content: this.modal.querySelector('textarea').value.trim() }
+            energy: energySlider.dataset.touched === 'true' ? { score: parseInt(energySlider.value) } : null,
+            intensity: intensitySlider.dataset.touched === 'true' ? { score: parseInt(intensitySlider.value) } : null,
+            text: textArea.value.trim() ? { content: textArea.value.trim() } : null
         };
     }
 
@@ -166,17 +166,15 @@ export class NotesModal extends BaseComponent {
     }
 
     resetValues() {
-        // Сброс слайдеров
         const sliders = this.modal.querySelectorAll('.rating-slider');
         sliders.forEach(slider => {
             slider.value = 3;
-            // Обновляем отображаемое значение
+            slider.dataset.touched = 'false'; // Сбрасываем флаг использования
             const group = slider.closest('.rating-group');
             const valueDisplay = group.querySelector('.rating-value');
-            valueDisplay.textContent = '3';
+            valueDisplay.textContent = '-';
         });
 
-        // Очистка текстового поля
         this.modal.querySelector('textarea').value = '';
     }
 } 

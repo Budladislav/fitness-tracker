@@ -19,6 +19,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 0;
 }
 
 .workout-exercises div {
@@ -36,7 +37,7 @@
     table-layout: fixed;
     background-color: white;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    box-shadow: none;
 }
 
 .exercise-table th,
@@ -140,20 +141,24 @@
 -------------------------------------------------- */
 .workout-notes {
     background: var(--card-background);
-    border-radius: var(--border-radius);
-    border-top: 1px solid var(--border-color);
-    padding-top: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .notes-ratings {
     display: flex;
     gap: var(--spacing-md);
+    justify-content: center;
 }
 
 .rating-item {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
+    min-width: 140px;
+    justify-content: center;
 }
 
 .rating-value {
@@ -166,4 +171,4 @@
     font-size: var(--font-size-sm);
     line-height: 1.4;
     margin-top: var(--spacing-xs);
-}   
+}

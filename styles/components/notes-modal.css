@@ -15,7 +15,7 @@
     display: none;
 }
 
-.notes-modal-content {
+.modal-content {
     background: var(--background-color);
     padding: var(--spacing-md);
     border-radius: var(--border-radius);
@@ -24,7 +24,7 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.notes-modal-header {
+.modal-header {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -32,19 +32,19 @@
     margin-bottom: var(--spacing-md);
 }
 
-.notes-modal-header h3 {
+.modal-header h3 {
     margin: 0;
     text-align: center;
 }
 
-.notes-modal-header .delete-btn {
+.modal-header .delete-btn {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
 }
 
-.notes-ratings {
+.ratings-section {
     display: flex;
     flex-direction: row;
     gap: var(--spacing-md);
@@ -156,8 +156,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-    margin-bottom: var(--spacing-xs);
+    flex: 1;
 }
 
 .rating-label-wrapper {
