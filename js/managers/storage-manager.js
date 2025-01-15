@@ -112,11 +112,12 @@ export class WorkoutStorage {
     getWorkoutHistory() {
         const workouts = this.getFromStorage('exercises') || [];
         
-        // Преобразуем даты при чтении
+        // Преобразуем даты при чтении и добавляем пустой объект notes, если его нет
         return workouts.map(workout => ({
             ...workout,
             displayDate: DateFormatter.formatWorkoutDate(workout.date),
-            startTime: workout.startTime || '' // Добавляем время старта, если оно есть
+            startTime: workout.startTime || '', // Добавляем время старта, если оно есть
+            notes: workout.notes || {} // Добавляем пустой объект notes, если его нет
         }));
     }
 
