@@ -26,13 +26,23 @@
 
 .notes-modal .modal-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    position: relative;
     margin-bottom: var(--spacing-md);
 }
 
 .notes-modal .modal-header h3 {
     margin: 0;
+    text-align: center;
+    flex: 1;
+}
+
+.notes-modal .modal-header .delete-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .notes-modal .rating-group {
@@ -69,7 +79,9 @@
     border: none;
     background: none;
     color: var(--text-color);
-    opacity: 0.6;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
     cursor: pointer;
     padding: 0;
     margin: 0;
@@ -81,6 +93,11 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
+}
+
+.notes-modal .reset-rating-btn.active {
+    opacity: 0.6;
+    visibility: visible;
 }
 
 .notes-modal .reset-rating-btn:hover {

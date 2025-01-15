@@ -67,9 +67,7 @@ export class NotesModal extends BaseComponent {
         sliders.forEach(slider => {
             slider.addEventListener('input', (e) => {
                 const group = e.target.closest('.rating-group');
-                const valueDisplay = group.querySelector('.rating-value');
-                e.target.dataset.touched = 'true'; // Помечаем слайдер как использованный
-                valueDisplay.textContent = `${e.target.value}/5`;
+                this.updateRatingDisplay(group, e.target.value);
             });
         });
 
@@ -82,7 +80,7 @@ export class NotesModal extends BaseComponent {
             };
         });
 
-        // Добавляем обработчики для кнопок сброса
+        // Обработчики для кнопок сброса
         const resetButtons = modal.querySelectorAll('.reset-rating-btn');
         resetButtons.forEach(button => {
             button.addEventListener('click', (e) => {
@@ -90,11 +88,10 @@ export class NotesModal extends BaseComponent {
                 const targetId = button.dataset.target;
                 const slider = modal.querySelector(`#${targetId}`);
                 const group = slider.closest('.rating-group');
-                const valueDisplay = group.querySelector('.rating-value');
                 
                 slider.value = '';
                 slider.dataset.touched = 'false';
-                valueDisplay.textContent = '-';
+                this.updateRatingDisplay(group, null);
             });
         });
     }
@@ -124,27 +121,20 @@ export class NotesModal extends BaseComponent {
     }
 
     setValues(notes) {
-        // Сохраняем текущие значения в состоянии модального окна
         this.currentNotes = notes;
 
         if (notes.energy?.score) {
             const energyGroup = this.modal.querySelector('#energyRating').closest('.rating-group');
             const energySlider = energyGroup.querySelector('.rating-slider');
-            const energyValue = energyGroup.querySelector('.rating-value');
-            
             energySlider.value = notes.energy.score;
-            energySlider.dataset.touched = 'true'; // Помечаем как использованный
-            energyValue.textContent = `${notes.energy.score}/5`;
+            this.updateRatingDisplay(energyGroup, notes.energy.score);
         }
         
         if (notes.intensity?.score) {
             const intensityGroup = this.modal.querySelector('#intensityRating').closest('.rating-group');
             const intensitySlider = intensityGroup.querySelector('.rating-slider');
-            const intensityValue = intensityGroup.querySelector('.rating-value');
-            
             intensitySlider.value = notes.intensity.score;
-            intensitySlider.dataset.touched = 'true'; // Помечаем как использованный
-            intensityValue.textContent = `${notes.intensity.score}/5`;
+            this.updateRatingDisplay(intensityGroup, notes.intensity.score);
         }
         
         if (notes.text?.content) {
@@ -189,16 +179,30 @@ export class NotesModal extends BaseComponent {
     }
 
     resetValues() {
-        this.currentNotes = null; // Сбрасываем текущие заметки
-        const sliders = this.modal.querySelectorAll('.rating-slider');
-        sliders.forEach(slider => {
+        this.currentNotes = null;
+        const groups = this.modal.querySelectorAll('.rating-group');
+        groups.forEach(group => {
+            const slider = group.querySelector('.rating-slider');
             slider.value = 3;
-            slider.dataset.touched = 'false';
-            const group = slider.closest('.rating-group');
-            const valueDisplay = group.querySelector('.rating-value');
-            valueDisplay.textContent = '-';
+            this.updateRatingDisplay(group, null);
         });
 
         this.modal.querySelector('textarea').value = '';
+    }
+
+    updateRatingDisplay(group, value) {
+        const valueDisplay = group.querySelector('.rating-value');
+        const resetBtn = group.querySelector('.reset-rating-btn');
+        const slider = group.querySelector('.rating-slider');
+        
+        if (value) {
+            valueDisplay.textContent = `${value}/5`;
+            slider.dataset.touched = 'true';
+            resetBtn.classList.add('active');
+        } else {
+            valueDisplay.textContent = '-';
+            slider.dataset.touched = 'false';
+            resetBtn.classList.remove('active');
+        }
     }
 } 
