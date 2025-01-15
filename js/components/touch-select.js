@@ -4,7 +4,7 @@ export class TouchSelect {
         this.touchStartTime = 0;
         this.touchStartY = 0;
         this.isScrolling = false;
-        this.longPressDelay = 200; // 200ms для определения долгого нажатия
+        this.longPressDelay = 100; // 100ms для определения долгого нажатия
         this.optionHeight = 40; // Примерная высота option в пикселях
         
         this.createPreviewElement();
@@ -52,15 +52,16 @@ export class TouchSelect {
         this.touchStartTime = Date.now();
         this.touchStartY = e.touches[0].clientY;
         this.currentIndex = this.select.selectedIndex;
+
+        // Добавляем таймер для показа превью
+        this.previewTimer = setTimeout(() => {
+            this.isScrolling = true;
+            this.showPreview();
+        }, this.longPressDelay);
     }
 
     handleTouchMove(e) {
-        if (Date.now() - this.touchStartTime > this.longPressDelay) {
-            if (!this.isScrolling) {
-                this.showPreview();
-            }
-            
-            this.isScrolling = true;
+        if (this.isScrolling) {
             e.preventDefault();
 
             const touch = e.touches[0];
@@ -78,6 +79,9 @@ export class TouchSelect {
     }
 
     handleTouchEnd(e) {
+        // Очищаем таймер
+        clearTimeout(this.previewTimer);
+        
         if (this.isScrolling) {
             e.preventDefault();
             const event = new Event('change', { bubbles: true });
