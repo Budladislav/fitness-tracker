@@ -59,31 +59,77 @@ export class BackupManager {
     async createBackup() {
         try {
             const workouts = this.storage.getWorkoutHistory();
-            const backupText = this.workoutsToText(workouts);
-            
-            // Форматируем текущую дату и время для имени файла
-            const now = new Date();
-            const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}`;
-            const timeStr = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
-            
-            const handle = await window.showSaveFilePicker({
-                suggestedName: `workout_backup_${dateStr}_${timeStr}.txt`,
-                types: [{
-                    description: 'Text Files',
-                    accept: {'text/plain': ['.txt']},
-                }],
+            if (workouts.length === 0) {
+                this.notifications.warning('История тренировок пуста');
+                return;
+            }
+
+            let result = '';
+            workouts.forEach(workout => {
+                result += `=== Тренировка ${workout.date} ===\n`;
+                if (workout.startTime) {
+                    result += `Время начала: ${workout.startTime}\n`;
+                }
+                
+                result += '\nУпражнения:\n';
+                workout.exercises.forEach(exercise => {
+                    result += `${exercise.name}:\n`;
+                    exercise.sets.forEach(set => {
+                        result += `- ${set.reps} повторений${set.weight ? ` × ${set.weight}кг` : ''}\n`;
+                    });
+                    result += '\n';
+                });
+
+                // Добавляем заметки, если они есть
+                if (workout.notes) {
+                    if (workout.notes.energy) {
+                        result += `Энергия: ${workout.notes.energy.score}/5\n`;
+                    }
+                    if (workout.notes.intensity) {
+                        result += `Интенсивность: ${workout.notes.intensity.score}/5\n`;
+                    }
+                    if (workout.notes.text?.content) {
+                        result += `Заметка: ${workout.notes.text.content}\n`;
+                    }
+                }
+                
+                result += '\n';
             });
 
-            const writable = await handle.createWritable();
-            await writable.write(backupText);
-            await writable.close();
+            const dateStr = new Date().toISOString().split('T')[0];
+            const timeStr = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+            const fileName = `workout_backup_${dateStr}_${timeStr}.txt`;
 
-            this.notifications.show('Резервная копия создана', 'success');
-            return true;
+            // Проверяем поддержку File System Access API
+            if ('showSaveFilePicker' in window) {
+                // Десктопный вариант
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: fileName,
+                    types: [{
+                        description: 'Text Files',
+                        accept: {'text/plain': ['.txt']},
+                    }],
+                });
+                const writable = await handle.createWritable();
+                await writable.write(result);
+                await writable.close();
+            } else {
+                // Мобильный fallback
+                const blob = new Blob([result], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            this.notifications.success('Резервная копия создана');
         } catch (error) {
-            console.error('Backup failed:', error);
-            this.notifications.show('Ошибка создания резервной копии', 'error');
-            return false;
+            console.error('Error creating backup:', error);
+            this.notifications.error('Ошибка при создании резервной копии');
         }
     }
 
