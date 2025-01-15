@@ -120,11 +120,6 @@ export class WorkoutManager {
                 saveHandler();
                 this.notesModal.hide();
             };
-
-            // Добавляем обработчик на кнопку "Отмена"
-            this.notesModal.modal.querySelector('.cancel-notes').onclick = () => {
-                this.notesModal.hide();
-            };
         });
     }
 

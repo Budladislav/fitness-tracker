@@ -22,21 +22,29 @@ export class NotesModal extends BaseComponent {
                 <div class="notes-ratings">
                     <div class="rating-group">
                         <div class="rating-header">
-                            <label>${NOTES_CONFIG.ratings.energy.title}</label>
-                            <button class="info-btn" data-rating="energy">?</button>
+                            <div class="rating-title">
+                                <div class="rating-label-wrapper">
+                                    <label>${NOTES_CONFIG.ratings.energy.title}</label>
+                                    <span class="rating-value">3</span>
+                                </div>
+                                <button class="info-btn" data-rating="energy">?</button>
+                            </div>
                         </div>
                         <input type="range" class="rating-slider" id="energyRating" 
                                min="1" max="5" value="3">
-                        <div class="rating-value">3</div>
                     </div>
                     <div class="rating-group">
                         <div class="rating-header">
-                            <label>${NOTES_CONFIG.ratings.intensity.title}</label>
-                            <button class="info-btn" data-rating="intensity">?</button>
+                            <div class="rating-title">
+                                <div class="rating-label-wrapper">
+                                    <label>${NOTES_CONFIG.ratings.intensity.title}</label>
+                                    <span class="rating-value">3</span>
+                                </div>
+                                <button class="info-btn" data-rating="intensity">?</button>
+                            </div>
                         </div>
                         <input type="range" class="rating-slider" id="intensityRating" 
                                min="1" max="5" value="3">
-                        <div class="rating-value">3</div>
                     </div>
                 </div>
                 <div class="notes-text">
@@ -44,7 +52,6 @@ export class NotesModal extends BaseComponent {
                 </div>
                 <div class="notes-actions">
                     <button class="btn save-notes">Сохранить</button>
-                    <button class="btn cancel-notes">Отмена</button>
                 </div>
             </div>
         `;
@@ -62,10 +69,13 @@ export class NotesModal extends BaseComponent {
             if (e.target === modal) this.hide();
         });
 
-        // Обработка слайдеров
+        // Обновляем обработчик слайдеров
         modal.querySelectorAll('.rating-slider').forEach(slider => {
             slider.addEventListener('input', (e) => {
-                e.target.nextElementSibling.textContent = e.target.value;
+                // Находим значение в той же группе, что и слайдер
+                const group = e.target.closest('.rating-group');
+                const valueEl = group.querySelector('.rating-value');
+                valueEl.textContent = e.target.value;
             });
         });
 
@@ -99,15 +109,23 @@ export class NotesModal extends BaseComponent {
 
     setValues(notes) {
         if (notes.energy) {
-            const energySlider = this.modal.querySelector('#energyRating');
+            const energyGroup = this.modal.querySelector('#energyRating').closest('.rating-group');
+            const energySlider = energyGroup.querySelector('.rating-slider');
+            const energyValue = energyGroup.querySelector('.rating-value');
+            
             energySlider.value = notes.energy.score;
-            energySlider.nextElementSibling.textContent = notes.energy.score;
+            energyValue.textContent = notes.energy.score;
         }
+        
         if (notes.intensity) {
-            const intensitySlider = this.modal.querySelector('#intensityRating');
+            const intensityGroup = this.modal.querySelector('#intensityRating').closest('.rating-group');
+            const intensitySlider = intensityGroup.querySelector('.rating-slider');
+            const intensityValue = intensityGroup.querySelector('.rating-value');
+            
             intensitySlider.value = notes.intensity.score;
-            intensitySlider.nextElementSibling.textContent = notes.intensity.score;
+            intensityValue.textContent = notes.intensity.score;
         }
+        
         if (notes.text) {
             this.modal.querySelector('textarea').value = notes.text.content;
         }
@@ -119,8 +137,30 @@ export class NotesModal extends BaseComponent {
             .map(([score, desc]) => `<p><strong>${score}:</strong> ${desc}</p>`)
             .join('');
             
-        // Здесь можно использовать существующий NotificationManager 
-        // или создать отдельное модальное окно для информации
-        alert(content); // Временное решение
+        // Создаем и добавляем информационное окно
+        const infoModal = document.createElement('div');
+        infoModal.className = 'rating-info-modal';
+        infoModal.innerHTML = `
+            <div class="rating-info-content">
+                <div class="rating-info-header">
+                    <h4>${NOTES_CONFIG.ratings[ratingType].title}</h4>
+                    <button class="delete-btn" title="Закрыть">×</button>
+                </div>
+                <div class="rating-info-body">
+                    ${content}
+                </div>
+            </div>
+        `;
+
+        // Добавляем обработчики
+        const closeBtn = infoModal.querySelector('.delete-btn');
+        closeBtn.addEventListener('click', () => infoModal.remove());
+
+        // Закрытие по клику вне окна
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal) infoModal.remove();
+        });
+
+        document.body.appendChild(infoModal);
     }
 } 
