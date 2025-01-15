@@ -220,22 +220,24 @@ export class HistoryManager extends BaseComponent {
 
         details.appendChild(exercises);
         
-        // Затем добавляем секцию заметок, если они есть
-        if (workout.notes) {
-            const notesSection = this.createNotesSection(workout.notes, workout.id);
-            if (notesSection) {
-                details.appendChild(notesSection);
-            }
-        }
+        // Добавляем секцию заметок (существующие или пустые)
+        const notesSection = workout.notes 
+            ? this.createNotesSection(workout.notes, workout.id)
+            : this.createEmptyNotesSection(workout.id);
+        
+        details.appendChild(notesSection);
         
         return details;
     }
 
-    createNotesSection(notes, workoutId) {
-        if (!notes.energy?.score && !notes.intensity?.score && !notes.text?.content) {
-            return null;
-        }
+    createEmptyNotesSection(workoutId) {
+        const section = this.createElement('div', 'workout-notes empty editable');
+        section.dataset.workoutId = workoutId;
+        section.addEventListener('click', () => this.handleNotesEdit(workoutId, {}));
+        return section;
+    }
 
+    createNotesSection(notes, workoutId) {
         const section = this.createElement('div', 'workout-notes');
         section.dataset.workoutId = workoutId;
         

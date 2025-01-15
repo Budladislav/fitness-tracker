@@ -181,3 +181,22 @@
 .workout-notes.editable:hover {
     background-color: var(--card-hover-background);
 }
+
+.workout-notes.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xs);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    min-height: 40px;
+}
+
+.workout-notes.empty:hover {
+    background: var(--card-hover-background);
+    border-color: var(--text-color-secondary);
+}
