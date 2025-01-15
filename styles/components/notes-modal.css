@@ -15,7 +15,7 @@
     display: none;
 }
 
-.modal-content {
+.notes-modal .modal-content {
     background: var(--background-color);
     padding: var(--spacing-md);
     border-radius: var(--border-radius);
@@ -24,27 +24,71 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.modal-header {
+.notes-modal .modal-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    position: relative;
     margin-bottom: var(--spacing-md);
 }
 
-.modal-header h3 {
+.notes-modal .modal-header h3 {
     margin: 0;
+}
+
+.notes-modal .rating-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.notes-modal .rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.notes-modal .rating-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.notes-modal .rating-title label {
+    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
+.notes-modal .rating-value {
+    min-width: 2em;
     text-align: center;
+    color: var(--text-color-secondary);
 }
 
-.modal-header .delete-btn {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+.notes-modal .reset-rating-btn {
+    border: none;
+    background: none;
+    color: var(--text-color);
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-size: 1.2em;
+    line-height: 1;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
 }
 
-.ratings-section {
+.notes-modal .reset-rating-btn:hover {
+    opacity: 1;
+    color: var(--error-color);
+}
+
+.notes-ratings {
     display: flex;
     flex-direction: row;
     gap: var(--spacing-md);
@@ -113,7 +157,6 @@
     padding: var(--spacing-sm);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    margin-bottom: var(--spacing-md);
     resize: vertical;
     box-sizing: border-box;
 }
@@ -149,14 +192,14 @@
 .rating-value {
     font-size: var(--font-size-sm);
     color: var(--text-color-secondary);
-    margin-top: 2px;
 }
 
 .rating-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex: 1;
+    width: 100%;
+    margin-bottom: var(--spacing-xs);
 }
 
 .rating-label-wrapper {

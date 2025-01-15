@@ -24,6 +24,7 @@ export class NotesModal extends BaseComponent {
                                 <div class="rating-title">
                                     <label>${NOTES_CONFIG.ratings.energy.title}</label>
                                     <span class="rating-value">-</span>
+                                    <button class="reset-rating-btn" data-target="energyRating" title="Сбросить оценку">×</button>
                                 </div>
                                 <button class="info-btn" data-rating="energy">?</button>
                             </div>
@@ -35,6 +36,7 @@ export class NotesModal extends BaseComponent {
                                 <div class="rating-title">
                                     <label>${NOTES_CONFIG.ratings.intensity.title}</label>
                                     <span class="rating-value">-</span>
+                                    <button class="reset-rating-btn" data-target="intensityRating" title="Сбросить оценку">×</button>
                                 </div>
                                 <button class="info-btn" data-rating="intensity">?</button>
                             </div>
@@ -78,6 +80,22 @@ export class NotesModal extends BaseComponent {
                 const ratingType = button.dataset.rating;
                 this.showRatingInfo(ratingType);
             };
+        });
+
+        // Добавляем обработчики для кнопок сброса
+        const resetButtons = modal.querySelectorAll('.reset-rating-btn');
+        resetButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const targetId = button.dataset.target;
+                const slider = modal.querySelector(`#${targetId}`);
+                const group = slider.closest('.rating-group');
+                const valueDisplay = group.querySelector('.rating-value');
+                
+                slider.value = '';
+                slider.dataset.touched = 'false';
+                valueDisplay.textContent = '-';
+            });
         });
     }
 
