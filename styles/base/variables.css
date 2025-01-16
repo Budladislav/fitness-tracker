@@ -45,4 +45,9 @@
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
     --shadow: 0 2px 4px rgba(0,0,0,0.1);
     --transition: all 0.3s ease;
+
+     /* RGB значения для прозрачности */
+     --primary-rgb: 33, 150, 243;    /* голубой */
+     --secondary-rgb: 76, 175, 80;   /* зеленый */
+     --accent-rgb: 255, 152, 0;      /* оранжевый */
 }

@@ -73,7 +73,8 @@
 
 /* Workout Entry */
 .workout-entry {
-    margin: var(--spacing-sm) 0;
+    margin: var(--spacing-md) 32px; /* Увеличиваем боковые отступы */
+    position: relative;
 }
 
 .summary-table {
@@ -210,4 +211,50 @@
 /* Добавим отступ для контента, чтобы он не уходил под фиксированные кнопки */
 .content-container {
     padding-bottom: calc(var(--spacing-xl) + 40px); /* 40px - примерная высота backup-controls */
+    position: relative;
+}
+
+/* Group Highlights
+-------------------------------------------------- */
+.year-group,
+.month-group,
+.week-group {
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+    border: 2px solid;
+    margin: -2px;
+    width: calc(100% - 32px); /* Увеличиваем ширину */
+    box-sizing: border-box;
+}
+
+.year-group {
+    left: 16px;
+    border-color: rgba(var(--primary-rgb), 0.2);
+    background: rgba(var(--primary-rgb), 0.03);
+}
+
+.month-group {
+    left: 20px;
+    border-color: rgba(var(--secondary-rgb), 0.2);
+    background: rgba(var(--secondary-rgb), 0.03);
+}
+
+.week-group {
+    left: 24px;
+    border-color: rgba(var(--accent-rgb), 0.2);
+    background: rgba(var(--accent-rgb), 0.03);
+}
+
+.group-label {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    background: white;
+    padding: 0 8px;
+    white-space: nowrap;
+    border-radius: 10px;
+    z-index: 1;
 }

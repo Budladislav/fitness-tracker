@@ -4,6 +4,7 @@ import { DateFormatter } from '../../utils/date-formatter.js';
 import { ExerciseCalculatorService } from '../../services/exercise-calculator.service.js';
 import { BackupManager } from '../../services/backup-manager.js';
 import { NotesModal } from '../../components/notes-modal.js';
+import { DateGrouping } from '../../utils/date-grouping.js';
 
 export class HistoryManager extends BaseComponent {
     /**
@@ -68,6 +69,9 @@ export class HistoryManager extends BaseComponent {
                 }
             });
 
+            // Добавляем группы после отрисовки тренировок
+            this.updateGroupHighlights();
+
             // Добавляем контролы бэкапа после истории
             this.setupBackupControls();
             this.elements.historyContainer.appendChild(this.elements.backupControls);
@@ -76,9 +80,73 @@ export class HistoryManager extends BaseComponent {
         }
     }
 
+    updateGroupHighlights() {
+        // Удаляем существующие группы
+        document.querySelectorAll('.year-group, .month-group, .week-group').forEach(el => el.remove());
+        
+        const workouts = this.storage.getWorkoutHistory();
+        if (!workouts.length) return;
+
+        // Получаем группы
+        const yearGroups = DateGrouping.getYearBoundaries(workouts);
+        const monthGroups = DateGrouping.getMonthBoundaries(workouts);
+        const weekGroups = DateGrouping.getWeekBoundaries(workouts);
+
+        // Создаем и позиционируем группы
+        this.createGroupHighlights(yearGroups, 'year');
+        this.createGroupHighlights(monthGroups, 'month');
+        this.createGroupHighlights(weekGroups, 'week');
+    }
+
+    createGroupHighlights(groups, type) {
+        groups.forEach(group => {
+            // Находим первую и последнюю тренировку группы в DOM
+            const firstWorkout = document.querySelector(`[data-date="${group.firstDate}"]`);
+            const lastWorkout = document.querySelector(`[data-date="${group.lastDate}"]`);
+            
+            if (!firstWorkout || !lastWorkout) return;
+
+            // Создаем элемент группы
+            const groupEl = this.createElement('div', `${type}-group`);
+            
+            // Создаем подпись
+            const label = this.createElement('div', 'group-label');
+            
+            // Формируем текст подписи
+            switch(type) {
+                case 'year':
+                    label.textContent = `${group.year} год, ${group.count} тр.`;
+                    break;
+                case 'month':
+                    label.textContent = `${group.month}, ${group.count} тр.`;
+                    break;
+                case 'week':
+                    label.textContent = `Неделя ${group.weekNumber}, ${group.count} тр.`;
+                    break;
+            }
+            
+            // Получаем размеры и позиции
+            const firstRect = firstWorkout.getBoundingClientRect();
+            const lastRect = lastWorkout.getBoundingClientRect();
+            const containerRect = this.elements.historyContainer.getBoundingClientRect();
+            
+            // Вычисляем позицию относительно контейнера
+            const top = firstWorkout.offsetTop;
+            const height = (lastWorkout.offsetTop + lastWorkout.offsetHeight) - top;
+            
+            // Позиционируем группу
+            groupEl.style.top = `${top}px`;
+            groupEl.style.height = `${height + 16}px`; // Добавляем отступ снизу
+            
+            groupEl.appendChild(label);
+            this.elements.historyContainer.appendChild(groupEl);
+        });
+    }
+
     createWorkoutEntry(workout) {
         const workoutEntry = this.createElement('div', 'workout-entry');
         workoutEntry.dataset.id = workout.id;
+        workoutEntry.dataset.date = workout.date; // Добавляем дату как атрибут
 
         const totalReps = ExerciseCalculatorService.calculateWorkoutTotalReps(workout);
         const totalWeight = ExerciseCalculatorService.calculateWorkoutTotalWeight(workout);
@@ -141,6 +209,8 @@ export class HistoryManager extends BaseComponent {
                     workoutEntry.remove();
                     if (!this.querySelector('.workout-entry')) {
                         this.elements.historyContainer.innerHTML = '<p>История тренировок пуста</p>';
+                    } else {
+                        this.updateGroupHighlights(); // Обновляем группы после удаления
                     }
                 }, 300);
                 this.notifications.success('Тренировка удалена');

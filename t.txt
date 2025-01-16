@@ -1,0 +1,91 @@
+Ñòðóêòóðà ïàïîê òîìà OS
+Ñåðèéíûé íîìåð òîìà: FE84-4993
+C:.
+¦   CHANGELOG.md
+¦   index.html
+¦   t.txt
+¦   
++---icons
+¦       android-chrome-192x192.png
+¦       android-chrome-512x512.png
+¦       apple-touch-icon.png
+¦       favicon-16x16.png
+¦       favicon-32x32.png
+¦       favicon.ico
+¦       
++---js
+¦   ¦   main.js
+¦   ¦   
+¦   +---components
+¦   ¦       base-component.js
+¦   ¦       custom-slider.js
+¦   ¦       notes-modal.js
+¦   ¦       touch-select.js
+¦   ¦       
+¦   +---constants
+¦   ¦       notes-config.js
+¦   ¦       selectors.js
+¦   ¦       
+¦   +---factories
+¦   ¦       workout.factory.js
+¦   ¦       
+¦   +---managers
+¦   ¦   ¦   exercise-validator.js
+¦   ¦   ¦   notification-manager.js
+¦   ¦   ¦   storage-manager.js
+¦   ¦   ¦   ui-manager.js
+¦   ¦   ¦   workout-manager.js
+¦   ¦   ¦   
+¦   ¦   L---ui
+¦   ¦           exercise-log-manager.js
+¦   ¦           history-manager.js
+¦   ¦           navigation-manager.js
+¦   ¦           validation-manager.js
+¦   ¦           workout-form-manager.js
+¦   ¦           
+¦   +---models
+¦   ¦       exercise-pool.js
+¦   ¦       
+¦   +---modules
+¦   ¦       import-module.js
+¦   ¦       
+¦   +---services
+¦   ¦       backup-manager.js
+¦   ¦       exercise-calculator.service.js
+¦   ¦       exercise-formatter.service.js
+¦   ¦       
+¦   L---utils
+¦           data-importer.js
+¦           date-formatter.js
+¦           date-grouping.js
+¦           device-detector.js
+¦           utils.js
+¦           
+L---styles
+    ¦   main.css
+    ¦   
+    +---base
+    ¦       reset.css
+    ¦       responsive.css
+    ¦       variables.css
+    ¦       
+    +---components
+    ¦       buttons.css
+    ¦       exercise-items.css
+    ¦       forms.css
+    ¦       import-button.css
+    ¦       navigation.css
+    ¦       notes-modal.css
+    ¦       notifications.css
+    ¦       select-preview.css
+    ¦       slider.css
+    ¦       
+    +---layout
+    ¦       containers.css
+    ¦       grid.css
+    ¦       
+    L---pages
+            history.css
+            statistics.css
+            workout.css
+            
