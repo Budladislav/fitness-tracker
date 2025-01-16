@@ -87,7 +87,7 @@ export class DateGrouping {
     }
 
     /**
-     * Группирует тренировки по годам
+     * Группирует тренировки по годам. Решено отказаться от отображения но оставить код
      */
     static getYearBoundaries(workouts) {
         if (!workouts.length) return [];

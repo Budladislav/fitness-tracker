@@ -2,6 +2,13 @@
 -------------------------------------------------- */
 /* Displays workout history entries with consistent spacing and formatting */
 
+.history-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 16px;
+    position: relative;
+}
+
 .workout-date {
     font-size: 1em;
     font-weight: normal;
@@ -73,10 +80,15 @@
 
 /* Workout Entry */
 .workout-entry {
-    margin: var(--spacing-md) 32px; /* Увеличиваем боковые отступы */
-    position: relative;
+    width: calc(100% - 32px);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 16px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
 }
-
 .summary-table {
     background: white;
     border-radius: var(--border-radius);
@@ -210,51 +222,47 @@
 
 /* Добавим отступ для контента, чтобы он не уходил под фиксированные кнопки */
 .content-container {
-    padding-bottom: calc(var(--spacing-xl) + 40px); /* 40px - примерная высота backup-controls */
     position: relative;
+    padding: 16px 0;
 }
 
-/* Group Highlights
--------------------------------------------------- */
-.year-group,
-.month-group,
+/* Group Highlights */
+.month-group {
+    display: none;
+}
+
 .week-group {
     position: absolute;
+    width: calc(100% - 20px);
+    left: 9px;
+    background: rgba(var(--primary-rgb), 0.1);
+    border: 1px solid rgba(var(--primary-rgb), 0.3);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     pointer-events: none;
     z-index: -1;
-    border: 2px solid;
-    margin: -2px;
-    width: calc(100% - 32px); /* Увеличиваем ширину */
-    box-sizing: border-box;
-}
-
-.year-group {
-    left: 16px;
-    border-color: rgba(var(--primary-rgb), 0.2);
-    background: rgba(var(--primary-rgb), 0.03);
-}
-
-.month-group {
-    left: 20px;
-    border-color: rgba(var(--secondary-rgb), 0.2);
-    background: rgba(var(--secondary-rgb), 0.03);
-}
-
-.week-group {
-    left: 24px;
-    border-color: rgba(var(--accent-rgb), 0.2);
-    background: rgba(var(--accent-rgb), 0.03);
+    display: block;
 }
 
 .group-label {
     position: absolute;
-    top: -10px;
-    left: 12px;
+    top: -17px;
+    left: 16px;
     font-size: 0.75em;
     color: var(--text-secondary);
     background: white;
-    padding: 0 8px;
+    padding: 2px 8px;
     white-space: nowrap;
-    border-radius: 10px;
-    z-index: 1;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Специальные отступы */
+.workout-entry[data-last-in-group="true"] {
+    margin-bottom: 48px;
+}
+
+.workout-entry:first-child {
+    margin-top: 48px;
 }
