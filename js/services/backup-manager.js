@@ -170,22 +170,38 @@ export class BackupManager {
         const workouts = [];
         const lines = content.split('\n');
         let currentWorkout = null;
+        let collectingNote = false; // Флаг для сбора многострочной заметки
+        let currentNote = ''; // Буфер для многострочной заметки
 
-        for (let line of lines) {
-            line = line.trim();
-            if (!line) continue;
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (!line) {
+                if (collectingNote) {
+                    // Пустая строка означает конец заметки
+                    if (currentWorkout && currentWorkout.notes) {
+                        currentWorkout.notes.text.content = currentNote.trim();
+                    }
+                    collectingNote = false;
+                    currentNote = '';
+                }
+                continue;
+            }
 
-            // Отладочный вывод для проверки входящих данных
-            console.log('Parsing line:', line);
-
-            // Обновленный regex для даты и времени (поддержка 2-х и 4-х значного года)
+            // Проверяем начало новой тренировки
             const dateTimeMatch = line.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?:\s+(\d{1,2}:\d{2}))?$/);
             if (dateTimeMatch) {
+                if (collectingNote && currentWorkout && currentWorkout.notes) {
+                    // Сохраняем предыдущую заметку перед новой тренировкой
+                    currentWorkout.notes.text.content = currentNote.trim();
+                    collectingNote = false;
+                    currentNote = '';
+                }
+
                 if (currentWorkout) {
                     workouts.push(currentWorkout);
                 }
+
                 const [_, day, month, year] = dateTimeMatch;
-                // Обрабатываем как 2-значный, так и 4-значный год
                 const fullYear = year.length === 2 ? `20${year}` : year;
                 const date = `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
                 
@@ -195,22 +211,43 @@ export class BackupManager {
                     startTime: dateTimeMatch[4] || '',
                     exercises: []
                 };
-                console.log('Created new workout:', currentWorkout);
                 continue;
             }
 
             if (!currentWorkout) continue;
 
+            // Если мы собираем многострочную заметку
+            if (collectingNote) {
+                // Проверяем, не начинается ли следующая тренировка или новое упражнение
+                const isNewWorkout = line.match(/^\d{1,2}\.\d{1,2}\.\d{2,4}/);
+                const isExercise = line.includes(' – ');
+                const isNewNote = line.startsWith('Заметка: ');
+                const isRating = line.match(/^(Энергия|Интенсивность): \d\/5$/);
+
+                if (isNewWorkout || isExercise || isNewNote || isRating) {
+                    // Сохраняем собранную заметку
+                    if (currentWorkout.notes) {
+                        currentWorkout.notes.text.content = currentNote.trim();
+                    }
+                    collectingNote = false;
+                    currentNote = '';
+                    i--; // Возвращаемся на строку назад для обработки нового элемента
+                    continue;
+                }
+
+                currentNote += line + '\n';
+                continue;
+            }
+
+            // Парсинг упражнений
             const exerciseData = this.parseExerciseLine(line);
             if (exerciseData) {
                 currentWorkout.exercises.push(exerciseData);
-                console.log('Added exercise:', exerciseData);
+                continue;
             }
 
-            // Парсинг заметок
+            // Парсинг оценок
             const noteMatch = line.match(/^(Энергия|Интенсивность): (\d)\/5$/);
-            const textNoteMatch = line.match(/^Заметка: (.+)$/);
-            
             if (noteMatch) {
                 if (!currentWorkout.notes) currentWorkout.notes = {};
                 const [_, type, score] = noteMatch;
@@ -219,20 +256,26 @@ export class BackupManager {
                 } else {
                     currentWorkout.notes.intensity = { score: parseInt(score), timestamp: new Date() };
                 }
+                continue;
             }
-            
+
+            // Начало текстовой заметки
+            const textNoteMatch = line.match(/^Заметка: (.+)$/);
             if (textNoteMatch) {
                 if (!currentWorkout.notes) currentWorkout.notes = {};
-                currentWorkout.notes.text = { content: textNoteMatch[1], timestamp: new Date() };
+                currentNote = textNoteMatch[1] + '\n';
+                currentWorkout.notes.text = { content: '', timestamp: new Date() };
+                collectingNote = true;
             }
         }
 
+        // Обработка последней заметки и тренировки
+        if (collectingNote && currentWorkout && currentWorkout.notes) {
+            currentWorkout.notes.text.content = currentNote.trim();
+        }
         if (currentWorkout) {
             workouts.push(currentWorkout);
         }
-
-        // Отладочный вывод результата
-        console.log('Parsed workouts:', workouts);
 
         return workouts;
     }
