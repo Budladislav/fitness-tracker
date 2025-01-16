@@ -66,23 +66,36 @@ export class BackupManager {
             const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}`;
             const timeStr = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
             
-            const handle = await window.showSaveFilePicker({
-                suggestedName: `workout_backup_${dateStr}_${timeStr}.txt`,
-                types: [{
-                    description: 'Text Files',
-                    accept: {'text/plain': ['.txt']},
-                }],
-            });
+            // Проверяем поддержку File System Access API
+            if ('showSaveFilePicker' in window) {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: `workout_backup_${dateStr}_${timeStr}.txt`,
+                    types: [{
+                        description: 'Text Files',
+                        accept: {'text/plain': ['.txt']},
+                    }],
+                });
 
-            const writable = await handle.createWritable();
-            await writable.write(backupText);
-            await writable.close();
+                const writable = await handle.createWritable();
+                await writable.write(backupText);
+                await writable.close();
+            } else {
+                const blob = new Blob([backupText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `workout_backup_${dateStr}_${timeStr}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
 
-            this.notifications.show('Резервная копия создана', 'success');
+            this.notifications.success('Резервная копия создана');
             return true;
         } catch (error) {
             console.error('Backup failed:', error);
-            this.notifications.show('Ошибка создания резервной копии', 'error');
+            this.notifications.error('Ошибка при создании резервной копии');
             return false;
         }
     }
@@ -130,32 +143,39 @@ export class BackupManager {
             line = line.trim();
             if (!line) continue;
 
-            // Обновленный regex для даты и времени
-            const dateTimeMatch = line.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2})(?:\s+(\d{1,2}:\d{2}))?$/);
+            // Отладочный вывод для проверки входящих данных
+            console.log('Parsing line:', line);
+
+            // Обновленный regex для даты и времени (поддержка 2-х и 4-х значного года)
+            const dateTimeMatch = line.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?:\s+(\d{1,2}:\d{2}))?$/);
             if (dateTimeMatch) {
                 if (currentWorkout) {
                     workouts.push(currentWorkout);
                 }
-                const [_, day, month, year, time] = dateTimeMatch;
-                const date = `20${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                const [_, day, month, year] = dateTimeMatch;
+                // Обрабатываем как 2-значный, так и 4-значный год
+                const fullYear = year.length === 2 ? `20${year}` : year;
+                const date = `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                
                 currentWorkout = {
                     id: Date.now() + Math.random(),
                     date,
-                    startTime: time || '', // Добавляем время, если оно есть
+                    startTime: dateTimeMatch[4] || '',
                     exercises: []
                 };
+                console.log('Created new workout:', currentWorkout);
                 continue;
             }
 
             if (!currentWorkout) continue;
 
-            // Парсинг упражнений остается прежним
             const exerciseData = this.parseExerciseLine(line);
             if (exerciseData) {
                 currentWorkout.exercises.push(exerciseData);
+                console.log('Added exercise:', exerciseData);
             }
 
-            // Добавим парсинг заметок
+            // Парсинг заметок
             const noteMatch = line.match(/^(Энергия|Интенсивность): (\d)\/5$/);
             const textNoteMatch = line.match(/^Заметка: (.+)$/);
             
@@ -178,6 +198,9 @@ export class BackupManager {
         if (currentWorkout) {
             workouts.push(currentWorkout);
         }
+
+        // Отладочный вывод результата
+        console.log('Parsed workouts:', workouts);
 
         return workouts;
     }
