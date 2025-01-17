@@ -8,6 +8,7 @@ export const DOM_SELECTORS = {
         HISTORY: '#historyPage'
     },
     WORKOUT: {
+        CONTROLS: '#workoutControls',
         FORM: '#workoutForm',
         CONTENT: '#workoutContent',
         START_SECTION: '#startWorkoutSection',

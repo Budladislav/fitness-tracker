@@ -9,6 +9,12 @@ import { TouchInput } from '../../components/touch-input.js';
 export class WorkoutFormManager extends BaseComponent {
     constructor(notifications, storage) {
         super(notifications, storage);
+        
+        // Проверяем наличие активной тренировки при инициализации
+        if (this.storage.getFromStorage('activeWorkout')) {
+            document.body.classList.add('workout-active');
+        }
+        
         this.elements = this.initializeElements();
         this.lastSelectedExercises = {
             weighted: '',
@@ -47,7 +53,8 @@ export class WorkoutFormManager extends BaseComponent {
             weightInput: this.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
             workoutContent: this.querySelector(DOM_SELECTORS.WORKOUT.CONTENT),
             repsSlider: this.querySelector(DOM_SELECTORS.WORKOUT.REPS_SLIDER),
-            weightSlider: this.querySelector(DOM_SELECTORS.WORKOUT.WEIGHT_SLIDER)
+            weightSlider: this.querySelector(DOM_SELECTORS.WORKOUT.WEIGHT_SLIDER),
+            workoutControls: this.querySelector(DOM_SELECTORS.WORKOUT.CONTROLS)
         };
     }
 

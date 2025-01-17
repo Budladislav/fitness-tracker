@@ -46,6 +46,7 @@ export class WorkoutManager {
         if (currentWorkout && currentWorkout.date) {
             if (!this._formShown) {
                 this._formShown = true;
+                this.ui.navigation.switchToTab('workout');
                 this.ui.showWorkoutForm(currentWorkout.date);
                 
                 if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
