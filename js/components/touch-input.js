@@ -6,6 +6,7 @@ export class TouchInput {
             maxChange: options.maxChange || 10,
             minValue: options.minValue || 0,
             initialValue: options.initialValue || 10,
+            sensitivity: options.sensitivity || 0.2,
             ...options
         };
 
@@ -13,7 +14,7 @@ export class TouchInput {
         this.touchStartY = 0;
         this.currentValue = parseFloat(this.input.value) || this.options.initialValue;
         this.longPressDelay = 200;
-        this.optionHeight = 40;
+        this.maxScrollDistance = 60;
 
         this.createPreview();
         this.setupEventListeners();
@@ -93,22 +94,30 @@ export class TouchInput {
 
             const touch = e.touches[0];
             const deltaY = this.touchStartY - touch.clientY;
-            const steps = Math.round(deltaY / this.optionHeight);
             
-            let newValue = this.startValue + (steps * this.options.step);
+            // Ограничиваем deltaY
+            const limitedDeltaY = Math.max(
+                -this.maxScrollDistance,
+                Math.min(this.maxScrollDistance, deltaY)
+            );
+            
+            // Используем sensitivity как в CustomSlider
+            const proposedChange = Math.round(limitedDeltaY * this.options.sensitivity / this.options.step) * this.options.step;
+            let newValue = this.startValue + proposedChange;
             
             // Применяем ограничения
             newValue = Math.max(this.options.minValue, newValue);
             if (this.options.maxChange) {
-                const maxChange = this.options.maxChange;
-                newValue = Math.min(this.startValue + maxChange, Math.max(this.startValue - maxChange, newValue));
+                newValue = Math.min(
+                    this.startValue + this.options.maxChange,
+                    Math.max(this.startValue - this.options.maxChange, newValue)
+                );
             }
             
             if (this.input.value !== String(newValue)) {
                 this.input.value = newValue;
                 this.updatePreview();
                 
-                // Генерируем событие input для сохранения состояния
                 const inputEvent = new Event('input', {
                     bubbles: true,
                     cancelable: true

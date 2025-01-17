@@ -30,6 +30,7 @@ export class WorkoutFormManager extends BaseComponent {
                 step: 2.5,
                 maxChange: 20,
                 minValue: 0,
+                sensitivity: 0.4,
                 initialValue: 100
             });
         }
