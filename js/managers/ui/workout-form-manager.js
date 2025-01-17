@@ -9,6 +9,10 @@ export class WorkoutFormManager extends BaseComponent {
     constructor(notifications, storage) {
         super(notifications, storage);
         this.elements = this.initializeElements();
+        this.lastSelectedExercises = {
+            weighted: '',
+            bodyweight: ''
+        };
         this.setupEventListeners();
         this.initializeExercisesList();
         this.setupSliders();
@@ -51,7 +55,7 @@ export class WorkoutFormManager extends BaseComponent {
         const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
         const exercises = ExercisePool.getExercisesByType(type);
         
-        exerciseNameSelect.innerHTML = '<option value="" disabled selected>Упражнение</option>';
+        exerciseNameSelect.innerHTML = '<option value="" disabled>Упражнение</option>';
         
         exercises.forEach(exercise => {
             const option = document.createElement('option');
@@ -59,6 +63,13 @@ export class WorkoutFormManager extends BaseComponent {
             option.textContent = exercise.name;
             exerciseNameSelect.appendChild(option);
         });
+
+        const lastSelected = this.lastSelectedExercises[type];
+        if (lastSelected) {
+            exerciseNameSelect.value = lastSelected;
+        } else {
+            exerciseNameSelect.selectedIndex = 0;
+        }
     }
 
     setupEventListeners() {
@@ -69,6 +80,9 @@ export class WorkoutFormManager extends BaseComponent {
         });
 
         this.elements.exerciseName.addEventListener('change', () => {
+            const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
+            this.lastSelectedExercises[type] = this.elements.exerciseName.value;
+
             const isWeighted = this.elements.exerciseType.checked;
             if (isWeighted) {
                 const selectedExercise = this.elements.exerciseName.value;
@@ -111,6 +125,10 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     clearInputs() {
+        this.lastSelectedExercises = {
+            weighted: '',
+            bodyweight: ''
+        };
         this.elements.exerciseName.value = '';
         this.elements.exerciseReps.value = '';
         this.elements.exerciseWeight.value = '';
@@ -118,7 +136,6 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     showWorkoutForm(date) {
-        
         // Очищаем предыдущий лог упражнений
         const exerciseLog = this.querySelector(DOM_SELECTORS.WORKOUT.LOG);
         if (exerciseLog) {
