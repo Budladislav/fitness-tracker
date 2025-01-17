@@ -171,8 +171,12 @@ export class HistoryManager extends BaseComponent {
         });
     }
 
-    handleWorkoutDeletion(workout) {
-        if (confirm('Вы уверены, что хотите удалить эту тренировку?')) {
+    async handleWorkoutDeletion(workout) {
+        const confirmed = await this.notifications.confirmModal.show(
+            'Вы уверены, что хотите удалить эту тренировку?'
+        );
+        
+        if (confirmed) {
             if (this.storage.deleteWorkoutFromHistory(workout.id)) {
                 const workoutEntry = this.querySelector(`[data-id="${workout.id}"]`);
                 workoutEntry.classList.add('removing');

@@ -136,17 +136,16 @@ export class WorkoutFormManager extends BaseComponent {
         // Обработчик для кнопки выхода
         const exitButton = document.getElementById('exitWorkout');
         if (exitButton) {
-            exitButton.addEventListener('click', () => {
-                if (confirm('Вы уверены, что хотите выйти без сохранения?')) {
-                    // Удаляем данные из хранилища
+            exitButton.addEventListener('click', async () => {
+                const confirmed = await this.notifications.confirmModal.show(
+                    'Вы уверены, что хотите выйти без сохранения?'
+                );
+                
+                if (confirmed) {
                     this.storage.removeFromStorage('currentWorkout', sessionStorage);
                     this.storage.removeFromStorage('activeWorkout');
                     this.storage.removeFromStorage('workoutFormState', sessionStorage);
-                    
-                    // Убираем класс активной тренировки
                     document.body.classList.remove('workout-active');
-                    
-                    // Сбрасываем форму
                     this.resetWorkoutForm();
                 }
             });

@@ -149,7 +149,7 @@ export class WorkoutManager {
             startWorkoutRoundBtn.addEventListener('click', startWorkoutHandler);
         }
         
-        this.ui.elements.saveWorkout.addEventListener('click', () => {
+        this.ui.elements.saveWorkout.addEventListener('click', async () => {
             const exercises = this.ui.getExercisesFromLog();
             
             if (exercises.length === 0) {
@@ -157,7 +157,11 @@ export class WorkoutManager {
                 return;
             }
 
-            if (!confirm('Вы уверены, что хотите сохранить тренировку?')) {
+            const confirmed = await this.notifications.confirmModal.show(
+                'Вы уверены, что хотите сохранить тренировку?'
+            );
+            
+            if (!confirmed) {
                 return;
             }
 

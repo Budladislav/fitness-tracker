@@ -1,3 +1,5 @@
+import { ConfirmModal } from '../components/confirm-modal.js';
+
 /**
  * Управляет отображением уведомлений
  * @class NotificationManager
@@ -9,6 +11,7 @@ export class NotificationManager {
 
     constructor() {
         this.container = this.createContainer();
+        this.confirmModal = new ConfirmModal();
     }
 
     createContainer() {
