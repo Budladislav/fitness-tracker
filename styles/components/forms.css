@@ -72,7 +72,9 @@ button:active {
 /* Toggle Switch */
 .toggle-wrapper {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: center;
+    position: relative;
 }
 
 .toggle {
@@ -221,4 +223,9 @@ select#exerciseName {
 /* Общий стиль для значения слайдера */
 .custom-slider .slider-value {
     font-size: 12px;
+}
+
+#exitWorkout {
+    position: absolute;
+    left: 0;
 }

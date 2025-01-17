@@ -125,6 +125,14 @@ export class WorkoutFormManager extends BaseComponent {
         if (this.elements.repsSlider) {
             this.setupSliders();
         }
+
+        // Обработчик для кнопки выхода
+        const exitButton = document.getElementById('exitWorkout');
+        exitButton.addEventListener('click', () => {
+            if (confirm('Вы уверены, что хотите выйти без сохранения?')) {
+                this.resetWorkoutForm();
+            }
+        });
     }
 
     toggleWeightInput(isWeighted, skipSave = false) {
