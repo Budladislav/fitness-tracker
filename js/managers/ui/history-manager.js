@@ -62,15 +62,40 @@ export class HistoryManager extends BaseComponent {
                 return;
             }
 
-            [...workouts].reverse().forEach(workout => {
-                const workoutEntry = this.createWorkoutEntry(workout);
-                if (workoutEntry) {
-                    this.elements.historyContainer.appendChild(workoutEntry);
+            // Получаем группы недель
+            const weekGroups = DateGrouping.getWeekBoundaries(workouts);
+            
+            // Сортируем группы по году и номеру недели (в обратном порядке)
+            const sortedGroups = weekGroups.sort((a, b) => {
+                if (a.year !== b.year) {
+                    return b.year - a.year; // Сначала по году (по убыванию)
                 }
+                return b.weekNumber - a.weekNumber; // Затем по номеру недели (по убыванию)
             });
-
-            // Добавляем группы после отрисовки тренировок
-            this.updateGroupHighlights();
+            
+            // Создаем и добавляем группы в контейнер
+            sortedGroups.forEach(group => {
+                const weekGroupElement = this.createElement('div', 'week-group');
+                
+                // Добавляем метку недели с годом для отладки
+                const label = this.createElement('div', 'group-label');
+                label.textContent = `Неделя ${group.weekNumber} (${group.year}), ${group.count} тр.`;
+                weekGroupElement.appendChild(label);
+                
+                // Сортируем тренировки внутри группы по убыванию даты
+                const weekWorkouts = group.workouts.sort((a, b) => 
+                    new Date(b.date) - new Date(a.date)
+                );
+                
+                weekWorkouts.forEach(workout => {
+                    const workoutEntry = this.createWorkoutEntry(workout);
+                    if (workoutEntry) {
+                        weekGroupElement.appendChild(workoutEntry);
+                    }
+                });
+                
+                this.elements.historyContainer.appendChild(weekGroupElement);
+            });
 
             // Добавляем контролы бэкапа после истории
             this.setupBackupControls();

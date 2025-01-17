@@ -6,8 +6,19 @@ export class DateGrouping {
         const d = new Date(date);
         d.setHours(0, 0, 0, 0);
         d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-        const week1 = new Date(d.getFullYear(), 0, 4);
-        return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+        
+        // Получаем год для недели (может отличаться от года даты)
+        const weekYear = new Date(d.getTime());
+        weekYear.setDate(d.getDate() + 3);
+        const actualYear = weekYear.getFullYear();
+        
+        const week1 = new Date(actualYear, 0, 4);
+        const weekNum = 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+        
+        return {
+            weekNumber: weekNum,
+            year: actualYear
+        };
     }
 
     /**
@@ -57,17 +68,15 @@ export class DateGrouping {
     static getWeekBoundaries(workouts) {
         if (!workouts.length) return [];
 
-        // Создаем копию и сортируем в обратном порядке
-        const sortedWorkouts = [...workouts].reverse();
-
-        const groups = sortedWorkouts.reduce((acc, workout) => {
+        const groups = workouts.reduce((acc, workout) => {
             const date = new Date(workout.date);
-            const weekNum = this.getWeekNumber(date);
-            const key = `${date.getFullYear()}-${weekNum}`;
+            const { weekNumber, year } = this.getWeekNumber(date);
+            const key = `${year}-${weekNumber}`;
             
             if (!acc[key]) {
                 acc[key] = {
-                    weekNumber: weekNum,
+                    year,
+                    weekNumber,
                     workouts: [],
                     firstDate: workout.date,
                     lastDate: workout.date
@@ -75,7 +84,14 @@ export class DateGrouping {
             }
             
             acc[key].workouts.push(workout);
-            acc[key].lastDate = workout.date;
+            
+            // Обновляем границы дат
+            const workoutDate = new Date(workout.date);
+            const firstDate = new Date(acc[key].firstDate);
+            const lastDate = new Date(acc[key].lastDate);
+            
+            if (workoutDate < firstDate) acc[key].firstDate = workout.date;
+            if (workoutDate > lastDate) acc[key].lastDate = workout.date;
             
             return acc;
         }, {});

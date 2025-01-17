@@ -232,21 +232,18 @@
 }
 
 .week-group {
-    position: absolute;
-    width: calc(100% - 20px);
-    left: 9px;
+    margin-bottom: 48px;
+    position: relative;
     background: rgba(var(--primary-rgb), 0.1);
     border: 1px solid rgba(var(--primary-rgb), 0.3);
     border-radius: var(--border-radius);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    pointer-events: none;
-    z-index: -1;
-    display: block;
+    padding: 24px 16px 16px;
+    margin-top: 32px;
 }
 
 .group-label {
     position: absolute;
-    top: -17px;
+    top: -12px;
     left: 16px;
     font-size: 0.75em;
     color: var(--text-secondary);
@@ -258,11 +255,11 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Специальные отступы */
-.workout-entry[data-last-in-group="true"] {
-    margin-bottom: 48px;
+/* Убираем старые отступы у тренировок, теперь они внутри группы */
+.workout-entry {
+    margin-bottom: 16px;
 }
 
-.workout-entry:first-child {
-    margin-top: 48px;
+.workout-entry:last-child {
+    margin-bottom: 0;
 }
