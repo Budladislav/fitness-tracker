@@ -9,37 +9,70 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .modal-overlay.visible {
     display: flex;
+    opacity: 1;
 }
 
 .confirm-modal {
     background: var(--background-color);
-    padding: 20px;
-    border-radius: 8px;
-    min-width: 300px;
-    max-width: 90%;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    border-radius: 12px;
+    width: 70%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.modal-overlay.visible .confirm-modal {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .modal-message {
-    margin: 0 0 20px;
+    margin: 0 0 24px;
     text-align: center;
     color: var(--text-color);
+    font-size: 16px;
+    line-height: 1.4;
 }
 
 .modal-buttons {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
 }
 
-.confirm-btn {
-    background: var(--accent-color);
+.modal-buttons button {
+    flex: 1;
+    max-width: 120px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--primary-hover);
 }
 
-.cancel-btn {
-    background: var(--secondary-color);
+.modal-buttons button:hover {
+    transform: translateY(-1px);
+}
+
+/* Стили для кнопки подтверждения при наведении */
+.confirm-btn:hover {
+    border-color: #4CAF50; /* Зеленый цвет */
+    background: rgba(76, 175, 80, 0.1); /* Легкий зеленый фон */
+}
+
+/* Стили для кнопки отмены при наведении */
+.cancel-btn:hover {
+    border-color: #F44336; /* Красный цвет */
+    background: rgba(244, 67, 54, 0.1); /* Легкий красный фон */
 } 
