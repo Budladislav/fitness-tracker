@@ -229,3 +229,22 @@ select#exerciseName {
     position: absolute;
     left: 0;
 }
+
+/* Скрываем панель управления по умолчанию */
+.controls-panel {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-background);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-sm);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+/* Показываем панель только когда тренировка активна */
+.workout-active .controls-panel {
+    display: block;
+}
