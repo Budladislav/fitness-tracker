@@ -214,12 +214,12 @@
     display: flex;
     gap: var(--spacing-lg);
     justify-content: center;
-    margin-bottom: env(safe-area-inset-bottom, 16px);
 }
 
 /* Убираем padding-bottom у content-container, он больше не нужен */
 .content-container {
     position: relative;
+    padding-bottom: env(safe-area-inset-bottom, 16px); /* Используем env() для учета системной панели */
 }
 
 /* Group Highlights */
@@ -254,4 +254,9 @@
 
 .workout-entry:last-child {
     margin-bottom: 0;
+}
+
+/* Специфичные стили для мобильных устройств */
+body:not(.desktop-device) .content-container {
+    padding-bottom: calc(var(--spacing-xl) + 40px); /* Отступ для мобильных */
 }

@@ -383,7 +383,15 @@ export class HistoryManager extends BaseComponent {
         this.elements.createBackupBtn.textContent = 'Резервировать историю';
         this.elements.restoreBackupBtn.textContent = 'Восстановить историю';
 
-        this.elements.backupControls.innerHTML = ''; // Очищаем на случай повторного вызова
+        // Определяем высоту панели навигации
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.clientHeight;
+        const navBarHeight = windowHeight - documentHeight;
+        
+        // Устанавливаем CSS-переменную
+        document.documentElement.style.setProperty('--nav-bar-height', `${navBarHeight}px`);
+
+        this.elements.backupControls.innerHTML = '';
         this.elements.backupControls.appendChild(this.elements.createBackupBtn);
         this.elements.backupControls.appendChild(this.elements.restoreBackupBtn);
     }
