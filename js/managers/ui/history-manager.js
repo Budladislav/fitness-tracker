@@ -79,7 +79,7 @@ export class HistoryManager extends BaseComponent {
                 
                 // Добавляем метку недели с годом для отладки
                 const label = this.createElement('div', 'group-label');
-                label.textContent = `Неделя ${group.weekNumber} (${group.year}), ${group.count} тр.`;
+                label.textContent = `Неделя ${group.weekNumber}, ${group.count} трен.`;
                 weekGroupElement.appendChild(label);
                 
                 // Сортируем тренировки внутри группы по убыванию даты
@@ -103,119 +103,6 @@ export class HistoryManager extends BaseComponent {
         } catch (error) {
             console.error('Error in displayWorkoutHistory:', error);
         }
-    }
-
-    updateGroupHighlights() {
-        // Удаляем существующие группы
-        document.querySelectorAll('.month-group, .week-group').forEach(el => el.remove());
-        
-        const workouts = this.storage.getWorkoutHistory();
-        if (!workouts.length) return;
-
-        // Получаем группы
-        const monthGroups = DateGrouping.getMonthBoundaries(workouts);
-        const weekGroups = DateGrouping.getWeekBoundaries(workouts);
-
-        // Сначала создаем все группы без проверки перекрытий
-        this.createGroupHighlights(weekGroups, 'week');
-        this.createGroupHighlights(monthGroups, 'month');
-        
-        // Затем проверяем перекрытия
-        this.adjustOverlappingLabels();
-    }
-
-    createGroupHighlights(groups, type) {
-        if (type !== 'week') return;
-        
-        console.group(`Creating week groups`);
-        
-        // Сбросим отступы и добавим отступ первому элементу
-        const workoutEntries = document.querySelectorAll('.workout-entry');
-        workoutEntries.forEach((entry, index) => {
-            entry.style.marginBottom = '16px';
-            if (index === 0) {
-                entry.style.marginTop = '48px';
-            }
-            delete entry.dataset.lastInGroup;
-            
-            console.log(`Reset entry ${index}:`, {
-                date: entry.dataset.date,
-                marginBottom: entry.style.marginBottom,
-                marginTop: entry.style.marginTop
-            });
-        });
-        
-        groups.forEach((group, index) => {
-            const firstWorkout = document.querySelector(`[data-date="${group.firstDate}"]`);
-            const lastWorkout = document.querySelector(`[data-date="${group.lastDate}"]`);
-            
-            if (!firstWorkout || !lastWorkout) {
-                console.warn(`Missing workouts for week group:`, { firstDate: group.firstDate, lastDate: group.lastDate });
-                return;
-            }
-
-            // Создаем визуальную группу
-            const groupEl = this.createElement('div', 'week-group');
-            
-            // Позиционируем группу
-            const top = firstWorkout.offsetTop - 8;
-            const height = (lastWorkout.offsetTop + lastWorkout.offsetHeight) - top + 8;
-            
-            groupEl.style.top = `${top}px`;
-            groupEl.style.height = `${height}px`;
-            
-            // Добавляем метку недели
-            const label = this.createElement('div', 'group-label');
-            label.textContent = `Неделя ${group.weekNumber}, ${group.count} тр.`;
-            groupEl.appendChild(label);
-            
-            // Устанавливаем отступ для последней тренировки в группе
-            lastWorkout.dataset.lastInGroup = "true";
-            lastWorkout.style.marginBottom = '48px';
-            
-            this.elements.historyContainer.appendChild(groupEl);
-            
-            console.log(`Created week group #${index}:`, {
-                dates: `${group.firstDate} - ${group.lastDate}`,
-                workouts: group.count,
-                top,
-                height,
-                lastWorkoutDate: lastWorkout.dataset.date,
-                marginBottom: lastWorkout.style.marginBottom
-            });
-        });
-        
-        console.groupEnd();
-    }
-
-    adjustOverlappingLabels() {
-        const monthGroups = document.querySelectorAll('.month-group');
-        const weekGroups = document.querySelectorAll('.week-group');
-
-        monthGroups.forEach(monthGroup => {
-            const monthTop = parseInt(monthGroup.style.top);
-            const monthLabel = monthGroup.querySelector('.group-label');
-            const monthBottom = monthTop + parseInt(monthGroup.style.height);
-
-            weekGroups.forEach(weekGroup => {
-                const weekTop = parseInt(weekGroup.style.top);
-                const weekBottom = weekTop + parseInt(weekGroup.style.height);
-
-                // Проверяем пересечение групп
-                if (!(monthBottom < weekTop || monthTop > weekBottom)) {
-                    monthLabel.style.top = '-28px';
-                    
-                    // Помечаем тренировки в области пересечения
-                    const workoutsInOverlap = document.querySelectorAll('.workout-entry[data-in-group="true"]');
-                    workoutsInOverlap.forEach(workout => {
-                        const workoutTop = workout.offsetTop;
-                        if (workoutTop >= weekTop && workoutTop <= weekBottom) {
-                            workout.dataset.inOverlap = "true";
-                        }
-                    });
-                }
-            });
-        });
     }
 
     createWorkoutEntry(workout) {
@@ -284,9 +171,8 @@ export class HistoryManager extends BaseComponent {
                     workoutEntry.remove();
                     if (!this.querySelector('.workout-entry')) {
                         this.elements.historyContainer.innerHTML = '<p>История тренировок пуста</p>';
-                    } else {
-                        this.updateGroupHighlights(); // Обновляем группы после удаления
                     }
+                    this.displayWorkoutHistory(this.storage.getWorkoutHistory());
                 }, 300);
                 this.notifications.success('Тренировка удалена');
             } else {
