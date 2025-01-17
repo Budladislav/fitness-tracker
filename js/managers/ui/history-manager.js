@@ -77,15 +77,24 @@ export class HistoryManager extends BaseComponent {
             sortedGroups.forEach(group => {
                 const weekGroupElement = this.createElement('div', 'week-group');
                 
-                // Добавляем метку недели с годом для отладки
                 const label = this.createElement('div', 'group-label');
                 label.textContent = `Неделя ${group.weekNumber}, ${group.count} трен.`;
                 weekGroupElement.appendChild(label);
                 
-                // Сортируем тренировки внутри группы по убыванию даты
-                const weekWorkouts = group.workouts.sort((a, b) => 
-                    new Date(b.date) - new Date(a.date)
-                );
+                // Сортируем тренировки внутри группы по убыванию даты и времени
+                const weekWorkouts = group.workouts.sort((a, b) => {
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    
+                    // Если даты равны, сортируем по времени (если оно есть)
+                    if (dateA.getTime() === dateB.getTime()) {
+                        const timeA = a.startTime || '00:00';
+                        const timeB = b.startTime || '00:00';
+                        return timeB.localeCompare(timeA); // Сортировка по убыванию времени
+                    }
+                    
+                    return dateB - dateA; // Сортировка по убыванию даты
+                });
                 
                 weekWorkouts.forEach(workout => {
                     const workoutEntry = this.createWorkoutEntry(workout);
