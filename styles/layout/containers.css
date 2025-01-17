@@ -46,7 +46,15 @@
 .content-container::-webkit-scrollbar {
     display: none;  /* Chrome, Safari, Opera */
 }
-
+/* Убираем padding-bottom у content-container, он больше не нужен */
+.content-container {
+    position: relative;
+    padding-bottom: env(safe-area-inset-bottom, 24px); /* Используем env() для учета системной панели */
+}
+/* Специфичные стили для мобильных устройств */
+body:not(.desktop-device) .content-container {
+    padding-bottom: calc(var(--spacing-xl) + 20px); /* Отступ для мобильных */
+}
 /* Fixed Control Panels */
 .controls-panel {
     position: fixed;

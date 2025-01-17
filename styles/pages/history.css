@@ -219,7 +219,8 @@
 .group-label {
     position: absolute;
     top: -12px;
-    left: 16px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 0.75em;
     color: var(--text-secondary);
     background: white;
@@ -228,24 +229,19 @@
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.05);
-}
+} 
 
 .backup-controls {
     position: relative;
     background: var(--card-background);
     border-top: 1px solid var(--border-color);
     padding: var(--spacing-sm);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     gap: var(--spacing-lg);
     justify-content: center;
 }
 
-/* Убираем padding-bottom у content-container, он больше не нужен */
-.content-container {
-    position: relative;
-    padding-bottom: env(safe-area-inset-bottom, 16px); /* Используем env() для учета системной панели */
-}
+
 /* Убираем старые отступы у тренировок, теперь они внутри группы */
 .workout-entry {
     margin-bottom: 5px;
@@ -255,7 +251,3 @@
     margin-bottom: 0;
 }
 
-/* Специфичные стили для мобильных устройств */
-body:not(.desktop-device) .content-container {
-    padding-bottom: calc(var(--spacing-xl) + 10px); /* Отступ для мобильных */
-}
