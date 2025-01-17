@@ -72,9 +72,10 @@ export class TouchInput {
         this.input.addEventListener('touchmove', this.handleTouchMove.bind(this));
         this.input.addEventListener('touchend', this.handleTouchEnd.bind(this));
         
-        // Предотвращаем стандартное открытие клавиатуры на мобильных
+        // Удаляем блокировку стандартного поведения при фокусе
         this.input.addEventListener('focus', (e) => {
-            if (document.body.classList.contains('mobile-device')) {
+            if (this.isScrolling) {
+                e.preventDefault();
                 this.input.blur();
             }
         });
@@ -87,6 +88,7 @@ export class TouchInput {
 
         this.previewTimer = setTimeout(() => {
             this.isScrolling = true;
+            this.input.blur(); // Убираем фокус при активации скролла
             this.input.classList.add('touch-active');
             this.showPreview();
         }, this.longPressDelay);
@@ -131,12 +133,20 @@ export class TouchInput {
         }
     }
 
-    handleTouchEnd() {
+    handleTouchEnd(e) {
         clearTimeout(this.previewTimer);
+        
         if (this.isScrolling) {
-            this.isScrolling = false;
-            this.input.classList.remove('touch-active');
+            e.preventDefault();
+            const inputEvent = new Event('input', {
+                bubbles: true,
+                cancelable: true
+            });
+            this.input.dispatchEvent(inputEvent);
             this.hidePreview();
+            this.isScrolling = false;
         }
+        
+        this.input.classList.remove('touch-active');
     }
 } 
