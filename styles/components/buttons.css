@@ -124,4 +124,40 @@
 
 .backup-btn:hover {
     background-color: var(--primary-hover);
+}
+
+/* Round Button */
+.round-btn {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    font-size: 48px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+.round-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.round-btn:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+/* Скрываем круглую кнопку когда тренировка активна */
+.workout-active .round-btn {
+    display: none;
 } 

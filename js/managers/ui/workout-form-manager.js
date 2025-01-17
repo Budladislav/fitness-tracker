@@ -127,12 +127,15 @@ export class WorkoutFormManager extends BaseComponent {
         }
 
         // Обработчик для кнопки выхода
-        const exitButton = document.getElementById('exitWorkout');
-        exitButton.addEventListener('click', () => {
-            if (confirm('Вы уверены, что хотите выйти без сохранения?')) {
-                this.resetWorkoutForm();
-            }
-        });
+       const exitButton = document.getElementById('exitWorkout');
+       if (exitButton) {
+           exitButton.addEventListener('click', () => {
+               if (confirm('Вы уверены, что хотите выйти без сохранения?')) {
+                   document.body.classList.remove('workout-active');
+                   this.ui.resetWorkoutForm();
+               }
+           });
+       }
     }
 
     toggleWeightInput(isWeighted, skipSave = false) {

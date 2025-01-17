@@ -125,21 +125,29 @@ export class WorkoutManager {
 
     initializeWorkoutEvents() {
         const startWorkoutBtn = document.getElementById('startWorkout');
-        if (startWorkoutBtn) {
-            startWorkoutBtn.addEventListener('click', () => {
-                this.storage.removeFromStorage('activeWorkout');
-                this.storage.removeFromStorage('currentWorkout', sessionStorage);
-                
-                const storageDate = DateFormatter.toStorageFormat('current');
-                // Создаем новую тренировку через фабрику
-                const newWorkout = WorkoutFactory.createNewWorkout(storageDate);
-                this.storage.saveCurrentWorkout(newWorkout);
-                
-                this.ui.showWorkoutForm(storageDate);
-                this.notifications.info('Начата новая тренировка');
-            });
-        }
+        const startWorkoutRoundBtn = document.getElementById('startWorkoutRound');
+        
+        const startWorkoutHandler = () => {
+            this.storage.removeFromStorage('activeWorkout');
+            this.storage.removeFromStorage('currentWorkout', sessionStorage);
+            
+            const storageDate = DateFormatter.toStorageFormat('current');
+            const newWorkout = WorkoutFactory.createNewWorkout(storageDate);
+            this.storage.saveCurrentWorkout(newWorkout);
+            
+            document.body.classList.add('workout-active');
+            this.ui.showWorkoutForm(storageDate);
+            this.notifications.info('Начата новая тренировка');
+        };
 
+        if (startWorkoutBtn) {
+            startWorkoutBtn.addEventListener('click', startWorkoutHandler);
+        }
+        
+        if (startWorkoutRoundBtn) {
+            startWorkoutRoundBtn.addEventListener('click', startWorkoutHandler);
+        }
+        
         this.ui.elements.saveWorkout.addEventListener('click', () => {
             const exercises = this.ui.getExercisesFromLog();
             
