@@ -4,6 +4,7 @@ import { ExercisePool } from '../../models/exercise-pool.js';
 import { Utils } from '../../utils/utils.js';
 import { CustomSlider } from '../../components/custom-slider.js';
 import { TouchSelect } from '../../components/touch-select.js';
+import { TouchInput } from '../../components/touch-input.js';
 
 export class WorkoutFormManager extends BaseComponent {
     constructor(notifications, storage) {
@@ -16,9 +17,21 @@ export class WorkoutFormManager extends BaseComponent {
         this.setupEventListeners();
         this.initializeExercisesList();
         this.setupSliders();
-        // Инициализируем TouchSelect только на мобильных устройствах
+        // Инициализируем TouchSelect и TouchInput только на мобильных устройствах
         if (document.body.classList.contains('mobile-device')) {
             new TouchSelect(this.elements.exerciseName);
+            new TouchInput(this.elements.exerciseReps, {
+                step: 1,
+                maxChange: 10,
+                minValue: 1,
+                initialValue: 10
+            });
+            new TouchInput(this.elements.exerciseWeight, {
+                step: 2.5,
+                maxChange: 20,
+                minValue: 0,
+                initialValue: 100
+            });
         }
     }
 

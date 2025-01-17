@@ -1,0 +1,51 @@
+.touch-preview {
+    position: fixed;
+    display: none;
+    background: var(--background-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    padding: 10px;
+}
+
+.touch-preview.active {
+    display: block;
+}
+
+.preview-content {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.preview-values {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+}
+
+.preview-option {
+    padding: 10px;
+    font-size: 16px;
+    color: var(--text-color-secondary);
+}
+
+.preview-option.selected {
+    color: var(--text-color);
+    font-weight: bold;
+}
+
+.preview-current {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 4px;
+} 
