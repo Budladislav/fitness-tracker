@@ -205,23 +205,6 @@
     width: 100%;
 }
 
-.backup-controls {
-    position: relative;
-    background: var(--card-background);
-    border-top: 1px solid var(--border-color);
-    padding: var(--spacing-sm);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    gap: var(--spacing-lg);
-    justify-content: center;
-}
-
-/* Убираем padding-bottom у content-container, он больше не нужен */
-.content-container {
-    position: relative;
-    padding-bottom: env(safe-area-inset-bottom, 16px); /* Используем env() для учета системной панели */
-}
-
 /* Group Highlights */
 
 .week-group {
@@ -247,6 +230,22 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+.backup-controls {
+    position: relative;
+    background: var(--card-background);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-sm);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+}
+
+/* Убираем padding-bottom у content-container, он больше не нужен */
+.content-container {
+    position: relative;
+    padding-bottom: env(safe-area-inset-bottom, 16px); /* Используем env() для учета системной панели */
+}
 /* Убираем старые отступы у тренировок, теперь они внутри группы */
 .workout-entry {
     margin-bottom: 5px;
@@ -258,5 +257,5 @@
 
 /* Специфичные стили для мобильных устройств */
 body:not(.desktop-device) .content-container {
-    padding-bottom: calc(var(--spacing-xl) + 40px); /* Отступ для мобильных */
+    padding-bottom: calc(var(--spacing-xl) + 10px); /* Отступ для мобильных */
 }
