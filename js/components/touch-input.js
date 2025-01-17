@@ -53,11 +53,14 @@ export class TouchInput {
         this.updatePreview();
         this.preview.classList.add('active');
         
-        // Позиционируем превью над инпутом
-        const inputRect = this.input.getBoundingClientRect();
-        this.preview.style.left = `${inputRect.left}px`;
-        this.preview.style.width = `${inputRect.width}px`;
-        this.preview.style.bottom = `${window.innerHeight - inputRect.top + 10}px`;
+        const screenWidth = window.innerWidth;
+        const previewWidth = Math.min(300, screenWidth - 40);
+        
+        this.preview.style.left = '50%';
+        this.preview.style.width = `${previewWidth}px`;
+        this.preview.style.transform = 'translateX(-50%)';
+        this.preview.style.top = '35%';
+        this.preview.style.marginTop = '-100px';
     }
 
     hidePreview() {
@@ -84,6 +87,7 @@ export class TouchInput {
 
         this.previewTimer = setTimeout(() => {
             this.isScrolling = true;
+            this.input.classList.add('touch-active');
             this.showPreview();
         }, this.longPressDelay);
     }
@@ -131,6 +135,7 @@ export class TouchInput {
         clearTimeout(this.previewTimer);
         if (this.isScrolling) {
             this.isScrolling = false;
+            this.input.classList.remove('touch-active');
             this.hidePreview();
         }
     }

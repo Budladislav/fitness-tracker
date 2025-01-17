@@ -48,4 +48,16 @@
     background: rgba(255, 255, 255, 0.9);
     padding: 10px;
     border-radius: 4px;
+}
+
+.input-group {
+    position: relative;
+    height: 35px; /* Фиксированная высота группы */
+}
+
+.input-group input.touch-active {
+    border: 2px solid var(--primary-color);
+    transition: border-color 0.1s ease-in-out;
+    position: relative;
+    z-index: 3; /* Выше чем у .custom-slider.active (z-index: 2) */
 } 
