@@ -23,11 +23,6 @@
         margin-left: 0;
     }
 
-    #startWorkout {
-        width: 100%;
-        max-width: 300px;
-    }
-
     /* Navigation */
     .nav-tab {
         font-size: var(--font-size-sm);
@@ -57,8 +52,7 @@
 /* Mobile */
 @media (max-width: 375px) {
     .content-container,
-    #workoutControls,
-    #startWorkoutSection {
+    #workoutControls {
         padding: var(--spacing-sm);
     }
     

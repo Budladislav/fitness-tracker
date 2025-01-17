@@ -67,8 +67,3 @@ body:not(.desktop-device) .content-container {
     z-index: 100;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
-
-.controls-panel--centered {
-    display: flex;
-    justify-content: center;
-}

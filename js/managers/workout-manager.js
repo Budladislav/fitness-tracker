@@ -125,7 +125,6 @@ export class WorkoutManager {
     }
 
     initializeWorkoutEvents() {
-        const startWorkoutBtn = document.getElementById('startWorkout');
         const startWorkoutRoundBtn = document.getElementById('startWorkoutRound');
         
         const startWorkoutHandler = () => {
@@ -141,10 +140,6 @@ export class WorkoutManager {
             this.notifications.info('Начата новая тренировка');
         };
 
-        if (startWorkoutBtn) {
-            startWorkoutBtn.addEventListener('click', startWorkoutHandler);
-        }
-        
         if (startWorkoutRoundBtn) {
             startWorkoutRoundBtn.addEventListener('click', startWorkoutHandler);
         }

@@ -49,7 +49,6 @@ export class WorkoutFormManager extends BaseComponent {
             exerciseReps: this.querySelector(DOM_SELECTORS.INPUTS.REPS.INPUT),
             exerciseWeight: this.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.INPUT),
             workoutForm: this.querySelector(DOM_SELECTORS.WORKOUT.FORM),
-            startWorkoutSection: this.querySelector(DOM_SELECTORS.WORKOUT.START_SECTION),
             weightInput: this.querySelector(DOM_SELECTORS.INPUTS.WEIGHT.CONTAINER),
             workoutContent: this.querySelector(DOM_SELECTORS.WORKOUT.CONTENT),
             repsSlider: this.querySelector(DOM_SELECTORS.WORKOUT.REPS_SLIDER),
@@ -182,7 +181,6 @@ export class WorkoutFormManager extends BaseComponent {
         }
 
         // Переключаем видимость
-        this.elements.startWorkoutSection.classList.add('hidden');
         this.elements.workoutForm.classList.remove('hidden');
         this.elements.workoutContent.classList.remove('hidden');
 
@@ -212,10 +210,7 @@ export class WorkoutFormManager extends BaseComponent {
             
             // Скрываем форму упражнений
             this.elements.workoutForm.classList.add('hidden');
-            
-            // Показываем кнопку "Начать тренировку"
-            this.elements.startWorkoutSection.classList.remove('hidden');
-            
+
             // Скрываем контент тренировки
             if (this.elements.workoutContent) {
                 this.elements.workoutContent.classList.add('hidden');
@@ -263,7 +258,6 @@ export class WorkoutFormManager extends BaseComponent {
             
             if (formState.isFormVisible) {
                 this.elements.workoutForm.classList.remove('hidden');
-                this.elements.startWorkoutSection.classList.add('hidden');
                 this.elements.workoutContent.classList.remove('hidden');
             }
             

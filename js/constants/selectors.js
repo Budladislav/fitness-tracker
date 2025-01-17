@@ -11,8 +11,6 @@ export const DOM_SELECTORS = {
         CONTROLS: '#workoutControls',
         FORM: '#workoutForm',
         CONTENT: '#workoutContent',
-        START_SECTION: '#startWorkoutSection',
-        START_BUTTON: '#startWorkout',
         SAVE_BUTTON: '#saveWorkout',
         ADD_BUTTON: '#addExercise',
         LOG: '#exerciseLog',
