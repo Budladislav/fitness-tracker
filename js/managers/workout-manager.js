@@ -187,6 +187,8 @@ export class WorkoutManager {
             this.storage.removeFromStorage('currentWorkout', sessionStorage);
             this.storage.removeFromStorage('activeWorkout');
             
+            document.body.classList.remove('workout-active');
+
             this.ui.resetWorkoutForm();
             this.ui.navigation.switchToTab('history');
             
