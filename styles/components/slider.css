@@ -1,13 +1,18 @@
 .custom-slider {
     display: none;
     position: absolute;
-    right: 0;
+
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-44%);
     width: 36px;
-    height: 35px;
+    height: 34px;
     flex-shrink: 0;
     z-index: 1;
+
+    position: absolute;
+    left: 0;
+
+
 }   
 
 .input-field.slider-active .custom-slider {

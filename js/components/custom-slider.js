@@ -24,6 +24,11 @@ export class CustomSlider {
         this.element.addEventListener('mousedown', (e) => this.handleTouchStart(e));
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleTouchEnd());
+
+        this.input.addEventListener('input', () => {
+            const value = parseFloat(this.input.value) || 0;
+            this.element.querySelector('.slider-value').textContent = value;
+        });
     }
 
     handleTouchStart(e) {

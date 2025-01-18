@@ -211,34 +211,23 @@ select option[disabled] {
 
 .input-group {
     position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    min-width: 0;
 }
 
+/* Центрируем текст в инпуте */
 .input-group input {
     text-align: center;
-    width: 100%;
+    padding-right: 35px; /* Место только для суффикса */
+    padding-left: 45px; /* Место для слайдера слева */
 }
 
-.input-group input#exerciseReps,
-.input-group input#exerciseWeight {
-    padding-right: 45px; /* Отступ для суффикса */
-}
-
+/* Прижимаем суффикс к правому краю */
 .input-suffix {
     position: absolute;
-    left: 50%;
-    transform: translateX(10px);
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     color: var(--text-color-secondary);
     pointer-events: none;
-}
-
-select#exerciseName {
-    text-align: center;
-    text-align-last: center; /* Для современных браузеров */
-    -moz-text-align-last: center; /* Для Firefox */
 }
 
 /* Общий стиль для значения слайдера */
@@ -274,6 +263,7 @@ select#exerciseName {
     background: var(--card-background);
     border-top: 1px solid var(--border-color);
     padding: var(--spacing-sm);
+    padding-bottom: 50px;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     z-index: 100;
 }
@@ -338,31 +328,6 @@ select#exerciseName {
 
 .add-exercise-btn:active {
     transform: scale(0.95);
-}
-
-/* Позиционируем слайдер справа от инпута */
-.custom-slider {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0 var(--spacing-sm);
-    width: 30px;
-}
-
-/* Убираем отступ справа у инпута для места под слайдер */
-.input-group input {
-    padding-right: 80px; /* Место для суффикса и слайдера */
-}
-
-/* Позиционируем суффикс */
-.input-suffix {
-    position: absolute;
-    right: 45px;
-    color: var(--text-color-secondary);
 }
 
 /* Стили для заголовка с упражнением и переключателем */
