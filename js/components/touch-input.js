@@ -85,11 +85,12 @@ export class TouchInput {
     handleTouchStart(e) {
         this.touchStartTime = Date.now();
         this.touchStartY = e.touches[0].clientY;
-        this.startValue = parseFloat(this.input.value) || this.options.initialValue;
-
+        this.startValue = parseFloat(this.input.value) || 0;
+        
+        this.isScrolling = false;
+        
         this.previewTimer = setTimeout(() => {
             this.isScrolling = true;
-            this.input.blur(); // Убираем фокус при активации скролла
             this.input.classList.add('touch-active');
             this.showPreview();
         }, this.longPressDelay);
