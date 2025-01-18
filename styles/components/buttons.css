@@ -155,6 +155,10 @@
 /* Specific positioning for start workout button */
 .round-btn {
     position: fixed;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    font-size: 32px;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);

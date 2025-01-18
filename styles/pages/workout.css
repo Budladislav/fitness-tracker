@@ -14,12 +14,14 @@
 .form-inputs {
     display: flex;
     gap: var(--spacing-xs);
-    flex-wrap: wrap;
+    width: 100%;
+    padding: 0 var(--spacing-xs);
+    box-sizing: border-box;
 }
 
 .input-field {
     flex: 1;
-    min-width: 200px;
+    min-width: 0;
 }
 
 /* Exercise Log Area */
@@ -31,4 +33,23 @@
 .toggle-wrapper {
     display: flex;
     justify-content: center;
+}
+
+/* Уменьшаем отступы на мобильных устройствах */
+@media (max-width: 375px) {
+    .form-inputs {
+        padding: 0 var(--spacing-xxs);
+        gap: var(--spacing-xxs);
+    }
+    
+    /* Уменьшаем правый отступ у инпутов для экономии места */
+    .input-group input#exerciseReps,
+    .input-group input#exerciseWeight {
+        padding-right: 35px;
+    }
+    
+    /* Корректируем позицию суффикса */
+    .input-suffix {
+        right: 35px;
+    }
 }
