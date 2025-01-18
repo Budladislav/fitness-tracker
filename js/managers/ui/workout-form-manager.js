@@ -30,14 +30,16 @@ export class WorkoutFormManager extends BaseComponent {
                 step: 1,
                 maxChange: 10,
                 minValue: 1,
-                initialValue: 10
+                initialValue: 10,
+                suffix: 'раз'
             });
             new TouchInput(this.elements.exerciseWeight, {
                 step: 2.5,
                 maxChange: 20,
                 minValue: 0,
                 sensitivity: 0.4,
-                initialValue: 100
+                initialValue: 100,
+                suffix: 'кг'
             });
         }
     }

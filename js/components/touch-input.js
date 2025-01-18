@@ -7,6 +7,7 @@ export class TouchInput {
             minValue: options.minValue || 0,
             initialValue: options.initialValue || 10,
             sensitivity: options.sensitivity || 0.2,
+            suffix: options.suffix || '',
             ...options
         };
 
@@ -36,7 +37,6 @@ export class TouchInput {
         const previewCurrent = this.preview.querySelector('.preview-current');
         const previewValues = this.preview.querySelector('.preview-values');
         
-        // Генерируем список значений вокруг текущего
         const currentValue = parseFloat(this.input.value);
         const values = [];
         for (let i = -5; i <= 5; i++) {
@@ -46,7 +46,8 @@ export class TouchInput {
         previewValues.innerHTML = values
             .map(value => `<div class="preview-option ${value === currentValue ? 'selected' : ''}">${value}</div>`)
             .join('');
-        previewCurrent.textContent = currentValue;
+        
+        previewCurrent.textContent = `${currentValue} ${this.options.suffix}`;
     }
 
     showPreview() {
