@@ -115,6 +115,8 @@ button:active {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-md);
+    margin: 0;
+    flex-shrink: 0;
 }
 
 .toggle-wrapper span {
@@ -125,8 +127,8 @@ button:active {
 .toggle {
     position: relative;
     display: inline-block;
-    width: 100px;
-    height: 34px;
+    width: 80px;
+    height: 30px;
 }
 
 .toggle input {
@@ -151,8 +153,8 @@ button:active {
 .toggle-slider:before {
     position: absolute;
     content: "";
-    height: 26px;
-    width: 26px;
+    height: 22px;
+    width: 22px;
     left: 4px;
     bottom: 3px;
     background-color: var(--primary-color);
@@ -161,7 +163,6 @@ button:active {
 }
 
 .toggle-label {
-    position: absolute;
     width: 100%;
     height: 100%;
     display: flex;
@@ -170,22 +171,12 @@ button:active {
     color: var(--text-color);
 }
 
-.toggle-label::before {
-    content: "Без веса";
-    opacity: 1;
-}
-
-.toggle-label::after {
-    content: "С весом";
-    opacity: 0;
-}
-
 input:checked + .toggle-slider {
     background-color: var(--background-color);
 }
 
 input:checked + .toggle-slider:before {
-    transform: translateX(66px);
+    transform: translateX(50px);
 }
 
 input:checked + .toggle-slider .toggle-label::before {
@@ -379,4 +370,16 @@ select#exerciseName {
     position: absolute;
     right: 45px;
     color: var(--text-color-secondary);
+}
+
+/* Стили для заголовка с упражнением и переключателем */
+.exercise-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.exercise-header select {
+    flex: 1;
 }

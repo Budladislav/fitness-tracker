@@ -50,9 +50,20 @@
                 <div class="workout-form-content">
                     <!-- Левая часть с инпутами -->
                     <div class="workout-inputs">
-                        <select id="exerciseName">
-                            <option value="" disabled selected>Выберите упражнение</option>
-                        </select>
+                        <div class="exercise-header">
+                            <select id="exerciseName">
+                                <option value="" disabled selected>Выберите упражнение</option>
+                            </select>
+                            
+                            <div class="toggle-wrapper">
+                                <label class="toggle">
+                                    <input type="checkbox" id="exerciseType">
+                                    <div class="toggle-slider">
+                                        <span class="toggle-label">вес</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
                         
                         <div class="form-inputs">
                             <div id="weightInput" class="input-field" data-visible="false">
@@ -79,15 +90,6 @@
                                     <div class="slider-value">10</div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="toggle-wrapper">
-                            <label class="toggle">
-                                <input type="checkbox" id="exerciseType">
-                                <div class="toggle-slider">
-                                    <span class="toggle-label"></span>
-                                </div>
-                            </label>
                         </div>
                     </div>
             </div>
