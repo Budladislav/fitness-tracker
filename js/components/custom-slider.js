@@ -76,14 +76,23 @@ export class CustomSlider {
             this.currentValue = Math.round(this.currentValue / this.step) * this.step;
         }
         
+        if (this.currentValue <= this.minValue) {
+            this.currentValue = this.minValue;
+            this.initialValue = this.minValue;
+        }
+        
         this.element.querySelector('.slider-value').textContent = this.currentValue;
         this.input.value = this.currentValue;
 
-        // Генерируем событие input для сохранения состояния
         const inputEvent = new Event('input', {
             bubbles: true,
             cancelable: true
         });
         this.input.dispatchEvent(inputEvent);
+    }
+
+    setInitialValue(value) {
+        this.initialValue = value;
+        this.currentValue = value;
     }
 } 

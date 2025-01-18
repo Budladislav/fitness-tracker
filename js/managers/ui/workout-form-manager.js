@@ -111,7 +111,10 @@ export class WorkoutFormManager extends BaseComponent {
                 const defaultWeight = ExercisePool.getDefaultWeight(selectedExercise);
                 this.elements.exerciseWeight.value = defaultWeight;
                 this.elements.weightSlider.querySelector('.slider-value').textContent = defaultWeight;
-                // Генерируем событие input для обновления слайдера
+                
+                // Обновляем initialValue в слайдере
+                this.weightSlider.setInitialValue(defaultWeight);
+                
                 const inputEvent = new Event('input', {
                     bubbles: true,
                     cancelable: true

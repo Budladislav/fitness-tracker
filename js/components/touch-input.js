@@ -108,12 +108,18 @@ export class TouchInput {
                 Math.min(this.maxScrollDistance, deltaY)
             );
             
-            // Используем sensitivity как в CustomSlider
             const proposedChange = Math.round(limitedDeltaY * this.options.sensitivity / this.options.step) * this.options.step;
             let newValue = this.startValue + proposedChange;
             
             // Применяем ограничения
             newValue = Math.max(this.options.minValue, newValue);
+            
+            // Если значение достигло минимума, обновляем startValue
+            if (newValue <= this.options.minValue) {
+                newValue = this.options.minValue;
+                this.startValue = this.options.minValue;
+            }
+            
             if (this.options.maxChange) {
                 newValue = Math.min(
                     this.startValue + this.options.maxChange,
