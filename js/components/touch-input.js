@@ -39,14 +39,24 @@ export class TouchInput {
         
         const currentValue = parseFloat(this.input.value);
         const values = [];
-        for (let i = -5; i <= 5; i++) {
-            values.push(currentValue + (i * this.options.step));
+        
+        // Генерируем значения с текущим шагом
+        for (let i = -2; i <= 2; i++) {
+            const value = currentValue + (i * this.options.step);
+            if (value >= this.options.minValue) {
+                values.push(value);
+            }
         }
 
+        // Сортируем значения по убыванию (сверху вниз)
+        values.sort((a, b) => b - a);
+
+        // Формируем HTML без суффиксов в options
         previewValues.innerHTML = values
-            .map(value => `<div class="preview-option ${value === currentValue ? 'selected' : ''}">${value}</div>`)
+            .map(value => `<div class="preview-option ${Math.abs(value - currentValue) < 0.001 ? 'selected' : ''}">${value}</div>`)
             .join('');
         
+        // Добавляем суффикс только в центральное значение
         previewCurrent.textContent = `${currentValue} ${this.options.suffix}`;
     }
 
