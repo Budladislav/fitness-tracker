@@ -2,47 +2,44 @@ export class CustomSlider {
     constructor(options) {
         this.element = options.element;
         this.input = options.input;
+        this.inputField = this.input.closest('.input-field');
         this.step = options.step || 1;
         this.maxChange = options.maxChange || 10;
         this.minValue = options.minValue || 0;
-        this.sensitivity = options.sensitivity || 0.2;
+        this.sensitivity = options.sensitivity || 0.5;
         this.initialValue = options.initialValue || 0;
-        
-        this.startY = 0;
         this.currentValue = this.initialValue;
-        this.isActive = false;
         
-        this.element.querySelector('.slider-value').textContent = String(this.initialValue);
+        this.isActive = false;
+        this.startY = 0;
+        
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        this.element.addEventListener('touchstart', this.handleTouchStart.bind(this));
-        this.element.addEventListener('touchmove', this.handleTouchMove.bind(this));
-        this.element.addEventListener('touchend', this.handleTouchEnd.bind(this));
-        this.element.addEventListener('touchcancel', this.handleTouchEnd.bind(this));
+        this.element.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+        document.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+        document.addEventListener('touchend', () => this.handleTouchEnd());
         
-        this.input.addEventListener('input', () => {
-            const value = this.input.value;
-            if (value) {
-                this.element.querySelector('.slider-value').textContent = value;
-            }
-        });
+        this.element.addEventListener('mousedown', (e) => this.handleTouchStart(e));
+        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        document.addEventListener('mouseup', () => this.handleTouchEnd());
     }
 
     handleTouchStart(e) {
         this.isActive = true;
-        this.startY = e.touches[0].clientY;
+        this.startY = e.touches ? e.touches[0].clientY : e.clientY;
         this.initialValue = parseFloat(this.input.value) || this.initialValue;
         this.currentValue = this.initialValue;
         this.element.classList.add('active');
+        this.inputField.classList.add('slider-active');
         e.preventDefault();
     }
 
     handleTouchMove(e) {
         if (!this.isActive) return;
-
-        const deltaY = this.startY - e.touches[0].clientY;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const deltaY = this.startY - clientY;
         const proposedChange = Math.round(deltaY * this.sensitivity / this.step) * this.step;
         const newValue = this.initialValue + proposedChange;
         
@@ -50,10 +47,16 @@ export class CustomSlider {
         e.preventDefault();
     }
 
+    handleMouseMove(e) {
+        if (!this.isActive) return;
+        this.handleTouchMove(e);
+    }
+
     handleTouchEnd() {
         if (this.isActive) {
             this.isActive = false;
             this.element.classList.remove('active');
+            this.inputField.classList.remove('slider-active');
         }
     }
 

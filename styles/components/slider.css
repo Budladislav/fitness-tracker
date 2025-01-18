@@ -1,8 +1,4 @@
-.input-group {
-    position: relative;
-}
-
-.input-group .custom-slider {
+.custom-slider {
     display: none;
     position: absolute;
     right: 0;
@@ -14,7 +10,8 @@
     z-index: 1;
 }   
 
-.input-group .custom-slider.active {
+.input-field.slider-active .custom-slider {
+    display: block;
     height: 120px;
     background-color: var(--background-color);
     border: 2px solid var(--primary-color);
@@ -22,8 +19,8 @@
     z-index: 2;
 }
 
-.input-group .custom-slider.active::before,
-.input-group .custom-slider.active::after {
+.input-field.slider-active .custom-slider::before,
+.input-field.slider-active .custom-slider::after {
     content: '';
     position: absolute;
     left: 50%;
@@ -33,16 +30,32 @@
     border-top: 2px solid var(--primary-color);
 }
 
-.input-group .custom-slider.active::before {
+.input-field.slider-active .custom-slider::before {
     top: 10px;
     transform: translateX(-50%) rotate(45deg);
 }
 
-.input-group .custom-slider.active::after {
+.input-field.slider-active .custom-slider::after {
     bottom: 10px;
     transform: translateX(-50%) rotate(225deg);
 }
 
-.mobile-device .input-group .custom-slider {
+.mobile-device .custom-slider {
     display: block;
+} 
+
+/* Стили для значения слайдера */
+.custom-slider .slider-value {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+/* Увеличиваем размер в активном состоянии */
+.input-field.slider-active .custom-slider .slider-value {
+    font-size: 18px;
+    font-weight: 500;
 } 
