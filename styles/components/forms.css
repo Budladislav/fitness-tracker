@@ -66,7 +66,7 @@ button:active {
     display: flex;
     justify-content: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -232,11 +232,9 @@ select#exerciseName {
 }
 
 #exitWorkout {
-    position: absolute;
-    left: var(--spacing-md);
-    top: var(--spacing-md);
-    width: 32px;
-    height: 32px;
+    position: relative;
+    width: 40px;
+    height:40px;
     padding: 0;
     border-radius: 50%;
     display: flex;
@@ -245,7 +243,6 @@ select#exerciseName {
     font-size: 18px;
     margin: 0;
     background: transparent;
-    color: var(--text-color);
 }
 
 #exitWorkout:hover {
@@ -274,11 +271,11 @@ select#exerciseName {
 /* Новая структура формы */
 .workout-form-content {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: 0;
 }
 
 .workout-inputs {
-    flex: 0 1 80%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
