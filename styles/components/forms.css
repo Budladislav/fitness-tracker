@@ -274,16 +274,15 @@ select#exerciseName {
 /* Новая структура формы */
 .workout-form-content {
     display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
+    gap: var(--spacing-xs);
 }
 
 .workout-inputs {
     flex: 0 1 80%;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs);
 }
 
 .form-inputs {
@@ -292,8 +291,11 @@ select#exerciseName {
 }
 
 .input-field {
-    flex: 1 1 200px;
-    min-width: 0;
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 /* При скрытом весе - растягиваем повторения */
@@ -323,4 +325,29 @@ select#exerciseName {
 
 .add-exercise-btn:active {
     transform: scale(0.95);
+}
+
+/* Позиционируем слайдер справа от инпута */
+.custom-slider {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-sm);
+    width: 30px;
+}
+
+/* Убираем отступ справа у инпута для места под слайдер */
+.input-group input {
+    padding-right: 80px; /* Место для суффикса и слайдера */
+}
+
+/* Позиционируем суффикс */
+.input-suffix {
+    position: absolute;
+    right: 45px;
+    color: var(--text-color-secondary);
 }
