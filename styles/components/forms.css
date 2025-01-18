@@ -67,30 +67,46 @@ button:active {
     align-items: center;
     padding: var(--spacing-sm);
     border-bottom: 1px solid var(--border-color);
-}
-
-.workout-buttons .delete-btn {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    background: transparent;
-    color: var(--text-color);
-    margin-right: auto;
-}
-
-.workout-buttons .delete-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
+    gap: var(--spacing-sm);
 }
 
 .workout-buttons .center-buttons {
-    margin: 0 auto;
+    flex: 1;
     display: flex;
-    gap: var(--spacing-md);
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+.workout-buttons .workout-btn {
+    min-width: 100px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+}
+
+/* Стили для кнопки добавления в панели кнопок */
+.workout-buttons .add-exercise-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: var(--transition);
+}
+
+.workout-buttons .add-exercise-btn:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+.workout-buttons .add-exercise-btn:active {
+    transform: scale(0.95);
 }
 
 /* Toggle Switch */
@@ -249,13 +265,12 @@ select#exerciseName {
 
 #exitWorkout {
     position: relative;
-    width: 40px;
-    height:40px;
-    padding: 0;
+    width: 0px;
+    min-width: 23px;
+    padding-left: var(--spacing-xs);
     border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: center;
     font-size: 30px;
     color: var(--error-color);
     margin: 0;

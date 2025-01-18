@@ -32,15 +32,3 @@
     display: flex;
     justify-content: center;
 }
-
-/* Workout Controls */
-.workout-buttons {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.workout-btn {
-    flex: 1;
-    min-width: 150px;
-    white-space: nowrap;
-}
