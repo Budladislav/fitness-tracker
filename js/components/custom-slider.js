@@ -17,8 +17,8 @@ export class CustomSlider {
     }
 
     setupEventListeners() {
-        this.element.addEventListener('touchstart', (e) => this.handleTouchStart(e));
-        document.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+        this.element.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+        document.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
         document.addEventListener('touchend', () => this.handleTouchEnd());
         
         this.element.addEventListener('mousedown', (e) => this.handleTouchStart(e));
