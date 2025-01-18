@@ -126,35 +126,45 @@
     background-color: var(--primary-hover);
 }
 
-/* Round Button */
-.round-btn {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 100px;
-    height: 100px;
+/* Base styles for round buttons */
+.round-button-base {
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background-color: var(--primary-color);
     color: white;
     border: none;
-    font-size: 48px;
+    font-size: 32px;
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.round-button-base:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+.round-button-base:active {
+    transform: scale(0.95);
+}
+
+/* Specific positioning for start workout button */
+.round-btn {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     z-index: 10;
 }
 
-.round-btn:hover {
-    background-color: var(--primary-hover);
-    transform: translate(-50%, -50%) scale(1.05);
-}
-
-.round-btn:active {
-    transform: translate(-50%, -50%) scale(0.95);
+/* Styles for add exercise button */
+.add-exercise-btn {
+    margin-right: var(--spacing-md);
+    align-self: center;
 }
 
 /* Скрываем круглую кнопку когда тренировка активна */

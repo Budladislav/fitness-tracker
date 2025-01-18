@@ -36,46 +36,61 @@
         <div id="workoutControls" class="controls-panel">
             <!-- Форма управления тренировкой (изначально скрыта) -->
             <div id="workoutForm" class="hidden">
+                <!-- Верхние кнопки -->
                 <div class="workout-buttons">
                     <button id="saveWorkout" class="btn workout-btn">Сохранить</button>
                     <button id="workoutNotes" class="btn workout-btn">Заметки</button>
-                    <button id="addExercise" class="btn workout-btn">Добавить</button>
+                    <button id="exitWorkout" class="btn workout-btn">Отмена</button>
                 </div>
                 
-                <select id="exerciseName">
-                    <option value="" disabled selected>Выберите упражнение</option>
-                </select>
-                
-                <div class="form-inputs">
-                    <div id="weightInput" class="input-field" data-visible="false">
-                        <div class="input-group">
-                            <input type="number" id="exerciseWeight">
-                            <span class="input-suffix">кг</span>
-                            <button type="button" class="custom-slider" aria-label="Изменить вес">
-                                <span class="slider-value">100</span>
-                            </button>
+                <!-- Новый flex-контейнер -->
+                <div class="workout-form-content">
+                    <!-- Левая часть с инпутами -->
+                    <div class="workout-inputs">
+                        <select id="exerciseName">
+                            <option value="" disabled selected>Выберите упражнение</option>
+                        </select>
+                        
+                        <div class="form-inputs">
+                            <div id="weightInput" class="input-field" data-visible="false">
+                                <div class="input-group">
+                                    <input type="number" id="exerciseWeight" inputmode="decimal" placeholder="0">
+                                    <span class="input-suffix">кг</span>
+                                </div>
+                                <!-- Слайдер для веса -->
+                                <div class="custom-slider" aria-label="Изменить вес">
+                                    <div class="slider-track"></div>
+                                    <div class="slider-handle"></div>
+                                    <div class="slider-value">100</div>
+                                </div>
+                            </div>
+                            <div id="repsInput" class="input-field">
+                                <div class="input-group">
+                                    <input type="number" id="exerciseReps" inputmode="decimal" placeholder="0">
+                                    <span class="input-suffix">раз</span>
+                                </div>
+                                <!-- Слайдер для повторений -->
+                                <div class="custom-slider" aria-label="Изменить количество повторений">
+                                    <div class="slider-track"></div>
+                                    <div class="slider-handle"></div>
+                                    <div class="slider-value">10</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="toggle-wrapper">
+                            <span>С весом</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="exerciseType">
+                                <div class="toggle-slider">
+                                    <span class="toggle-label"></span>
+                                </div>
+                            </label>
                         </div>
                     </div>
                     
-                    <div id="repsInput" class="input-field">
-                        <div class="input-group">
-                            <input type="number" id="exerciseReps">
-                            <span class="input-suffix">раз</span>
-                            <button type="button" class="custom-slider" aria-label="Изменить количество повторений">
-                                <span class="slider-value">10</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="toggle-wrapper">
-                    <button id="exitWorkout" class="delete-btn">×</button>
-                    <label class="toggle">
-                        <input type="checkbox" id="exerciseType">
-                        <span class="toggle-slider">
-                            <span class="toggle-label" data-on="С весом" data-off="Без веса"></span>
-                        </span>
-                    </label>
+                    <!-- Правая часть с кнопкой -->
+                    <button id="addExercise" class="round-button-base add-exercise-btn" aria-label="Добавить упражнение">+</button>
                 </div>
             </div>
         </div>
