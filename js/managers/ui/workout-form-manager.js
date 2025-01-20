@@ -14,19 +14,16 @@ export class WorkoutFormManager extends BaseComponent {
         this.weightSlider = null;
         this.repsSlider = null;
         
-        // Проверяем наличие активной тренировки при инициализации
-        if (this.storage.getFromStorage('activeWorkout')) {
-            document.body.classList.add('workout-active');
-        }
-        
+        // Инициализация при создании
         this.elements = this.initializeElements();
-        
-        // Восстанавливаем lastSelectedExercises из состояния или используем пустые значения
-        const formState = this.storage.getFromStorage('workoutFormState', sessionStorage);
-        this.lastSelectedExercises = formState?.lastSelectedExercises || {
+        this.lastSelectedExercises = {
             weighted: '',
             bodyweight: ''
         };
+        
+        if (this.storage.getFromStorage('activeWorkout')) {
+            document.body.classList.add('workout-active');
+        }
         
         this.setupEventListeners();
         this.initializeExercisesList();
@@ -81,64 +78,30 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     updateExercisesList() {
-        const exerciseNameSelect = this.elements.exerciseName;
-        const currentType = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
-        const exercises = ExercisePool.getExercisesByType(currentType);
+        const select = this.elements.exerciseName;
+        const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
+        const exercises = ExercisePool.getExercisesByType(type);
         
-        exerciseNameSelect.innerHTML = '<option value="" disabled>Упражнение</option>';
-        
+        select.innerHTML = '<option value="" disabled>Упражнение</option>';
         exercises.forEach(exercise => {
-            const option = document.createElement('option');
-            option.value = exercise.name;
-            option.textContent = exercise.name;
-            exerciseNameSelect.appendChild(option);
+            select.add(new Option(exercise.name, exercise.name));
         });
 
-        // Проверяем есть ли сохраненное значение для текущего типа
-        if (this.lastSelectedExercises[currentType]) {
-            // Проверяем существует ли такое упражнение в текущем списке
-            const exists = Array.from(exerciseNameSelect.options).some(
-                option => option.value === this.lastSelectedExercises[currentType]
-            );
-            
-            if (exists) {
-                exerciseNameSelect.value = this.lastSelectedExercises[currentType];
-            } else {
-                // Если упражнение не найдено в списке, сбрасываем сохраненное значение
-                this.lastSelectedExercises[currentType] = '';
-                exerciseNameSelect.selectedIndex = 0;
-            }
-        } else {
-            exerciseNameSelect.selectedIndex = 0;
-        }
+        select.value = this.lastSelectedExercises[type] || '';
+        select.selectedIndex = select.value ? select.selectedIndex : 0;
     }
 
     setupEventListeners() {
         this.setupExerciseTypeEvents();
         this.setupExerciseNameEvents();
-        this.setupInputEvents();
-        this.setupExitButtonEvents();
+        this.setupFormEvents();
     }
 
     setupExerciseTypeEvents() {
         this.elements.exerciseType.addEventListener('change', () => {
             const isWeighted = this.elements.exerciseType.checked;
-            
-            // Сохраняем текущее упражнение в правильный слот
-            const currentType = isWeighted ? 'weighted' : 'bodyweight';
-            const previousType = isWeighted ? 'bodyweight' : 'weighted';
-            
-            // Сохраняем текущее значение перед переключением
-            this.lastSelectedExercises[previousType] = this.elements.exerciseName.value;
-            
             this.toggleWeightInput(isWeighted);
             this.updateExercisesList();
-            
-            // Восстанавливаем последнее выбранное упражнение для нового типа
-            if (this.lastSelectedExercises[currentType]) {
-                this.elements.exerciseName.value = this.lastSelectedExercises[currentType];
-            }
-            
             this.saveFormState();
         });
     }
@@ -147,28 +110,11 @@ export class WorkoutFormManager extends BaseComponent {
         this.elements.exerciseName.addEventListener('change', () => {
             const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
             this.lastSelectedExercises[type] = this.elements.exerciseName.value;
-            
-            if (this.elements.exerciseType.checked) {
-                this.updateWeightForExercise(this.elements.exerciseName.value);
-            }
             this.saveFormState();
         });
     }
 
-    updateWeightForExercise(exerciseName) {
-        const defaultWeight = ExercisePool.getDefaultWeight(exerciseName);
-        this.elements.exerciseWeight.value = defaultWeight;
-        this.elements.weightSlider.querySelector('.slider-value').textContent = defaultWeight;
-        
-        if (this.weightSlider) {
-            this.weightSlider.setInitialValue(defaultWeight);
-        }
-        
-        const inputEvent = new Event('input', { bubbles: true, cancelable: true });
-        this.elements.exerciseWeight.dispatchEvent(inputEvent);
-    }
-
-    setupInputEvents() {
+    setupFormEvents() {
         ['exerciseName', 'exerciseReps', 'exerciseWeight'].forEach(fieldName => {
             const element = this.elements[fieldName];
             ['input', 'blur'].forEach(eventType => {
@@ -181,18 +127,14 @@ export class WorkoutFormManager extends BaseComponent {
         }
     }
 
-    setupExitButtonEvents() {
-        const exitButton = document.getElementById('exitWorkout');
-        if (exitButton) {
-            exitButton.addEventListener('click', async () => {
-                const confirmed = await this.notifications.confirmModal.show(
-                    'Вы уверены, что хотите выйти без сохранения?'
-                );
-                
-                if (confirmed) {
-                    this.clearWorkoutState();
-                }
-            });
+    toggleWeightInput(isWeighted, skipAnimation = false) {
+        const weightInput = this.elements.weightInput;
+        
+        if (skipAnimation) {
+            weightInput.style.display = isWeighted ? 'block' : 'none';
+        } else {
+            weightInput.style.display = isWeighted ? 'block' : 'none';
+            weightInput.dataset.visible = isWeighted;
         }
     }
 
@@ -202,25 +144,6 @@ export class WorkoutFormManager extends BaseComponent {
         this.formState.clearState();
         document.body.classList.remove('workout-active');
         this.resetWorkoutForm();
-    }
-
-    toggleWeightInput(isWeighted, skipSave = false) {
-        try {
-            this.elements.weightInput.setAttribute('data-visible', isWeighted);
-            if (!skipSave) {
-                this.saveFormState();
-            }
-        } catch (error) {
-            console.error('Error in toggleWeightInput:', error);
-        }
-    }
-
-    clearInputs() {
-        // Не очищаем lastSelectedExercises при очистке формы
-        this.elements.exerciseName.value = '';
-        this.elements.exerciseReps.value = '';
-        this.elements.exerciseWeight.value = '';
-        this.saveFormState();
     }
 
     showWorkoutForm(date) {
@@ -326,5 +249,13 @@ export class WorkoutFormManager extends BaseComponent {
             minValue: 0,
             initialValue: 0
         });
+    }
+
+    clearInputs() {
+        // Не очищаем lastSelectedExercises при очистке формы
+        this.elements.exerciseName.value = '';
+        this.elements.exerciseReps.value = '';
+        this.elements.exerciseWeight.value = '';
+        this.saveFormState();
     }
 } 
