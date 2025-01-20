@@ -5,10 +5,12 @@ import { Utils } from '../../utils/utils.js';
 import { CustomSlider } from '../../components/custom-slider.js';
 import { TouchSelect } from '../../components/touch-select.js';
 import { TouchInput } from '../../components/touch-input.js';
+import { FormStateService } from '../../services/form-state-service.js';
 
 export class WorkoutFormManager extends BaseComponent {
     constructor(notifications, storage) {
         super(notifications, storage);
+        this.formState = new FormStateService(storage);
         
         // Проверяем наличие активной тренировки при инициализации
         if (this.storage.getFromStorage('activeWorkout')) {
@@ -162,7 +164,7 @@ export class WorkoutFormManager extends BaseComponent {
     clearWorkoutState() {
         this.storage.removeFromStorage('currentWorkout', sessionStorage);
         this.storage.removeFromStorage('activeWorkout');
-        this.storage.removeFromStorage('workoutFormState', sessionStorage);
+        this.formState.clearState();
         document.body.classList.remove('workout-active');
         this.resetWorkoutForm();
     }
@@ -237,48 +239,27 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     saveFormState() {
-        const formState = {
-            exerciseName: this.elements.exerciseName.value,
-            exerciseReps: this.elements.exerciseReps.value,
-            exerciseWeight: this.elements.exerciseWeight.value,
-            exerciseType: this.elements.exerciseType.checked,
-            isFormVisible: !this.elements.workoutForm.classList.contains('hidden')
-        };
-        
-        return this.storage.saveToStorage('workoutFormState', formState, sessionStorage);
+        return this.formState.saveState(this.elements);
     }
 
     restoreFormState() {
-        const formState = this.storage.getFromStorage('workoutFormState', sessionStorage);
-        
-        if (formState) {
-            // Сначала устанавливаем тип упражнения без сохранения состояния
-            this.elements.exerciseType.checked = formState.exerciseType;
-            this.toggleWeightInput(formState.exerciseType, true);
-            
+        const state = this.formState.restoreState(this.elements);
+        if (state) {
+            this.toggleWeightInput(state.exerciseType, true);
             this.updateExercisesList();
-            
-            this.elements.exerciseName.value = formState.exerciseName || '';
-            this.elements.exerciseReps.value = formState.exerciseReps || '';
-            this.elements.exerciseWeight.value = formState.exerciseWeight || '';
-            
-            if (this.elements.repsSlider) {
-                this.elements.repsSlider.querySelector('.slider-value').textContent = 
-                    formState.exerciseReps || '10';
-            }
-            
-            if (this.elements.weightSlider) {
-                this.elements.weightSlider.querySelector('.slider-value').textContent = 
-                    formState.exerciseWeight || '100';
-            }
-            
-            if (formState.isFormVisible) {
-                this.elements.workoutForm.classList.remove('hidden');
-                this.elements.workoutContent.classList.remove('hidden');
-            }
-            
-            // Сохраняем состояние только один раз в конце
-            this.saveFormState();
+            this.updateSliderValues(state);
+        }
+    }
+
+    updateSliderValues(state) {
+        if (this.elements.repsSlider) {
+            this.elements.repsSlider.querySelector('.slider-value').textContent = 
+                state.exerciseReps || '10';
+        }
+        
+        if (this.elements.weightSlider) {
+            this.elements.weightSlider.querySelector('.slider-value').textContent = 
+                state.exerciseWeight || '0';
         }
     }
 
@@ -287,7 +268,7 @@ export class WorkoutFormManager extends BaseComponent {
         new CustomSlider({
             element: this.elements.repsSlider,
             input: this.elements.exerciseReps,
-            step: 1,
+            step: 1,    
             maxChange: 10,
             minValue: 1,
             initialValue: 10
