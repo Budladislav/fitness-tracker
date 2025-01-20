@@ -110,6 +110,26 @@ export class WorkoutFormManager extends BaseComponent {
         this.elements.exerciseName.addEventListener('change', () => {
             const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
             this.lastSelectedExercises[type] = this.elements.exerciseName.value;
+            
+            // Устанавливаем вес по умолчанию при выборе упражнения
+            if (type === 'weighted' && this.elements.exerciseName.value) {
+                const defaultWeight = ExercisePool.getDefaultWeight(this.elements.exerciseName.value);
+                if (defaultWeight) {
+                    this.elements.exerciseWeight.value = defaultWeight;
+                    // Обновляем значение слайдера, если он есть
+                    const slider = this.querySelector('.custom-slider[aria-label="Изменить вес"]');
+                    if (slider) {
+                        const valueDisplay = slider.querySelector('.slider-value');
+                        const handle = slider.querySelector('.slider-handle');
+                        if (valueDisplay) valueDisplay.textContent = defaultWeight;
+                        if (handle) {
+                            const percent = (defaultWeight - 0) / (200 - 0) * 100;
+                            handle.style.left = `${percent}%`;
+                        }
+                    }
+                }
+            }
+            
             this.saveFormState();
         });
     }

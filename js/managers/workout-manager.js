@@ -26,14 +26,7 @@ export class WorkoutManager {
             this.initializeEventListeners();
             
             // Проверяем наличие активной тренировки
-            const currentWorkout = this.stateManager.getCurrentWorkout();
-            if (currentWorkout) {
-                // Восстанавливаем только если есть активная тренировка
-                this.restoreWorkoutState();
-            } else {
-                // Если нет активной тренировки, показываем историю
-                this.ui.navigation.switchToTab('history');
-            }
+            this.restoreWorkoutState();
             
             setTimeout(() => {
                 this.displayWorkoutHistory();
@@ -43,8 +36,8 @@ export class WorkoutManager {
         }
     }
 
-    restoreWorkoutState() {
-        const currentWorkout = this.stateManager.getCurrentWorkout();
+    async restoreWorkoutState() {
+        const currentWorkout = await this.stateManager.getCurrentWorkout();
         
         if (currentWorkout && currentWorkout.date) {
             if (!this.stateManager.isFormShown()) {
@@ -77,15 +70,14 @@ export class WorkoutManager {
     }
 
     initializeFormEvents() {
-        this.ui.elements.addExercise.addEventListener('click', () => {
+        this.ui.elements.addExercise.addEventListener('click', async () => {
             const formData = this.ui.getFormData();
             const validatedData = this.validator.validate(formData);
             
             if (validatedData) {
                 this.ui.addExerciseToLog(validatedData);
-                const existing = this.stateManager.getCurrentWorkout();
+                const existing = await this.stateManager.getCurrentWorkout();
                 
-                // Создаем новую тренировку, сохраняя существующие данные
                 const currentWorkout = WorkoutFactory.createNewWorkout(
                     existing.date,
                     this.ui.getExercisesFromLog(),
@@ -96,13 +88,12 @@ export class WorkoutManager {
                         notes: existing.notes
                     }
                 );
-                this.stateManager.setCurrentWorkout(currentWorkout);
+                await this.stateManager.setCurrentWorkout(currentWorkout);
             }
         });
 
-        // Добавляем обработчик для кнопки заметок
-        document.getElementById('workoutNotes').addEventListener('click', () => {
-            const currentWorkout = this.stateManager.getCurrentWorkout();
+        document.getElementById('workoutNotes').addEventListener('click', async () => {
+            const currentWorkout = await this.stateManager.getCurrentWorkout();
             
             if (!currentWorkout) {
                 this.notifications.error('Сначала начните тренировку');
@@ -111,15 +102,13 @@ export class WorkoutManager {
 
             this.notesModal.show(currentWorkout.notes);
             
-            // Обработчик сохранения заметок
-            const saveHandler = () => {
+            const saveHandler = async () => {
                 const notes = this.notesModal.getValues();
                 currentWorkout.notes = notes;
-                this.stateManager.setCurrentWorkout(currentWorkout);
+                await this.stateManager.setCurrentWorkout(currentWorkout);
                 this.notifications.success('Заметки сохранены');
             };
 
-            // Добавляем обработчик на кнопку "Сохранить" в модальном окне
             this.notesModal.modal.querySelector('.save-notes').onclick = () => {
                 saveHandler();
                 this.notesModal.hide();
@@ -130,12 +119,17 @@ export class WorkoutManager {
     initializeWorkoutEvents() {
         const startWorkoutRoundBtn = document.getElementById('startWorkoutRound');
         
-        const startWorkoutHandler = () => {
-            this.stateManager.clearCurrentWorkout();
+        const startWorkoutHandler = async () => {
+            await this.stateManager.clearCurrentWorkout();
             
-            const storageDate = DateFormatter.toStorageFormat('current');
+            const now = new Date();
+            // Если время между 00:00 и 04:00, используем предыдущий день
+            if (now.getHours() < 4) {
+                now.setDate(now.getDate() - 1);
+            }
+            const storageDate = DateFormatter.toStorageFormat(now);
             const newWorkout = WorkoutFactory.createNewWorkout(storageDate);
-            this.stateManager.setCurrentWorkout(newWorkout);
+            await this.stateManager.setCurrentWorkout(newWorkout);
             
             document.body.classList.add('workout-active');
             this.ui.showWorkoutForm(storageDate);
@@ -158,18 +152,15 @@ export class WorkoutManager {
                 'Вы уверены, что хотите сохранить тренировку?'
             );
             
-            if (!confirmed) {
-                return;
-            }
+            if (!confirmed) return;
 
-            const currentWorkout = this.stateManager.getCurrentWorkout();
-
+            const currentWorkout = await this.stateManager.getCurrentWorkout();
+            
             if (!currentWorkout.date) {
                 this.notifications.error('Ошибка: дата тренировки не найдена!');
                 return;
             }
 
-            // Передаем все существующие данные в фабрику
             const workoutToSave = WorkoutFactory.createNewWorkout(
                 currentWorkout.date,
                 exercises,
@@ -177,29 +168,28 @@ export class WorkoutManager {
                     id: currentWorkout.id,
                     created: currentWorkout.created,
                     startTime: currentWorkout.startTime,
-                    notes: currentWorkout.notes // Явно передаем заметки
+                    notes: currentWorkout.notes
                 }
             );
 
-            if (!this.stateManager.saveWorkoutToHistory(workoutToSave)) {
+            if (!await this.stateManager.saveWorkoutToHistory(workoutToSave)) {
                 this.notifications.error('Не удалось сохранить тренировку');
                 return;
             }
-            
-            this.stateManager.clearCurrentWorkout();
+
+            await this.stateManager.clearCurrentWorkout();
             
             document.body.classList.remove('workout-active');
-
             this.ui.resetWorkoutForm();
             this.ui.navigation.switchToTab('history');
             
-            this.displayWorkoutHistory();
+            await this.displayWorkoutHistory();
             this.notifications.success('Тренировка сохранена!');
         });
     }
 
-    displayWorkoutHistory() {
-        const savedWorkouts = this.stateManager.getWorkoutHistory();
-        this.ui.displayWorkoutHistory(savedWorkouts);
+    async displayWorkoutHistory() {
+        const workouts = await this.stateManager.getWorkoutHistory();
+        this.ui.displayWorkoutHistory(workouts);
     }
 } 

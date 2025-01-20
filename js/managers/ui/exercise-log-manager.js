@@ -106,10 +106,10 @@ export class ExerciseLogManager extends BaseComponent {
         return deleteBtn;
     }
 
-    updateWeightInfo(item, exercise, exerciseName, element = null) {
+    async updateWeightInfo(item, exercise, exerciseName, element = null) {
         const totalWeight = ExerciseCalculatorService.calculateTotalWeight(exercise);
-        const history = this.storage.getExerciseHistory(exerciseName);
-        const avgWeight = ExerciseCalculatorService.calculateAverageWeight(history);
+        const history = await this.storage.getExerciseHistory(exerciseName);
+        const avgWeight = ExerciseCalculatorService.calculateAverageWeight(history || []);
         
         const weightElement = element || item.querySelector('.total-weight');
         weightElement.innerHTML = `

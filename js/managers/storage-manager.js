@@ -8,10 +8,11 @@ import { ExerciseCalculatorService } from '../services/exercise-calculator.servi
  */
 export class WorkoutStorage {
     constructor() {
-        this.storageAvailable = this.checkStorageAvailability();
-        this.STORAGE_KEY = 'workouts';
         this.ACTIVE_WORKOUT_KEY = 'activeWorkout';
-        this.BACKUP_KEY = 'workouts_backup';
+        this.CURRENT_WORKOUT_KEY = 'currentWorkout';
+        this.EXERCISES_KEY = 'exercises';
+        this.BACKUP_KEY = 'exercisesBackup';
+        this.storageAvailable = this.checkStorageAvailability();
     }
 
     checkStorageAvailability() {
@@ -82,115 +83,79 @@ export class WorkoutStorage {
         }
     }
 
-    getCurrentWorkout() {
-        // Пробуем получить из sessionStorage
-        const currentWorkout = this.getFromStorage('currentWorkout', sessionStorage);
-        if (currentWorkout) return currentWorkout;
+    // Базовые методы работы с хранилищем
+    async getWorkout(id) {
+        const workouts = await this.getWorkoutHistory();
+        return workouts.find(w => w.id === id);
+    }
 
-        // Если нет в sessionStorage, проверяем activeWorkout
-        const activeWorkout = this.getFromStorage('activeWorkout');
-        if (activeWorkout) {
-            // Сохраняем в sessionStorage и возвращаем
-            this.saveToStorage('currentWorkout', activeWorkout, sessionStorage);
-            return activeWorkout;
+    async getCurrentWorkout() {
+        // Приоритет: sessionStorage -> localStorage -> null
+        const current = this.getFromStorage(this.CURRENT_WORKOUT_KEY, sessionStorage);
+        if (current) return this.formatWorkoutData(current);
+
+        const active = this.getFromStorage(this.ACTIVE_WORKOUT_KEY);
+        if (active) {
+            const formatted = this.formatWorkoutData(active);
+            this.saveToStorage(this.CURRENT_WORKOUT_KEY, formatted, sessionStorage);
+            return formatted;
         }
 
-        // Если нигде нет, возвращаем null вместо нового объекта
         return null;
     }
 
-    saveCurrentWorkout(workout) {
-        // Убедимся, что у тренировки есть дата
-        if (!workout.date) {
-            workout.date = new Date().toISOString().split('T')[0];
-        }
+    async saveCurrentWorkout(workout) {
+        const formatted = this.formatWorkoutData(workout);
         
-        this.saveToStorage('currentWorkout', workout, sessionStorage);
-        this.setActiveWorkout(workout);
+        // Сохраняем в оба хранилища
+        this.saveToStorage(this.CURRENT_WORKOUT_KEY, formatted, sessionStorage);
+        this.setActiveWorkout(formatted);
+        
+        return formatted;
     }
 
-    getWorkoutHistory() {
-        const workouts = this.getFromStorage('exercises') || [];
+    async getWorkoutHistory() {
+        const workouts = this.getFromStorage(this.EXERCISES_KEY) || [];
+        return workouts.map(workout => this.formatWorkoutData(workout));
+    }
+
+    async saveWorkoutToHistory(workout) {
+        const workouts = await this.getWorkoutHistory();
+        const formatted = this.formatWorkoutData(workout);
         
-        // Преобразуем даты при чтении и добавляем пустой объект notes, если его нет
-        return workouts.map(workout => ({
+        workouts.push(formatted);
+        const success = this.saveToStorage(this.EXERCISES_KEY, workouts);
+        
+        if (success) {
+            this.createAutoBackup();
+        }
+        
+        return success;
+    }
+
+    // Вспомогательные методы
+    formatWorkoutData(workout) {
+        if (!workout) return null;
+        
+        return {
             ...workout,
+            date: workout.date ? DateFormatter.toStorageFormat(workout.date) : workout.date,
             displayDate: DateFormatter.formatWorkoutDate(workout.date),
-            startTime: workout.startTime || '', // Добавляем время старта, если оно есть
-            notes: workout.notes || {} // Добавляем пустой объект notes, если его нет
-        }));
-    }
-
-    saveWorkoutToHistory(workout) {
-        const savedWorkouts = this.getWorkoutHistory();
-        
-        // Преобразуем дату в формат хранения, если она есть
-        const processedWorkout = {
-            ...workout,
-            date: workout.date ? DateFormatter.toStorageFormat(workout.date) : workout.date
+            startTime: workout.startTime || '',
+            notes: workout.notes || {},
+            id: workout.id || crypto.randomUUID()
         };
-        
-        savedWorkouts.push(processedWorkout);
-        const success = this.saveToStorage('exercises', savedWorkouts);
-        
-        if (success) {
-            this.createAutoBackup(); // Создаем автобэкап при успешном сохранении
-        }
-        
-        return success;
     }
 
-    deleteWorkoutFromHistory(workoutId) {
-        const workouts = this.getWorkoutHistory();
-        const filteredWorkouts = workouts.filter(workout => workout.id !== workoutId);
-        const success = this.saveToStorage('exercises', filteredWorkouts);
-        
-        if (success) {
-            this.createAutoBackup(); // Создаем автобэкап при успешном удалении
-        }
-        
-        return success;
+    clearCurrentWorkout() {
+        this.removeFromStorage(this.CURRENT_WORKOUT_KEY, sessionStorage);
+        this.removeFromStorage(this.ACTIVE_WORKOUT_KEY);
     }
 
-    /**
-     * Получает активную тренировку из хранилища
-     * @returns {Object|null} Активная тренировка или null
-     */
-    getActiveWorkout() {
-        try {
-            const activeWorkoutJson = localStorage.getItem(this.ACTIVE_WORKOUT_KEY);
-            return activeWorkoutJson ? JSON.parse(activeWorkoutJson) : null;
-        } catch (error) {
-            console.error('Error getting active workout:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Сохраняет активную тренировку
-     * @param {Object} workout - Тренировка для сохранения
-     */
-    setActiveWorkout(workout) {
-        // Убедимся, что у тренировки есть дата
-        if (!workout.date) {
-            workout.date = new Date().toISOString().split('T')[0];
-        }
-        
-        this.saveToStorage('activeWorkout', workout);
-    }
-
-    /**
-     * Удаляет активную тренировку
-     */
-    clearActiveWorkout() {
-        localStorage.removeItem(this.ACTIVE_WORKOUT_KEY);
-    }
-
-    getExerciseHistory(exerciseName, limit = 3) {
-        const workouts = this.getWorkoutHistory();
+    async getExerciseHistory(exerciseName, limit = 3) {
+        const workouts = await this.getWorkoutHistory();
         const exerciseHistory = [];
         
-        // Перебираем тренировки в обратном порядке
         for (let i = workouts.length - 1; i >= 0 && exerciseHistory.length < limit; i--) {
             const workout = workouts[i];
             const exercise = workout.exercises.find(e => e.name === exerciseName);
@@ -217,9 +182,9 @@ export class WorkoutStorage {
      * @param {Object} workout - Обновленная тренировка
      * @returns {boolean} Успешность операции
      */
-    updateWorkout(workout) {
+    async updateWorkout(workout) {
         try {
-            const history = this.getWorkoutHistory();
+            const history = await this.getWorkoutHistory();
             const index = history.findIndex(w => w.id === workout.id);
             
             if (index !== -1) {
@@ -227,10 +192,10 @@ export class WorkoutStorage {
                     ...workout,
                     date: workout.date ? DateFormatter.toStorageFormat(workout.date) : workout.date
                 };
-                const success = this.saveToStorage('exercises', history);
+                const success = this.saveToStorage(this.EXERCISES_KEY, history);
                 
                 if (success) {
-                    this.createAutoBackup();
+                    await this.createAutoBackup();
                 }
                 
                 return success;
@@ -259,5 +224,17 @@ export class WorkoutStorage {
         }
         
         return null;
+    }
+
+    // Добавляем метод setActiveWorkout обратно
+    setActiveWorkout(workout) {
+        if (!workout) return;
+        
+        const activeWorkout = {
+            date: workout.date,
+            timestamp: Date.now()
+        };
+        
+        this.saveToStorage(this.ACTIVE_WORKOUT_KEY, activeWorkout);
     }
 }

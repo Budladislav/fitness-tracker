@@ -53,7 +53,7 @@ const DEFAULT_EXERCISES = {
             id: 'squat',
             name: 'Присяд',
             type: 'weighted',
-            defaultWeight: 115
+            defaultWeight: 120
         }
     ]
 };

@@ -8,65 +8,30 @@ export class StateManager {
     }
 
     // Методы для работы с текущей тренировкой
-    getCurrentWorkout() {
+    async getCurrentWorkout() {
         if (!this._currentWorkout) {
-            this._currentWorkout = this.storage.getFromStorage('currentWorkout', sessionStorage);
+            this._currentWorkout = await this.storage.getCurrentWorkout();
         }
         return this._currentWorkout;
     }
 
-    setCurrentWorkout(workout) {
-        // Убедимся, что у тренировки есть дата
-        if (!workout.date) {
-            workout.date = new Date().toISOString().split('T')[0];
-        }
-        
-        this._currentWorkout = workout;
-        this.storage.saveToStorage('currentWorkout', workout, sessionStorage);
-        this.setActiveWorkout(workout);
+    async setCurrentWorkout(workout) {
+        this._currentWorkout = await this.storage.saveCurrentWorkout(workout);
     }
 
-    // Методы для работы с активным состоянием
-    setActiveWorkout(workout) {
-        this.storage.saveToStorage('activeWorkout', {
-            date: workout.date,
-            timestamp: Date.now()
-        });
-    }
-
-    clearCurrentWorkout() {
+    async clearCurrentWorkout() {
         this._currentWorkout = null;
         this._formShown = false;
-        this.storage.removeFromStorage('currentWorkout', sessionStorage);
-        this.storage.removeFromStorage('activeWorkout');
+        this.storage.clearCurrentWorkout();
     }
 
     // Методы для работы с историей
-    getWorkoutHistory() {
-        const workouts = this.storage.getFromStorage('exercises') || [];
-        return workouts.map(workout => ({
-            ...workout,
-            displayDate: DateFormatter.formatWorkoutDate(workout.date),
-            startTime: workout.startTime || '',
-            notes: workout.notes || {}
-        }));
+    async getWorkoutHistory() {
+        return await this.storage.getWorkoutHistory();
     }
 
-    saveWorkoutToHistory(workout) {
-        const savedWorkouts = this.getWorkoutHistory();
-        const processedWorkout = {
-            ...workout,
-            date: workout.date ? DateFormatter.toStorageFormat(workout.date) : workout.date
-        };
-        
-        savedWorkouts.push(processedWorkout);
-        const success = this.storage.saveToStorage('exercises', savedWorkouts);
-        
-        if (success) {
-            this.storage.createAutoBackup();
-        }
-        
-        return success;
+    async saveWorkoutToHistory(workout) {
+        return await this.storage.saveWorkoutToHistory(workout);
     }
 
     // Методы для работы с состоянием формы

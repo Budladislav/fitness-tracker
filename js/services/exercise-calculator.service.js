@@ -47,9 +47,14 @@ export class ExerciseCalculatorService {
      * @returns {number|null} Средний вес или null
      */
     static calculateAverageWeight(exerciseHistory) {
-        if (!exerciseHistory || exerciseHistory.length === 0) return null;
-        const sum = exerciseHistory.reduce((total, entry) => 
-            total + entry.totalWeight, 0);
-        return Math.round(sum / exerciseHistory.length);
+        if (!exerciseHistory || !Array.isArray(exerciseHistory) || exerciseHistory.length === 0) {
+            return null;
+        }
+
+        const totalWeight = exerciseHistory.reduce((sum, entry) => {
+            return sum + (entry.totalWeight || 0);
+        }, 0);
+
+        return Math.round(totalWeight / exerciseHistory.length);
     }
 } 
