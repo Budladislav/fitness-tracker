@@ -11,6 +11,8 @@ export class WorkoutFormManager extends BaseComponent {
     constructor(notifications, storage) {
         super(notifications, storage);
         this.formState = new FormStateService(storage);
+        this.weightSlider = null;
+        this.repsSlider = null;
         
         // Проверяем наличие активной тренировки при инициализации
         if (this.storage.getFromStorage('activeWorkout')) {
@@ -18,10 +20,14 @@ export class WorkoutFormManager extends BaseComponent {
         }
         
         this.elements = this.initializeElements();
-        this.lastSelectedExercises = {
+        
+        // Восстанавливаем lastSelectedExercises из состояния или используем пустые значения
+        const formState = this.storage.getFromStorage('workoutFormState', sessionStorage);
+        this.lastSelectedExercises = formState?.lastSelectedExercises || {
             weighted: '',
             bodyweight: ''
         };
+        
         this.setupEventListeners();
         this.initializeExercisesList();
         this.setupSliders();
@@ -76,8 +82,8 @@ export class WorkoutFormManager extends BaseComponent {
 
     updateExercisesList() {
         const exerciseNameSelect = this.elements.exerciseName;
-        const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
-        const exercises = ExercisePool.getExercisesByType(type);
+        const currentType = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
+        const exercises = ExercisePool.getExercisesByType(currentType);
         
         exerciseNameSelect.innerHTML = '<option value="" disabled>Упражнение</option>';
         
@@ -88,9 +94,20 @@ export class WorkoutFormManager extends BaseComponent {
             exerciseNameSelect.appendChild(option);
         });
 
-        const lastSelected = this.lastSelectedExercises[type];
-        if (lastSelected) {
-            exerciseNameSelect.value = lastSelected;
+        // Проверяем есть ли сохраненное значение для текущего типа
+        if (this.lastSelectedExercises[currentType]) {
+            // Проверяем существует ли такое упражнение в текущем списке
+            const exists = Array.from(exerciseNameSelect.options).some(
+                option => option.value === this.lastSelectedExercises[currentType]
+            );
+            
+            if (exists) {
+                exerciseNameSelect.value = this.lastSelectedExercises[currentType];
+            } else {
+                // Если упражнение не найдено в списке, сбрасываем сохраненное значение
+                this.lastSelectedExercises[currentType] = '';
+                exerciseNameSelect.selectedIndex = 0;
+            }
         } else {
             exerciseNameSelect.selectedIndex = 0;
         }
@@ -106,8 +123,23 @@ export class WorkoutFormManager extends BaseComponent {
     setupExerciseTypeEvents() {
         this.elements.exerciseType.addEventListener('change', () => {
             const isWeighted = this.elements.exerciseType.checked;
+            
+            // Сохраняем текущее упражнение в правильный слот
+            const currentType = isWeighted ? 'weighted' : 'bodyweight';
+            const previousType = isWeighted ? 'bodyweight' : 'weighted';
+            
+            // Сохраняем текущее значение перед переключением
+            this.lastSelectedExercises[previousType] = this.elements.exerciseName.value;
+            
             this.toggleWeightInput(isWeighted);
             this.updateExercisesList();
+            
+            // Восстанавливаем последнее выбранное упражнение для нового типа
+            if (this.lastSelectedExercises[currentType]) {
+                this.elements.exerciseName.value = this.lastSelectedExercises[currentType];
+            }
+            
+            this.saveFormState();
         });
     }
 
@@ -127,7 +159,10 @@ export class WorkoutFormManager extends BaseComponent {
         const defaultWeight = ExercisePool.getDefaultWeight(exerciseName);
         this.elements.exerciseWeight.value = defaultWeight;
         this.elements.weightSlider.querySelector('.slider-value').textContent = defaultWeight;
-        this.weightSlider.setInitialValue(defaultWeight);
+        
+        if (this.weightSlider) {
+            this.weightSlider.setInitialValue(defaultWeight);
+        }
         
         const inputEvent = new Event('input', { bubbles: true, cancelable: true });
         this.elements.exerciseWeight.dispatchEvent(inputEvent);
@@ -181,10 +216,7 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     clearInputs() {
-        this.lastSelectedExercises = {
-            weighted: '',
-            bodyweight: ''
-        };
+        // Не очищаем lastSelectedExercises при очистке формы
         this.elements.exerciseName.value = '';
         this.elements.exerciseReps.value = '';
         this.elements.exerciseWeight.value = '';
@@ -242,11 +274,22 @@ export class WorkoutFormManager extends BaseComponent {
         return this.formState.saveState(this.elements);
     }
 
-    restoreFormState() {
-        const state = this.formState.restoreState(this.elements);
+    restoreFormState(state) {
         if (state) {
+            // Восстанавливаем базовые значения
+            this.lastSelectedExercises = state.lastSelectedExercises || {
+                weighted: '',
+                bodyweight: ''
+            };
+            
+            this.elements.exerciseType.checked = state.exerciseType;
             this.toggleWeightInput(state.exerciseType, true);
             this.updateExercisesList();
+            
+            // Восстанавливаем значения полей
+            if (state.exerciseReps) this.elements.exerciseReps.value = state.exerciseReps;
+            if (state.exerciseWeight) this.elements.exerciseWeight.value = state.exerciseWeight;
+            
             this.updateSliderValues(state);
         }
     }
@@ -265,7 +308,7 @@ export class WorkoutFormManager extends BaseComponent {
 
     setupSliders() {
         // Слайдер для повторений
-        new CustomSlider({
+        this.repsSlider = new CustomSlider({
             element: this.elements.repsSlider,
             input: this.elements.exerciseReps,
             step: 1,    
@@ -275,14 +318,13 @@ export class WorkoutFormManager extends BaseComponent {
         });
 
         // Слайдер для веса
-        new CustomSlider({
+        this.weightSlider = new CustomSlider({
             element: this.elements.weightSlider,
             input: this.elements.exerciseWeight,
             step: 2.5,
             maxChange: 20,
             minValue: 0,
-            sensitivity: 0.1,
-            initialValue: 100
+            initialValue: 0
         });
     }
 } 

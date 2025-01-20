@@ -1,6 +1,7 @@
 import { DateFormatter } from '../utils/date-formatter.js';
 import { WorkoutFactory } from '../factories/workout.factory.js';
 import { NotesModal } from '../components/notes-modal.js';
+import { StateManager } from '../services/state-manager.js';
 
 /**
  * Основной класс управления приложением
@@ -20,10 +21,12 @@ export class WorkoutManager {
             // Передаем зависимости в NotesModal
             this.notesModal = new NotesModal(notifications, storage);
             
+            this.stateManager = new StateManager(storage);
+            
             this.initializeEventListeners();
             
             // Проверяем наличие активной тренировки
-            const currentWorkout = this.storage.getCurrentWorkout();
+            const currentWorkout = this.stateManager.getCurrentWorkout();
             if (currentWorkout) {
                 // Восстанавливаем только если есть активная тренировка
                 this.restoreWorkoutState();
@@ -41,11 +44,11 @@ export class WorkoutManager {
     }
 
     restoreWorkoutState() {
-        const currentWorkout = this.storage.getCurrentWorkout();
+        const currentWorkout = this.stateManager.getCurrentWorkout();
         
         if (currentWorkout && currentWorkout.date) {
-            if (!this._formShown) {
-                this._formShown = true;
+            if (!this.stateManager.isFormShown()) {
+                this.stateManager.setFormShown(true);
                 this.ui.navigation.switchToTab('workout');
                 this.ui.showWorkoutForm(currentWorkout.date);
                 
@@ -80,7 +83,7 @@ export class WorkoutManager {
             
             if (validatedData) {
                 this.ui.addExerciseToLog(validatedData);
-                const existing = this.storage.getCurrentWorkout();
+                const existing = this.stateManager.getCurrentWorkout();
                 
                 // Создаем новую тренировку, сохраняя существующие данные
                 const currentWorkout = WorkoutFactory.createNewWorkout(
@@ -93,13 +96,13 @@ export class WorkoutManager {
                         notes: existing.notes
                     }
                 );
-                this.storage.saveCurrentWorkout(currentWorkout);
+                this.stateManager.setCurrentWorkout(currentWorkout);
             }
         });
 
         // Добавляем обработчик для кнопки заметок
         document.getElementById('workoutNotes').addEventListener('click', () => {
-            const currentWorkout = this.storage.getCurrentWorkout();
+            const currentWorkout = this.stateManager.getCurrentWorkout();
             
             if (!currentWorkout) {
                 this.notifications.error('Сначала начните тренировку');
@@ -112,7 +115,7 @@ export class WorkoutManager {
             const saveHandler = () => {
                 const notes = this.notesModal.getValues();
                 currentWorkout.notes = notes;
-                this.storage.saveCurrentWorkout(currentWorkout);
+                this.stateManager.setCurrentWorkout(currentWorkout);
                 this.notifications.success('Заметки сохранены');
             };
 
@@ -128,12 +131,11 @@ export class WorkoutManager {
         const startWorkoutRoundBtn = document.getElementById('startWorkoutRound');
         
         const startWorkoutHandler = () => {
-            this.storage.removeFromStorage('activeWorkout');
-            this.storage.removeFromStorage('currentWorkout', sessionStorage);
+            this.stateManager.clearCurrentWorkout();
             
             const storageDate = DateFormatter.toStorageFormat('current');
             const newWorkout = WorkoutFactory.createNewWorkout(storageDate);
-            this.storage.saveCurrentWorkout(newWorkout);
+            this.stateManager.setCurrentWorkout(newWorkout);
             
             document.body.classList.add('workout-active');
             this.ui.showWorkoutForm(storageDate);
@@ -160,7 +162,7 @@ export class WorkoutManager {
                 return;
             }
 
-            const currentWorkout = this.storage.getCurrentWorkout();
+            const currentWorkout = this.stateManager.getCurrentWorkout();
 
             if (!currentWorkout.date) {
                 this.notifications.error('Ошибка: дата тренировки не найдена!');
@@ -179,13 +181,12 @@ export class WorkoutManager {
                 }
             );
 
-            if (!this.storage.saveWorkoutToHistory(workoutToSave)) {
+            if (!this.stateManager.saveWorkoutToHistory(workoutToSave)) {
                 this.notifications.error('Не удалось сохранить тренировку');
                 return;
             }
             
-            this.storage.removeFromStorage('currentWorkout', sessionStorage);
-            this.storage.removeFromStorage('activeWorkout');
+            this.stateManager.clearCurrentWorkout();
             
             document.body.classList.remove('workout-active');
 
@@ -198,7 +199,7 @@ export class WorkoutManager {
     }
 
     displayWorkoutHistory() {
-        const savedWorkouts = this.storage.getWorkoutHistory();
+        const savedWorkouts = this.stateManager.getWorkoutHistory();
         this.ui.displayWorkoutHistory(savedWorkouts);
     }
 } 

@@ -9,7 +9,11 @@ export class FormStateService {
             exerciseReps: elements.exerciseReps.value,
             exerciseWeight: elements.exerciseWeight.value,
             exerciseType: elements.exerciseType.checked,
-            isFormVisible: !elements.workoutForm.classList.contains('hidden')
+            isFormVisible: !elements.workoutForm.classList.contains('hidden'),
+            lastSelectedExercises: {
+                weighted: elements.lastSelectedExercises?.weighted || '',
+                bodyweight: elements.lastSelectedExercises?.bodyweight || ''
+            }
         };
         
         return this.storage.saveToStorage('workoutFormState', formState, sessionStorage);
@@ -21,6 +25,15 @@ export class FormStateService {
         if (!formState) return false;
 
         elements.exerciseType.checked = formState.exerciseType;
+        
+        if (formState.lastSelectedExercises) {
+            elements.lastSelectedExercises = formState.lastSelectedExercises;
+        }
+
+        if (typeof elements.updateExercisesList === 'function') {
+            elements.updateExercisesList();
+        }
+
         elements.exerciseName.value = formState.exerciseName || '';
         elements.exerciseReps.value = formState.exerciseReps || '';
         elements.exerciseWeight.value = formState.exerciseWeight || '';
