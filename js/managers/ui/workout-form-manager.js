@@ -95,36 +95,43 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     setupEventListeners() {
+        this.setupExerciseTypeEvents();
+        this.setupExerciseNameEvents();
+        this.setupInputEvents();
+        this.setupExitButtonEvents();
+    }
+
+    setupExerciseTypeEvents() {
         this.elements.exerciseType.addEventListener('change', () => {
             const isWeighted = this.elements.exerciseType.checked;
             this.toggleWeightInput(isWeighted);
             this.updateExercisesList();
         });
+    }
 
+    setupExerciseNameEvents() {
         this.elements.exerciseName.addEventListener('change', () => {
             const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
             this.lastSelectedExercises[type] = this.elements.exerciseName.value;
-
-            const isWeighted = this.elements.exerciseType.checked;
-            if (isWeighted) {
-                const selectedExercise = this.elements.exerciseName.value;
-                const defaultWeight = ExercisePool.getDefaultWeight(selectedExercise);
-                this.elements.exerciseWeight.value = defaultWeight;
-                this.elements.weightSlider.querySelector('.slider-value').textContent = defaultWeight;
-                
-                // Обновляем initialValue в слайдере
-                this.weightSlider.setInitialValue(defaultWeight);
-                
-                const inputEvent = new Event('input', {
-                    bubbles: true,
-                    cancelable: true
-                });
-                this.elements.exerciseWeight.dispatchEvent(inputEvent);
+            
+            if (this.elements.exerciseType.checked) {
+                this.updateWeightForExercise(this.elements.exerciseName.value);
             }
             this.saveFormState();
         });
+    }
 
-        // Добавляем слушатели на input для всех полей
+    updateWeightForExercise(exerciseName) {
+        const defaultWeight = ExercisePool.getDefaultWeight(exerciseName);
+        this.elements.exerciseWeight.value = defaultWeight;
+        this.elements.weightSlider.querySelector('.slider-value').textContent = defaultWeight;
+        this.weightSlider.setInitialValue(defaultWeight);
+        
+        const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+        this.elements.exerciseWeight.dispatchEvent(inputEvent);
+    }
+
+    setupInputEvents() {
         ['exerciseName', 'exerciseReps', 'exerciseWeight'].forEach(fieldName => {
             const element = this.elements[fieldName];
             ['input', 'blur'].forEach(eventType => {
@@ -132,12 +139,12 @@ export class WorkoutFormManager extends BaseComponent {
             });
         });
 
-        // Добавляем обработчики для слайдера
         if (this.elements.repsSlider) {
             this.setupSliders();
         }
+    }
 
-        // Обработчик для кнопки выхода
+    setupExitButtonEvents() {
         const exitButton = document.getElementById('exitWorkout');
         if (exitButton) {
             exitButton.addEventListener('click', async () => {
@@ -146,14 +153,18 @@ export class WorkoutFormManager extends BaseComponent {
                 );
                 
                 if (confirmed) {
-                    this.storage.removeFromStorage('currentWorkout', sessionStorage);
-                    this.storage.removeFromStorage('activeWorkout');
-                    this.storage.removeFromStorage('workoutFormState', sessionStorage);
-                    document.body.classList.remove('workout-active');
-                    this.resetWorkoutForm();
+                    this.clearWorkoutState();
                 }
             });
         }
+    }
+
+    clearWorkoutState() {
+        this.storage.removeFromStorage('currentWorkout', sessionStorage);
+        this.storage.removeFromStorage('activeWorkout');
+        this.storage.removeFromStorage('workoutFormState', sessionStorage);
+        document.body.classList.remove('workout-active');
+        this.resetWorkoutForm();
     }
 
     toggleWeightInput(isWeighted, skipSave = false) {
