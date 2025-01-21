@@ -267,15 +267,24 @@ export class WorkoutFormManager extends BaseComponent {
             step: 2.5,
             maxChange: 20,
             minValue: 0,
-            initialValue: 0
+            initialValue: 100
         });
     }
 
     clearInputs() {
         // Не очищаем lastSelectedExercises при очистке формы
         this.elements.exerciseName.value = '';
-        this.elements.exerciseReps.value = '';
-        this.elements.exerciseWeight.value = '';
+        this.elements.exerciseReps.value = '10';  // Устанавливаем начальное значение
+        this.elements.exerciseWeight.value = '100';  // Устанавливаем начальное значение
+        
+        // Обновляем отображение значений в слайдерах
+        if (this.elements.repsSlider) {
+            this.elements.repsSlider.querySelector('.slider-value').textContent = '10';
+        }
+        if (this.elements.weightSlider) {
+            this.elements.weightSlider.querySelector('.slider-value').textContent = '100';
+        }
+        
         this.saveFormState();
     }
 } 

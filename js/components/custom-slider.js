@@ -17,9 +17,9 @@ export class CustomSlider {
     }
 
     setupEventListeners() {
-        this.element.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
-        document.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
-        document.addEventListener('touchend', () => this.handleTouchEnd());
+        this.element.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+        document.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: true });
+        document.addEventListener('touchend', () => this.handleTouchEnd(), { passive: true });
         
         this.element.addEventListener('mousedown', (e) => this.handleTouchStart(e));
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
@@ -38,7 +38,6 @@ export class CustomSlider {
         this.currentValue = this.initialValue;
         this.element.classList.add('active');
         this.inputField.classList.add('slider-active');
-        e.preventDefault();
     }
 
     handleTouchMove(e) {
@@ -49,7 +48,6 @@ export class CustomSlider {
         const newValue = this.initialValue + proposedChange;
         
         this.updateValue(newValue);
-        e.preventDefault();
     }
 
     handleMouseMove(e) {
