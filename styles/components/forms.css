@@ -345,3 +345,7 @@ select option[disabled] {
 .exercise-header select {
     flex: 1;
 }
+
+.input-group input::placeholder {
+    color: transparent;
+}
