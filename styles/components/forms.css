@@ -349,3 +349,15 @@ select option[disabled] {
 .input-group input::placeholder {
     color: transparent;
 }
+
+select#exerciseName {
+    text-align: center;
+    text-align-last: center;  /* Для Firefox */
+    -moz-text-align-last: center;  /* Для старых версий Firefox */
+    -webkit-text-align-last: center;  /* Для Safari */
+}
+
+/* Опционально, если нужно центрировать и options в выпадающем списке */
+select#exerciseName option {
+    text-align: center;
+}
