@@ -107,53 +107,55 @@ export class TouchInput {
     }
 
     handleTouchMove(e) {
-        if (this.isScrolling) {
-            e.preventDefault();
+        // Проверяем isScrolling до вызова preventDefault
+        if (!this.isScrolling) return;
 
-            const touch = e.touches[0];
-            const deltaY = this.touchStartY - touch.clientY;
-            
-            // Ограничиваем deltaY
-            const limitedDeltaY = Math.max(
-                -this.maxScrollDistance,
-                Math.min(this.maxScrollDistance, deltaY)
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        const deltaY = this.touchStartY - touch.clientY;
+        
+        // Ограничиваем deltaY
+        const limitedDeltaY = Math.max(
+            -this.maxScrollDistance,
+            Math.min(this.maxScrollDistance, deltaY)
+        );
+        
+        const proposedChange = Math.round(limitedDeltaY * this.options.sensitivity / this.options.step) * this.options.step;
+        let newValue = this.startValue + proposedChange;
+        
+        // Применяем ограничения
+        newValue = Math.max(this.options.minValue, newValue);
+        
+        // Если значение достигло минимума, обновляем startValue
+        if (newValue <= this.options.minValue) {
+            newValue = this.options.minValue;
+            this.startValue = this.options.minValue;
+        }
+        
+        if (this.options.maxChange) {
+            newValue = Math.min(
+                this.startValue + this.options.maxChange,
+                Math.max(this.startValue - this.options.maxChange, newValue)
             );
+        }
+        
+        if (this.input.value !== String(newValue)) {
+            this.input.value = newValue;
+            this.updatePreview();
             
-            const proposedChange = Math.round(limitedDeltaY * this.options.sensitivity / this.options.step) * this.options.step;
-            let newValue = this.startValue + proposedChange;
-            
-            // Применяем ограничения
-            newValue = Math.max(this.options.minValue, newValue);
-            
-            // Если значение достигло минимума, обновляем startValue
-            if (newValue <= this.options.minValue) {
-                newValue = this.options.minValue;
-                this.startValue = this.options.minValue;
-            }
-            
-            if (this.options.maxChange) {
-                newValue = Math.min(
-                    this.startValue + this.options.maxChange,
-                    Math.max(this.startValue - this.options.maxChange, newValue)
-                );
-            }
-            
-            if (this.input.value !== String(newValue)) {
-                this.input.value = newValue;
-                this.updatePreview();
-                
-                const inputEvent = new Event('input', {
-                    bubbles: true,
-                    cancelable: true
-                });
-                this.input.dispatchEvent(inputEvent);
-            }
+            const inputEvent = new Event('input', {
+                bubbles: true,
+                cancelable: true
+            });
+            this.input.dispatchEvent(inputEvent);
         }
     }
 
     handleTouchEnd(e) {
         clearTimeout(this.previewTimer);
         
+        // Проверяем isScrolling до вызова preventDefault
         if (this.isScrolling) {
             e.preventDefault();
             const inputEvent = new Event('input', {
@@ -162,9 +164,9 @@ export class TouchInput {
             });
             this.input.dispatchEvent(inputEvent);
             this.hidePreview();
-            this.isScrolling = false;
         }
         
+        this.isScrolling = false;
         this.input.classList.remove('touch-active');
     }
 } 
