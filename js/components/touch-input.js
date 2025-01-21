@@ -2,12 +2,12 @@ export class TouchInput {
     constructor(input, options = {}) {
         this.input = input;
         this.options = {
-            step: options.step || 1,
-            maxChange: options.maxChange || 10,
-            minValue: options.minValue || 0,
+            step: 1,
+            maxChange: 5,
+            minValue: 0,
             initialValue: input.classList.contains('weight-input') ? 100 : 10,
             sensitivity: options.sensitivity || 0.1,
-            suffix: options.suffix || '',
+            suffix: '',
             ...options
         };
 
@@ -151,14 +151,6 @@ export class TouchInput {
             this.input.dispatchEvent(inputEvent);
         }
 
-        console.log({
-            deltaY: limitedDeltaY,
-            scrollPercentage,
-            smoothPercentage,
-            rawSteps,
-            stepsToChange,
-            proposedChange
-        });
     }
 
     handleTouchEnd(e) {

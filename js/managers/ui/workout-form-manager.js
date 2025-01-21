@@ -33,14 +33,14 @@ export class WorkoutFormManager extends BaseComponent {
             new TouchSelect(this.elements.exerciseName);
             new TouchInput(this.elements.exerciseReps, {
                 step: 1,
-                maxChange: 10,
+                maxChange: 5,
                 minValue: 1,
                 initialValue: 10,
                 suffix: 'раз'
             });
             new TouchInput(this.elements.exerciseWeight, {
                 step: 2.5,
-                maxChange: 20,
+                maxChange: 10,
                 minValue: 0,
                 sensitivity: 0.4,
                 initialValue: 100,
@@ -255,7 +255,7 @@ export class WorkoutFormManager extends BaseComponent {
             element: this.elements.repsSlider,
             input: this.elements.exerciseReps,
             step: 1,    
-            maxChange: 10,
+            maxChange: 5,
             minValue: 1,
             initialValue: 10
         });
@@ -265,7 +265,7 @@ export class WorkoutFormManager extends BaseComponent {
             element: this.elements.weightSlider,
             input: this.elements.exerciseWeight,
             step: 2.5,
-            maxChange: 20,
+            maxChange: 10,
             minValue: 0,
             initialValue: 100
         });
