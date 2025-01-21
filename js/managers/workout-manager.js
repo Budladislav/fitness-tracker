@@ -1,7 +1,7 @@
-import { DateFormatter } from '../utils/date-formatter.js';
 import { WorkoutFactory } from '../factories/workout.factory.js';
 import { NotesModal } from '../components/notes-modal.js';
 import { StateManager } from '../services/state-manager.js';
+import { StorageFactory } from '../services/storage/storage.factory.js';
 
 /**
  * Основной класс управления приложением
@@ -14,7 +14,7 @@ export class WorkoutManager {
     constructor(notifications, storage, ui, validator) {
         try {
             this.notifications = notifications;
-            this.storage = storage;
+            this.storage = StorageFactory.createStorage();
             this.ui = ui;
             this.validator = validator;
             

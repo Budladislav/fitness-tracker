@@ -1,7 +1,10 @@
+import { StorageFactory } from './storage/storage.factory.js';
+import { NotificationManager } from '../managers/notification-manager.js';
+
 export class BackupManager {
     constructor(storage, notifications) {
-        this.storage = storage;
-        this.notifications = notifications;
+        this.storage = storage || StorageFactory.createStorage();
+        this.notifications = notifications || NotificationManager.getInstance();
     }
 
     /**
