@@ -61,6 +61,10 @@ export class WorkoutManager {
                 
                 this.notifications.info('Восстановлена текущая тренировка');
             }
+        } else {
+            // Добавляем переключение на историю если нет активной тренировки
+            this.ui.navigation.switchToTab('history');
+            await this.displayWorkoutHistory();
         }
     }
 
