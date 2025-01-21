@@ -167,26 +167,31 @@ export class HistoryManager extends BaseComponent {
         const deleteButton = summaryRow.querySelector('.delete-btn');
         deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.handleWorkoutDeletion(workout);
+            this.handleWorkoutDeletion(workout.id);
         });
     }
 
-    async handleWorkoutDeletion(workout) {
+    async handleWorkoutDeletion(workoutId) {
         const confirmed = await this.notifications.confirmModal.show(
-            'Вы уверены, что хотите удалить эту тренировку?'
+            'Вы уверены, что хотите удалить тренировку?'
         );
         
         if (confirmed) {
-            if (this.storage.deleteWorkoutFromHistory(workout.id)) {
-                const workoutEntry = this.querySelector(`[data-id="${workout.id}"]`);
-                workoutEntry.classList.add('removing');
-                setTimeout(() => {
-                    workoutEntry.remove();
-                    if (!this.querySelector('.workout-entry')) {
-                        this.elements.historyContainer.innerHTML = '<p>История тренировок пуста</p>';
-                    }
-                    this.displayWorkoutHistory(this.storage.getWorkoutHistory());
-                }, 300);
+            const success = await this.storage.deleteWorkoutFromHistory(workoutId);
+            
+            if (success) {
+                // Получаем обновленную историю
+                const workouts = await this.storage.getWorkoutHistory();
+                
+                // Обновляем отображение
+                const historyContainer = document.querySelector('.workout-history');
+                if (historyContainer) {
+                    historyContainer.innerHTML = '';
+                    workouts.forEach(workout => {
+                        this.renderWorkoutCard(workout, historyContainer);
+                    });
+                }
+                
                 this.notifications.success('Тренировка удалена');
             } else {
                 this.notifications.error('Не удалось удалить тренировку');

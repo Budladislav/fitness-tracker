@@ -191,6 +191,24 @@ export class WorkoutManager {
             await this.displayWorkoutHistory();
             this.notifications.success('Тренировка сохранена!');
         });
+
+        // Добавляем обработчик для кнопки выхода
+        const exitWorkoutBtn = document.getElementById('exitWorkout');
+        if (exitWorkoutBtn) {
+            exitWorkoutBtn.addEventListener('click', async () => {
+                const confirmed = await this.notifications.confirmModal.show(
+                    'Вы уверены, что хотите выйти без сохранения?'
+                );
+                
+                if (confirmed) {
+                    await this.stateManager.clearCurrentWorkout();
+                    document.body.classList.remove('workout-active');
+                    this.ui.resetWorkoutForm();
+                    this.ui.navigation.switchToTab('history');
+                    await this.displayWorkoutHistory();
+                }
+            });
+        }
     }
 
     async displayWorkoutHistory() {

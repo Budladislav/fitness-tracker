@@ -239,4 +239,21 @@ export class WorkoutStorage {
         
         this.saveToStorage(this.ACTIVE_WORKOUT_KEY, activeWorkout);
     }
+
+    async deleteWorkoutFromHistory(workoutId) {
+        try {
+            const workouts = await this.getWorkoutHistory();
+            const filteredWorkouts = workouts.filter(workout => workout.id !== workoutId);
+            const success = this.saveToStorage(this.EXERCISES_KEY, filteredWorkouts);
+            
+            if (success) {
+                await this.createAutoBackup();
+            }
+            
+            return success;
+        } catch (error) {
+            console.error('Error deleting workout:', error);
+            return false;
+        }
+    }
 }
