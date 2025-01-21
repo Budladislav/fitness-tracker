@@ -60,4 +60,30 @@
     transition: border-color 0.1s ease-in-out;
     position: relative;
     z-index: 3; /* Выше чем у .custom-slider.active (z-index: 2) */
+}
+
+/* Добавляем индикаторы зоны прокрутки */
+.input-group::before,
+.input-group::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: red;
+    z-index: 1000;
+}
+
+.input-group::before {
+    top: -50px;  /* maxScrollDistance из TouchInput */
+}
+
+.input-group::after {
+    bottom: -50px;  /* maxScrollDistance из TouchInput */
+}
+
+/* Показываем индикаторы только при активном состоянии */
+.input-group input.touch-active + .input-suffix::before,
+.input-group input.touch-active + .input-suffix::after {
+    opacity: 1;
 } 

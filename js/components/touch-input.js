@@ -6,7 +6,7 @@ export class TouchInput {
             maxChange: options.maxChange || 10,
             minValue: options.minValue || 0,
             initialValue: input.classList.contains('weight-input') ? 100 : 10,
-            sensitivity: options.sensitivity || 0.2,
+            sensitivity: options.sensitivity || 0.1,
             suffix: options.suffix || '',
             ...options
         };
@@ -15,7 +15,7 @@ export class TouchInput {
         this.touchStartY = 0;
         this.currentValue = parseFloat(this.input.value) || this.options.initialValue;
         this.longPressDelay = 100;
-        this.maxScrollDistance = 60;
+        this.maxScrollDistance = 50;
 
         if (!this.input.value) {
             this.input.value = this.options.initialValue;
@@ -111,9 +111,7 @@ export class TouchInput {
     }
 
     handleTouchMove(e) {
-        // Проверяем isScrolling до вызова preventDefault
         if (!this.isScrolling) return;
-
         e.preventDefault();
 
         const touch = e.touches[0];
@@ -125,24 +123,22 @@ export class TouchInput {
             Math.min(this.maxScrollDistance, deltaY)
         );
         
-        const proposedChange = Math.round(limitedDeltaY * this.options.sensitivity / this.options.step) * this.options.step;
+        // Вычисляем процент прокрутки от максимальной
+        const scrollPercentage = limitedDeltaY / this.maxScrollDistance;
+        
+        // Применяем квадратичную функцию для более плавного начала
+        const smoothPercentage = Math.pow(scrollPercentage, 2) * Math.sign(scrollPercentage);
+        
+        // Вычисляем изменение значения
+        const maxSteps = this.options.maxChange / this.options.step;
+        const rawSteps = smoothPercentage * maxSteps;
+        const stepsToChange = Math.trunc(Math.abs(rawSteps)) * Math.sign(rawSteps);
+        const proposedChange = stepsToChange * this.options.step;
+        
         let newValue = this.startValue + proposedChange;
         
         // Применяем ограничения
         newValue = Math.max(this.options.minValue, newValue);
-        
-        // Если значение достигло минимума, обновляем startValue
-        if (newValue <= this.options.minValue) {
-            newValue = this.options.minValue;
-            this.startValue = this.options.minValue;
-        }
-        
-        if (this.options.maxChange) {
-            newValue = Math.min(
-                this.startValue + this.options.maxChange,
-                Math.max(this.startValue - this.options.maxChange, newValue)
-            );
-        }
         
         if (this.input.value !== String(newValue)) {
             this.input.value = newValue;
@@ -154,6 +150,15 @@ export class TouchInput {
             });
             this.input.dispatchEvent(inputEvent);
         }
+
+        console.log({
+            deltaY: limitedDeltaY,
+            scrollPercentage,
+            smoothPercentage,
+            rawSteps,
+            stepsToChange,
+            proposedChange
+        });
     }
 
     handleTouchEnd(e) {
