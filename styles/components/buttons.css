@@ -96,10 +96,6 @@
     border-color: var(--primary-color);
 }
 
-.custom-slider:active {
-    transform: none;
-}
-
 /* Backup Controls */
 .backup-controls {
     border-top: 1px solid var(--border-color);
