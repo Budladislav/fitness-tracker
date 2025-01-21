@@ -137,11 +137,13 @@ export class WorkoutStorage {
     formatWorkoutData(workout) {
         if (!workout) return null;
         
+        const date = workout.date instanceof Date ? workout.date : new Date(workout.date);
+        
         return {
             ...workout,
-            date: workout.date ? DateFormatter.toStorageFormat(workout.date) : workout.date,
-            displayDate: DateFormatter.formatWorkoutDate(workout.date),
-            startTime: workout.startTime || '',
+            date: DateFormatter.toStorageFormat(date),
+            displayDate: DateFormatter.formatWorkoutDate(date),
+            startTime: workout.startTime || date.toTimeString().slice(0, 5),
             notes: workout.notes || {},
             id: workout.id || crypto.randomUUID()
         };
@@ -182,9 +184,9 @@ export class WorkoutStorage {
      * @param {Object} workout - Обновленная тренировка
      * @returns {boolean} Успешность операции
      */
-    async updateWorkout(workout) {
+    updateWorkout(workout) {
         try {
-            const history = await this.getWorkoutHistory();
+            const history = this.getWorkoutHistory();
             const index = history.findIndex(w => w.id === workout.id);
             
             if (index !== -1) {
@@ -195,7 +197,7 @@ export class WorkoutStorage {
                 const success = this.saveToStorage(this.EXERCISES_KEY, history);
                 
                 if (success) {
-                    await this.createAutoBackup();
+                    this.createAutoBackup();
                 }
                 
                 return success;

@@ -127,12 +127,13 @@ export class WorkoutManager {
             if (now.getHours() < 4) {
                 now.setDate(now.getDate() - 1);
             }
-            const storageDate = DateFormatter.toStorageFormat(now);
-            const newWorkout = WorkoutFactory.createNewWorkout(storageDate);
+            
+            // Передаем объект Date напрямую
+            const newWorkout = WorkoutFactory.createNewWorkout(now);
             await this.stateManager.setCurrentWorkout(newWorkout);
             
             document.body.classList.add('workout-active');
-            this.ui.showWorkoutForm(storageDate);
+            this.ui.showWorkoutForm(now);
             this.notifications.info('Начата новая тренировка');
         };
 
