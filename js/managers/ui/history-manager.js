@@ -43,70 +43,72 @@ export class HistoryManager extends BaseComponent {
 
         this.elements.restoreBackupBtn.addEventListener('click', async () => {
             if (await this.backupManager.restoreFromBackup()) {
-                this.displayWorkoutHistory(this.storage.getWorkoutHistory());
+                const workouts = await this.storage.getWorkoutHistory();
+                this.displayWorkoutHistory(workouts);
             }
         });
     }
 
     displayWorkoutHistory(workouts = []) {
         try {
-            if (!this.elements.historyContainer) {
-                console.error('History container not found');
-                return;
+            // Сохраняем контролы бэкапа перед очисткой
+            const backupControls = this.elements.historyContainer.querySelector('.backup-controls');
+            if (backupControls) {
+                backupControls.remove();
             }
 
+            // Очищаем контейнер
             this.elements.historyContainer.innerHTML = '';
-            
-            if (workouts.length === 0) {
+
+            if (!workouts || workouts.length === 0) {
                 this.elements.historyContainer.innerHTML = '<p>История тренировок пуста</p>';
-                return;
+            } else {
+                // Получаем группы недель
+                const weekGroups = DateGrouping.getWeekBoundaries(workouts);
+                
+                // Сортируем группы по году и номеру недели (в обратном порядке)
+                const sortedGroups = weekGroups.sort((a, b) => {
+                    if (a.year !== b.year) {
+                        return b.year - a.year; // Сначала по году (по убыванию)
+                    }
+                    return b.weekNumber - a.weekNumber; // Затем по номеру недели (по убыванию)
+                });
+                
+                // Создаем и добавляем группы в контейнер
+                sortedGroups.forEach(group => {
+                    const weekGroupElement = this.createElement('div', 'week-group');
+                    
+                    const label = this.createElement('div', 'group-label');
+                    label.textContent = `Неделя ${group.weekNumber}, ${group.count} трен.`;
+                    weekGroupElement.appendChild(label);
+                    
+                    // Сортируем тренировки внутри группы по убыванию даты и времени
+                    const weekWorkouts = group.workouts.sort((a, b) => {
+                        const dateA = new Date(a.date);
+                        const dateB = new Date(b.date);
+                        
+                        // Если даты равны, сортируем по времени (если оно есть)
+                        if (dateA.getTime() === dateB.getTime()) {
+                            const timeA = a.startTime || '00:00';
+                            const timeB = b.startTime || '00:00';
+                            return timeB.localeCompare(timeA); // Сортировка по убыванию времени
+                        }
+                        
+                        return dateB - dateA; // Сортировка по убыванию даты
+                    });
+                    
+                    weekWorkouts.forEach(workout => {
+                        const workoutEntry = this.createWorkoutEntry(workout);
+                        if (workoutEntry) {
+                            weekGroupElement.appendChild(workoutEntry);
+                        }
+                    });
+                    
+                    this.elements.historyContainer.appendChild(weekGroupElement);
+                });
             }
 
-            // Получаем группы недель
-            const weekGroups = DateGrouping.getWeekBoundaries(workouts);
-            
-            // Сортируем группы по году и номеру недели (в обратном порядке)
-            const sortedGroups = weekGroups.sort((a, b) => {
-                if (a.year !== b.year) {
-                    return b.year - a.year; // Сначала по году (по убыванию)
-                }
-                return b.weekNumber - a.weekNumber; // Затем по номеру недели (по убыванию)
-            });
-            
-            // Создаем и добавляем группы в контейнер
-            sortedGroups.forEach(group => {
-                const weekGroupElement = this.createElement('div', 'week-group');
-                
-                const label = this.createElement('div', 'group-label');
-                label.textContent = `Неделя ${group.weekNumber}, ${group.count} трен.`;
-                weekGroupElement.appendChild(label);
-                
-                // Сортируем тренировки внутри группы по убыванию даты и времени
-                const weekWorkouts = group.workouts.sort((a, b) => {
-                    const dateA = new Date(a.date);
-                    const dateB = new Date(b.date);
-                    
-                    // Если даты равны, сортируем по времени (если оно есть)
-                    if (dateA.getTime() === dateB.getTime()) {
-                        const timeA = a.startTime || '00:00';
-                        const timeB = b.startTime || '00:00';
-                        return timeB.localeCompare(timeA); // Сортировка по убыванию времени
-                    }
-                    
-                    return dateB - dateA; // Сортировка по убыванию даты
-                });
-                
-                weekWorkouts.forEach(workout => {
-                    const workoutEntry = this.createWorkoutEntry(workout);
-                    if (workoutEntry) {
-                        weekGroupElement.appendChild(workoutEntry);
-                    }
-                });
-                
-                this.elements.historyContainer.appendChild(weekGroupElement);
-            });
-
-            // Добавляем контролы бэкапа после истории
+            // Добавляем контролы бэкапа обратно
             this.setupBackupControls();
             this.elements.historyContainer.appendChild(this.elements.backupControls);
         } catch (error) {

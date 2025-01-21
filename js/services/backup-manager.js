@@ -102,59 +102,25 @@ export class BackupManager {
 
     async restoreFromBackup() {
         try {
-            let content;
-            
-            if ('showOpenFilePicker' in window) {
-                // Desktop version
-                const [fileHandle] = await window.showOpenFilePicker({
-                    types: [{
-                        description: 'Text Files',
-                        accept: {'text/plain': ['.txt']},
-                    }],
-                });
-                const file = await fileHandle.getFile();
-                content = await file.text();
-            } else {
-                // Mobile fallback
-                // Создаем скрытый input для выбора файла
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.txt';
-                
-                // Создаем Promise для обработки выбора файла
-                const fileContent = await new Promise((resolve, reject) => {
-                    input.onchange = async (e) => {
-                        const file = e.target.files[0];
-                        if (!file) {
-                            reject(new Error('Файл не выбран'));
-                            return;
-                        }
-                        try {
-                            const text = await file.text();
-                            resolve(text);
-                        } catch (error) {
-                            reject(error);
-                        }
-                    };
-                    
-                    // Симулируем клик по input
-                    input.click();
-                });
-                
-                content = fileContent;
-            }
-            
-            // Парсим содержимое файла
+            const content = await this.readBackupFile();
             const workouts = this.parseWorkoutData(content);
             
             if (workouts.length > 0) {
-                localStorage.removeItem('exercises');
-                workouts.forEach(workout => {
-                    this.storage.saveWorkoutToHistory(workout);
-                });
+                // Форматируем все тренировки
+                const formattedWorkouts = workouts.map(workout => 
+                    this.storage.formatWorkoutData(workout)
+                );
                 
-                this.notifications.success(`Восстановлено ${workouts.length} тренировок`);
-                return true;
+                // Сохраняем весь массив тренировок разом
+                const success = this.storage.saveToStorage(
+                    this.storage.EXERCISES_KEY, 
+                    formattedWorkouts
+                );
+                
+                if (success) {
+                    this.notifications.success(`Восстановлено ${workouts.length} тренировок`);
+                    return true;
+                }
             }
             
             this.notifications.error('Файл бэкапа не содержит тренировок');
@@ -337,5 +303,45 @@ export class BackupManager {
             type: type,
             sets: sets
         };
+    }
+
+    async readBackupFile() {
+        try {
+            // Проверяем поддержку File System Access API
+            if ('showOpenFilePicker' in window) {
+                const [handle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'Text Files',
+                        accept: {'text/plain': ['.txt']},
+                    }],
+                });
+                const file = await handle.getFile();
+                return await file.text();
+            } else {
+                // Fallback для браузеров без поддержки File System Access API
+                return new Promise((resolve, reject) => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.txt';
+                    
+                    input.onchange = async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            try {
+                                const text = await file.text();
+                                resolve(text);
+                            } catch (error) {
+                                reject(error);
+                            }
+                        }
+                    };
+                    
+                    input.click();
+                });
+            }
+        } catch (error) {
+            console.error('Error reading backup file:', error);
+            throw error;
+        }
     }
 } 
