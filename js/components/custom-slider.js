@@ -44,9 +44,27 @@ export class CustomSlider {
         if (!this.isActive) return;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const deltaY = this.startY - clientY;
-        const proposedChange = Math.round(deltaY * this.sensitivity / this.step) * this.step;
-        const newValue = this.initialValue + proposedChange;
         
+        // Ограничиваем deltaY
+        const maxScrollDistance = 50;
+        const limitedDeltaY = Math.max(
+            -maxScrollDistance,
+            Math.min(maxScrollDistance, deltaY)
+        );
+        
+        // Вычисляем процент прокрутки
+        const scrollPercentage = limitedDeltaY / maxScrollDistance;
+        
+        // Применяем квадратичную функцию для плавности
+        const smoothPercentage = Math.pow(scrollPercentage, 2) * Math.sign(scrollPercentage);
+        
+        // Вычисляем изменение значения
+        const maxSteps = this.maxChange / this.step;
+        const rawSteps = smoothPercentage * maxSteps;
+        const stepsToChange = Math.trunc(Math.abs(rawSteps)) * Math.sign(rawSteps);
+        const proposedChange = stepsToChange * this.step;
+        
+        const newValue = this.initialValue + proposedChange;
         this.updateValue(newValue);
     }
 
