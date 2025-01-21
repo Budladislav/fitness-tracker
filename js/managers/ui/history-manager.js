@@ -176,26 +176,49 @@ export class HistoryManager extends BaseComponent {
             'Вы уверены, что хотите удалить тренировку?'
         );
         
-        if (confirmed) {
-            const success = await this.storage.deleteWorkoutFromHistory(workoutId);
-            
-            if (success) {
-                // Получаем обновленную историю
-                const workouts = await this.storage.getWorkoutHistory();
+        if (!confirmed) return;
+        
+        const success = await this.storage.deleteWorkoutFromHistory(workoutId);
+        
+        if (success) {
+            // Находим элемент тренировки
+            const workoutEntry = this.elements.historyContainer.querySelector(`[data-id="${workoutId}"]`);
+            if (workoutEntry) {
+                // Находим родительскую группу
+                const weekGroup = workoutEntry.closest('.week-group');
                 
-                // Обновляем отображение
-                const historyContainer = document.querySelector('.workout-history');
-                if (historyContainer) {
-                    historyContainer.innerHTML = '';
-                    workouts.forEach(workout => {
-                        this.renderWorkoutCard(workout, historyContainer);
-                    });
+                // Удаляем элемент тренировки
+                workoutEntry.remove();
+                
+                // Проверяем, остались ли тренировки в группе
+                if (weekGroup) {
+                    const remainingWorkouts = weekGroup.querySelectorAll('.workout-entry');
+                    if (remainingWorkouts.length === 0) {
+                        weekGroup.remove(); // Удаляем пустую группу
+                    } else {
+                        // Обновляем счетчик тренировок в группе
+                        const label = weekGroup.querySelector('.group-label');
+                        if (label) {
+                            const text = label.textContent;
+                            const newCount = remainingWorkouts.length;
+                            label.textContent = text.replace(/\d+ трен./, `${newCount} трен.`);
+                        }
+                    }
+                }
+                
+                // Проверяем, остались ли вообще тренировки
+                const remainingGroups = this.elements.historyContainer.querySelectorAll('.week-group');
+                if (remainingGroups.length === 0) {
+                    this.elements.historyContainer.innerHTML = '<p>История тренировок пуста</p>';
+                    // Добавляем контролы бэкапа обратно
+                    this.setupBackupControls();
+                    this.elements.historyContainer.appendChild(this.elements.backupControls);
                 }
                 
                 this.notifications.success('Тренировка удалена');
-            } else {
-                this.notifications.error('Не удалось удалить тренировку');
             }
+        } else {
+            this.notifications.error('Не удалось удалить тренировку');
         }
     }
 
