@@ -58,7 +58,7 @@ export class BackupManager {
 
     async createBackup() {
         try {
-            const workouts = this.storage.getWorkoutHistory();
+            const workouts = await this.storage.getWorkoutHistory();
             const backupText = this.workoutsToText(workouts);
             
             // Форматируем текущую дату и время для имени файла
@@ -90,12 +90,12 @@ export class BackupManager {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }
-
+            
             this.notifications.success('Резервная копия создана');
             return true;
         } catch (error) {
             console.error('Backup failed:', error);
-            this.notifications.error('Ошибка при создании резервной копии');
+            this.notifications.error('Ошибка создания резервной копии');
             return false;
         }
     }
