@@ -5,7 +5,7 @@ export class TouchInput {
             step: options.step || 1,
             maxChange: options.maxChange || 10,
             minValue: options.minValue || 0,
-            initialValue: options.initialValue || 10,
+            initialValue: input.classList.contains('weight-input') ? 100 : 10,
             sensitivity: options.sensitivity || 0.2,
             suffix: options.suffix || '',
             ...options
@@ -14,8 +14,12 @@ export class TouchInput {
         this.isScrolling = false;
         this.touchStartY = 0;
         this.currentValue = parseFloat(this.input.value) || this.options.initialValue;
-        this.longPressDelay = 200;
+        this.longPressDelay = 100;
         this.maxScrollDistance = 60;
+
+        if (!this.input.value) {
+            this.input.value = this.options.initialValue;
+        }
 
         this.createPreview();
         this.setupEventListeners();
@@ -27,7 +31,7 @@ export class TouchInput {
         this.preview.innerHTML = `
             <div class="preview-content">
                 <div class="preview-values"></div>
-                <div class="preview-current"></div>
+                <div class="preview-current" style="background: white"></div>
             </div>
         `;
         document.body.appendChild(this.preview);
