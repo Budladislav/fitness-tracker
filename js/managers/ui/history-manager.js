@@ -367,8 +367,14 @@ export class HistoryManager extends BaseComponent {
     }
 
     handleNotesEdit(workoutId, notes) {
-        const workout = this.storage.getWorkoutById(workoutId);
-        if (!workout) return;
+        // Получаем историю синхронно
+        const workouts = this.storage.getFromStorage(this.storage.EXERCISES_KEY) || [];
+        const workout = workouts.find(w => w.id === workoutId);
+        
+        if (!workout) {
+            this.notifications.error('Тренировка не найдена');
+            return;
+        }
 
         this.notesModal.show(notes);
 
@@ -379,10 +385,18 @@ export class HistoryManager extends BaseComponent {
             const updatedNotes = this.notesModal.getValues();
             workout.notes = updatedNotes;
             
-            if (this.storage.updateWorkout(workout)) {
-                const history = this.storage.getWorkoutHistory();
-                this.displayWorkoutHistory(history);
+            // Обновляем тренировку в массиве
+            const index = workouts.findIndex(w => w.id === workoutId);
+            if (index !== -1) {
+                workouts[index] = workout;
+            }
+            
+            // Сохраняем обновленный массив
+            if (this.storage.saveToStorage(this.storage.EXERCISES_KEY, workouts)) {
+                this.displayWorkoutHistory(workouts);
                 this.notifications.success('Заметки обновлены');
+                // Создаем автобэкап после обновления
+                this.storage.createAutoBackup();
             } else {
                 this.notifications.error('Ошибка при обновлении заметок');
             }
