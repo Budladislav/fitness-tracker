@@ -3,9 +3,8 @@ import { NotificationManager } from '../managers/notification-manager.js';
 import { WorkoutFormatterService } from './workout-formatter.service.js';
 
 export class BackupManager {
-    constructor(storage, notifications) {
+    constructor(storage) {
         this.storage = storage || StorageFactory.createStorage();
-        this.notifications = notifications || NotificationManager.getInstance();
     }
 
     /**
@@ -65,41 +64,41 @@ export class BackupManager {
             const workouts = await this.storage.getWorkoutHistory();
             const backupText = this.workoutsToText(workouts);
             
-            // Форматируем текущую дату и время для имени файла
-            const now = new Date();
-            const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}`;
-            const timeStr = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
-            
-            // Проверяем поддержку File System Access API
             if ('showSaveFilePicker' in window) {
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: `workout_backup_${dateStr}_${timeStr}.txt`,
-                    types: [{
-                        description: 'Text Files',
-                        accept: {'text/plain': ['.txt']},
-                    }],
-                });
-
-                const writable = await handle.createWritable();
-                await writable.write(backupText);
-                await writable.close();
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: `workout_backup_${new Date().toISOString().split('T')[0]}_${new Date().toISOString().split('T')[1].split('.')[0].replace(':', '-')}.txt`,
+                        types: [{
+                            description: 'Text Files',
+                            accept: {'text/plain': ['.txt']},
+                        }],
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(backupText);
+                    await writable.close();
+                    this.notifications?.showSuccess('Бэкап успешно создан');
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        // Пользователь отменил - просто игнорируем
+                        return;
+                    }
+                    throw error;
+                }
             } else {
                 const blob = new Blob([backupText], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `workout_backup_${dateStr}_${timeStr}.txt`;
+                a.download = `workout_backup_${new Date().toISOString().split('T')[0]}_${new Date().toISOString().split('T')[1].split('.')[0].replace(':', '-')}.txt`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }
             
-            this.notifications.success('Резервная копия создана');
             return true;
         } catch (error) {
             console.error('Backup failed:', error);
-            this.notifications.error('Ошибка создания резервной копии');
             return false;
         }
     }
@@ -124,16 +123,13 @@ export class BackupManager {
                 );
                 
                 if (success) {
-                    this.notifications.success(`Восстановлено ${workouts.length} тренировок`);
                     return true;
                 }
             }
             
-            this.notifications.error('Файл бэкапа не содержит тренировок');
             return false;
         } catch (error) {
             console.error('Restore failed:', error);
-            this.notifications.error('Ошибка восстановления из резервной копии');
             return false;
         }
     }
@@ -348,6 +344,24 @@ export class BackupManager {
         } catch (error) {
             console.error('Error reading backup file:', error);
             throw error;
+        }
+    }
+
+    async restoreFromAutoBackup() {
+        try {
+            const backup = localStorage.getItem('workouts_backup');
+            if (!backup) return false;
+            
+            const { text } = JSON.parse(backup);
+            if (!text) return false;
+            
+            const workouts = this.parseWorkoutData(text);
+            await this.storage.restoreWorkouts(workouts);
+            
+            return true;
+        } catch (error) {
+            console.error('Error restoring from auto backup:', error);
+            return false;
         }
     }
 } 

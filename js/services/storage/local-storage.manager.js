@@ -3,6 +3,7 @@ import { DateFormatter } from '../../utils/date-formatter.js';
 import { ExerciseCalculatorService } from '../exercise-calculator.service.js';
 import { Utils } from '../../utils/utils.js';
 import { WorkoutFormatterService } from '../workout-formatter.service.js';
+import { BackupManager } from '../backup-manager.js';
 
 export class LocalStorageManager extends StorageInterface {
     constructor() {
@@ -12,6 +13,7 @@ export class LocalStorageManager extends StorageInterface {
         this.ACTIVE_WORKOUT_KEY = 'activeWorkout';
         this.BACKUP_KEY = 'workouts_backup';
         this.storageAvailable = this.checkStorageAvailability();
+        this.backupManager = new BackupManager(this);
     }
 
     checkStorageAvailability() {
@@ -104,7 +106,13 @@ export class LocalStorageManager extends StorageInterface {
             const index = workouts.findIndex(w => w.id === workout.id);
             if (index !== -1) {
                 workouts[index] = workout;
-                return this.saveToStorage(this.EXERCISES_KEY, workouts);
+                const success = this.saveToStorage(this.EXERCISES_KEY, workouts);
+                
+                if (success) {
+                    this.createAutoBackup();
+                }
+                
+                return success;
             }
             return false;
         } catch (error) {
@@ -183,6 +191,19 @@ export class LocalStorageManager extends StorageInterface {
 
     createAutoBackup() {
         const workouts = this.getFromStorage(this.EXERCISES_KEY) || [];
+        // Просто копируем массив тренировок как есть
         return this.saveToStorage(this.BACKUP_KEY, workouts);
+    }
+
+    restoreFromAutoBackup() {
+        const backupWorkouts = this.getFromStorage(this.BACKUP_KEY);
+        if (!backupWorkouts || !Array.isArray(backupWorkouts)) return false;
+        
+        // Форматируем данные перед восстановлением
+        const formattedWorkouts = backupWorkouts.map(workout => 
+            WorkoutFormatterService.formatWorkoutData(workout)
+        );
+        
+        return this.saveToStorage(this.EXERCISES_KEY, formattedWorkouts);
     }
 } 
