@@ -5,11 +5,12 @@ import { ExerciseCalculatorService } from '../../services/exercise-calculator.se
 import { BackupManager } from '../../services/backup-manager.js';
 import { NotesModal } from '../../components/notes-modal.js';
 import { DateGrouping } from '../../utils/date-grouping.js';
+import { StorageFactory } from '../../services/storage/storage.factory.js';
 
 export class HistoryManager extends BaseComponent {
     /**
      * @param {NotificationManager} notifications - Менеджер уведомлений
-     * @param {WorkoutStorage} storage - Менеджер хранилища
+     * @param {StorageInterface} storage - Менеджер хранилища
      * @param {NotesModal} notesModal - Модальное окно заметок
      */
     constructor(notifications, storage, notesModal) {

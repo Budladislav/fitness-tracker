@@ -1,4 +1,4 @@
-import { WorkoutStorage } from '../managers/storage-manager.js';
+import { StorageFactory } from '../services/storage/storage.factory.js';
 import { parseWorkoutData } from '../utils/data-importer.js';
 
 export class ImportModule {
@@ -39,7 +39,7 @@ export class ImportModule {
                 return;
             }
 
-            const storage = new WorkoutStorage();
+            const storage = StorageFactory.createStorage();
             const parsedWorkouts = parseWorkoutData(rawWorkoutData);
             
             localStorage.removeItem('exercises');

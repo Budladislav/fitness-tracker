@@ -1,3 +1,5 @@
+import { StorageFactory } from '../services/storage/storage.factory.js';
+
 /**
  * Базовый класс для менеджеров UI, предоставляющий общую функциональность:
  * - Доступ к сервисам уведомлений и хранилища
@@ -15,7 +17,7 @@
 export class BaseComponent {
     /**
      * @param {NotificationManager} notifications - Менеджер уведомлений
-     * @param {WorkoutStorage} storage - Менеджер хранилища
+     * @param {StorageInterface} storage - Менеджер хранилища
      */
     constructor(notifications, storage) {
         this.notifications = notifications;

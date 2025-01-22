@@ -44,7 +44,9 @@
  * Подъем ног, Отжимания на кольцах, Отжимания на брусьях, Подтягивания прямым хватом, Подтягивания обратным хватом 
  */
 
-import { WorkoutStorage } from '../managers/storage-manager.js';
+import { StorageFactory } from '../services/storage/storage.factory.js';
+
+const storage = StorageFactory.createStorage();
 
 const rawWorkoutData = `4.09.24
 Жим (75) – 9, 6, 6
@@ -542,7 +544,6 @@ function parseExerciseLine(line) {
 }
 
 export function importWorkoutData() {
-    const storage = new WorkoutStorage();
     const parsedWorkouts = parseWorkoutData(rawWorkoutData);
     
     localStorage.removeItem('exercises');
