@@ -189,13 +189,7 @@ export class FirebaseStorageManager extends StorageInterface {
             }
             
             const backupData = {
-                workouts: workouts.map(w => ({
-                    id: w.id,
-                    date: w.date,
-                    exercises: w.exercises || [],
-                    notes: w.notes || {},
-                    timestamp: w.timestamp || new Date(w.date).getTime()
-                })),
+                workouts: workouts,
                 timestamp: new Date().toISOString()
             };
             
@@ -226,7 +220,6 @@ export class FirebaseStorageManager extends StorageInterface {
     async saveToStorage(key, value) {
         try {
             if (key === this.EXERCISES_KEY) {
-                // Для тренировок используем отдельную коллекцию
                 const workouts = Array.isArray(value) ? value : [];
                 
                 // Очищаем существующие документы
@@ -241,16 +234,16 @@ export class FirebaseStorageManager extends StorageInterface {
                 for (const workout of workouts) {
                     const formatted = {
                         ...workout,
-                        id: workout.id || generateId(),
+                        id: workout.id || String(Date.now()),
                         exercises: workout.exercises || [],
                         notes: workout.notes || {}
                     };
-                    await setDoc(doc(this.db, 'workouts', formatted.id), formatted);
+                    const docRef = this.getDocument('workouts', formatted.id);
+                    await setDoc(docRef, formatted);
                 }
                 return true;
             }
     
-            // Для остальных ключей используем коллекцию settings
             const docRef = this.getDocument('settings', key);
             await setDoc(docRef, { value });
             return true;
@@ -258,5 +251,9 @@ export class FirebaseStorageManager extends StorageInterface {
             console.error(`Error saving to storage for key "${key}":`, error);
             return false;
         }
+    }
+
+    async deleteWorkoutFromHistory(workoutId) {
+        return this.deleteWorkout(workoutId);
     }
 } 
