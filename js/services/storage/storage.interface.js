@@ -79,4 +79,23 @@ export class StorageInterface {
     createAutoBackup() {
         throw new Error('Method not implemented');
     }
+
+    /**
+     * Получить данные из хранилища
+     * @param {string} key - Ключ
+     * @returns {Promise<any>}
+     */
+    async getFromStorage(key) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Сохранить данные в хранилище
+     * @param {string} key - Ключ
+     * @param {any} value - Значение
+     * @returns {Promise<boolean>}
+     */
+    async saveToStorage(key, value) {
+        throw new Error('Method not implemented');
+    }
 } 

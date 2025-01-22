@@ -1,12 +1,12 @@
 export const firebaseConfig = {
     // Здесь будут реальные данные из Firebase Console
-    apiKey: "your-api-key",
-    authDomain: "your-app.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-app.appspot.com",
-    messagingSenderId: "your-sender-id",
-    appId: "your-app-id"
+    apiKey: "AIzaSyDDzIvvwIpXeZZk2kiYAcZGGWCIRVbxg8E",
+    authDomain: "workout-tracker-500df.firebaseapp.com",
+    projectId: "workout-tracker-500df",
+    storageBucket: "workout-tracker-500df.firebasestorage.app",
+    messagingSenderId: "292466308281",
+    appId: "1:292466308281:web:d667c6dd6a91b3fe7a1768"
 };
 
 // Флаг для переключения между локальным и Firebase хранилищем
-export const useFirebase = false; 
+export const useFirebase = true;

@@ -1,17 +1,27 @@
 import { StorageInterface } from './storage.interface.js';
 import { firebaseService } from '../firebase.service.js';
-import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+// Функция для генерации ID
+const generateId = () => Math.random().toString(36).substr(2, 9);
 
 export class FirebaseStorageManager extends StorageInterface {
     constructor() {
         super();
         this.db = firebaseService.getDb();
         
+        // Добавляем константы для ключей
+        this.EXERCISES_KEY = 'exercises';
+        this.CURRENT_WORKOUT_KEY = 'current_workout';
+        this.ACTIVE_WORKOUT_KEY = 'active_workout';
+        this.BACKUP_KEY = 'backup';
+        
         // Определяем коллекции в Firestore
         this.collections = {
             workouts: 'workouts',
             currentWorkout: 'current_workout',
-            backup: 'backup'
+            backup: 'backup',
+            settings: 'settings'  // Добавляем коллекцию для настроек
         };
     }
 
@@ -33,13 +43,17 @@ export class FirebaseStorageManager extends StorageInterface {
             
             const workouts = [];
             snapshot.forEach(doc => {
+                const data = doc.data();
                 workouts.push({
                     id: doc.id,
-                    ...doc.data()
+                    date: data.date,
+                    exercises: data.exercises || [],
+                    notes: data.notes || {},
+                    timestamp: data.timestamp || new Date(data.date).getTime()
                 });
             });
             
-            // Сортируем по дате (как в LocalStorageManager)
+            console.log('Firebase workouts:', workouts);
             return workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
         } catch (error) {
             console.error('Error getting workout history:', error);
@@ -108,6 +122,7 @@ export class FirebaseStorageManager extends StorageInterface {
             const docSnap = await getDoc(docRef);
             
             if (docSnap.exists()) {
+                console.log('Firebase current workout:', docSnap.data()); //отладка
                 return docSnap.data();
             }
             return null;
@@ -168,14 +183,79 @@ export class FirebaseStorageManager extends StorageInterface {
     async createAutoBackup() {
         try {
             const workouts = await this.getWorkoutHistory();
-            const backupRef = this.getDocument('backup', 'latest');
-            await setDoc(backupRef, {
-                workouts,
+            if (!workouts || !Array.isArray(workouts)) {
+                console.error('Invalid workouts data for backup');
+                return false;
+            }
+            
+            const backupData = {
+                workouts: workouts.map(w => ({
+                    id: w.id,
+                    date: w.date,
+                    exercises: w.exercises || [],
+                    notes: w.notes || {},
+                    timestamp: w.timestamp || new Date(w.date).getTime()
+                })),
                 timestamp: new Date().toISOString()
-            });
+            };
+            
+            const backupRef = this.getDocument('backup', 'latest');
+            await setDoc(backupRef, backupData);
             return true;
         } catch (error) {
             console.error('Error creating backup:', error);
+            return false;
+        }
+    }
+
+    async getFromStorage(key) {
+        try {
+            const docRef = this.getDocument('settings', key);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                return docSnap.data().value;
+            }
+            return null;
+        } catch (error) {
+            console.error(`Error reading from storage for key "${key}":`, error);
+            return null;
+        }
+    }
+
+    async saveToStorage(key, value) {
+        try {
+            if (key === this.EXERCISES_KEY) {
+                // Для тренировок используем отдельную коллекцию
+                const workouts = Array.isArray(value) ? value : [];
+                
+                // Очищаем существующие документы
+                const snapshot = await getDocs(this.getCollection('workouts'));
+                const batch = writeBatch(this.db);
+                snapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+                
+                // Сохраняем новые
+                for (const workout of workouts) {
+                    const formatted = {
+                        ...workout,
+                        id: workout.id || generateId(),
+                        exercises: workout.exercises || [],
+                        notes: workout.notes || {}
+                    };
+                    await setDoc(doc(this.db, 'workouts', formatted.id), formatted);
+                }
+                return true;
+            }
+    
+            // Для остальных ключей используем коллекцию settings
+            const docRef = this.getDocument('settings', key);
+            await setDoc(docRef, { value });
+            return true;
+        } catch (error) {
+            console.error(`Error saving to storage for key "${key}":`, error);
             return false;
         }
     }
