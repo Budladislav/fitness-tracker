@@ -37,34 +37,39 @@ export class WorkoutManager {
     }
 
     async restoreWorkoutState() {
-        const currentWorkout = await this.stateManager.getCurrentWorkout();
-        
-        if (currentWorkout && currentWorkout.date) {
-            if (!this.stateManager.isFormShown()) {
-                this.stateManager.setFormShown(true);
-                this.ui.navigation.switchToTab('workout');
-                this.ui.showWorkoutForm(currentWorkout.date);
-                
-                if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
-                    currentWorkout.exercises.forEach(exercise => {
-                        exercise.sets.forEach(set => {
-                            const exerciseData = {
-                                name: exercise.name,
-                                type: exercise.type,
-                                reps: set.reps,
-                                weight: set.weight
-                            };
-                            this.ui.addExerciseToLog(exerciseData);
+        this.ui.showLoader();
+        try {
+            const currentWorkout = await this.stateManager.getCurrentWorkout();
+            
+            if (currentWorkout && currentWorkout.date) {
+                if (!this.stateManager.isFormShown()) {
+                    this.stateManager.setFormShown(true);
+                    this.ui.navigation.switchToTab('workout');
+                    this.ui.showWorkoutForm(currentWorkout.date);
+                    
+                    if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
+                        currentWorkout.exercises.forEach(exercise => {
+                            exercise.sets.forEach(set => {
+                                const exerciseData = {
+                                    name: exercise.name,
+                                    type: exercise.type,
+                                    reps: set.reps,
+                                    weight: set.weight
+                                };
+                                this.ui.addExerciseToLog(exerciseData);
+                            });
                         });
-                    });
+                    }
+                    
+                    this.notifications.info('Восстановлена текущая тренировка');
                 }
-                
-                this.notifications.info('Восстановлена текущая тренировка');
+            } else {
+                // Добавляем переключение на историю если нет активной тренировки
+                this.ui.navigation.switchToTab('history');
+                await this.displayWorkoutHistory();
             }
-        } else {
-            // Добавляем переключение на историю если нет активной тренировки
-            this.ui.navigation.switchToTab('history');
-            await this.displayWorkoutHistory();
+        } finally {
+            this.ui.hideLoader();
         }
     }
 
@@ -212,7 +217,12 @@ export class WorkoutManager {
     }
 
     async displayWorkoutHistory() {
-        const workouts = await this.stateManager.getWorkoutHistory();
-        this.ui.displayWorkoutHistory(workouts);
+        this.ui.showLoader();
+        try {
+            const workouts = await this.stateManager.getWorkoutHistory();
+            this.ui.displayWorkoutHistory(workouts);
+        } finally {
+            this.ui.hideLoader();
+        }
     }
 } 

@@ -6,6 +6,7 @@ import { ValidationManager } from './ui/validation-manager.js';
 import { BaseComponent } from '../components/base-component.js';
 import { DOM_SELECTORS } from '../constants/selectors.js';
 import { NotesModal } from '../components/notes-modal.js';
+import { LoaderManager } from './ui/loader-manager.js';
 
 export class UIManager extends BaseComponent {
     constructor(notifications, storage) {
@@ -20,6 +21,7 @@ export class UIManager extends BaseComponent {
         this.navigation = new NavigationManager(notifications, storage);
         this.exerciseLog = new ExerciseLogManager(notifications, storage);
         this.validation = new ValidationManager(notifications, storage);
+        this.loader = new LoaderManager();
         
         // Оставляем только базовую инициализацию
         this.elements = this.initializeElements();
@@ -55,5 +57,13 @@ export class UIManager extends BaseComponent {
 
     getFormData() {
         return this.workoutForm.getFormData();
+    }
+
+    showLoader() {
+        this.loader.show();
+    }
+
+    hideLoader() {
+        this.loader.hide();
     }
 } 

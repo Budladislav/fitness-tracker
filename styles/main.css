@@ -19,6 +19,7 @@
 @import 'components/notes-modal.css';
 @import 'components/touch-input.css';
 @import 'components/modal.css';
+@import 'components/loader.css';
 
 /* Pages */
 @import 'pages/workout.css';
