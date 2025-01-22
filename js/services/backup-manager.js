@@ -64,32 +64,30 @@ export class BackupManager {
             const workouts = await this.storage.getWorkoutHistory();
             const backupText = this.workoutsToText(workouts);
             
+            // Форматируем текущую дату и время для имени файла
+            const now = new Date();
+            const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}`;
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            // Проверяем поддержку File System Access API
             if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: `workout_backup_${new Date().toISOString().split('T')[0]}_${new Date().toISOString().split('T')[1].split('.')[0].replace(':', '-')}.txt`,
-                        types: [{
-                            description: 'Text Files',
-                            accept: {'text/plain': ['.txt']},
-                        }],
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(backupText);
-                    await writable.close();
-                    this.notifications?.showSuccess('Бэкап успешно создан');
-                } catch (error) {
-                    if (error.name === 'AbortError') {
-                        // Пользователь отменил - просто игнорируем
-                        return;
-                    }
-                    throw error;
-                }
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: `workout_backup_${dateStr}_${timeStr}.txt`,
+                    types: [{
+                        description: 'Text Files',
+                        accept: {'text/plain': ['.txt']},
+                    }],
+                });
+
+                const writable = await handle.createWritable();
+                await writable.write(backupText);
+                await writable.close();
             } else {
                 const blob = new Blob([backupText], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `workout_backup_${new Date().toISOString().split('T')[0]}_${new Date().toISOString().split('T')[1].split('.')[0].replace(':', '-')}.txt`;
+                a.download = `workout_backup_${dateStr}_${timeStr}.txt`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -111,18 +109,18 @@ export class BackupManager {
             const workouts = this.parseWorkoutData(content);
             
             if (workouts.length > 0) {
-                // Форматируем все тренировки
                 const formattedWorkouts = workouts.map(workout => 
                     WorkoutFormatterService.formatWorkoutData(workout)
                 );
                 
-                // Сохраняем весь массив тренировок разом
                 const success = this.storage.saveToStorage(
                     this.storage.EXERCISES_KEY, 
                     formattedWorkouts
                 );
                 
                 if (success) {
+                    // Создаем автобэкап после успешного восстановления
+                    this.storage.createAutoBackup();
                     return true;
                 }
             }
