@@ -1,5 +1,6 @@
 import { StorageFactory } from './storage/storage.factory.js';
 import { NotificationManager } from '../managers/notification-manager.js';
+import { WorkoutFormatterService } from './workout-formatter.service.js';
 
 export class BackupManager {
     constructor(storage, notifications) {
@@ -106,12 +107,14 @@ export class BackupManager {
     async restoreFromBackup() {
         try {
             const content = await this.readBackupFile();
+            if (!content) return false;
+            
             const workouts = this.parseWorkoutData(content);
             
             if (workouts.length > 0) {
                 // Форматируем все тренировки
                 const formattedWorkouts = workouts.map(workout => 
-                    this.storage.formatWorkoutData(workout)
+                    WorkoutFormatterService.formatWorkoutData(workout)
                 );
                 
                 // Сохраняем весь массив тренировок разом

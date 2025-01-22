@@ -62,4 +62,21 @@ export class StorageInterface {
     async clearCurrentWorkout() {
         throw new Error('Method not implemented');
     }
+
+    /**
+     * Получить историю упражнения
+     * @param {string} exerciseName - Название упражнения
+     * @param {number} limit - Лимит записей
+     * @returns {Promise<Array>}
+     */
+    async getExerciseHistory(exerciseName, limit = 3) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Создать автоматический бэкап
+     */
+    createAutoBackup() {
+        throw new Error('Method not implemented');
+    }
 } 
