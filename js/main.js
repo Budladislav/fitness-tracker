@@ -5,11 +5,23 @@ import { UIManager } from './managers/ui-manager.js';
 import { WorkoutManager } from './managers/workout-manager.js';
 import { ImportModule } from './modules/import-module.js';
 import { DeviceDetector } from './utils/device-detector.js';
+import { firebaseService } from './services/firebase.service.js';
+import { useFirebase } from './config/firebase.config.js';
 
 // Инициализация приложения
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Определяем тип устройства
     DeviceDetector.addDeviceClass();
+    
+    // Инициализируем Firebase если он включен
+    if (useFirebase) {
+        const isInitialized = firebaseService.initialize();
+        if (!isInitialized) {
+            console.error('Failed to initialize Firebase');
+            // Можно добавить уведомление пользователю
+            return;
+        }
+    }
     
     // Создаем все необходимые менеджеры
     const notifications = new NotificationManager();
