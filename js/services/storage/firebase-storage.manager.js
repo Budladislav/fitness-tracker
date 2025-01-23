@@ -74,7 +74,7 @@ export class FirebaseStorageManager extends StorageInterface {
             const workoutToSave = {
                 ...formatted,
                 date: formatted.date,
-                time: formatted.startTime || '12:00',
+                time: formatted.startTime,
                 timestamp: Date.now(),
                 exercises: formatted.exercises || [],
                 notes: formatted.notes || {}
@@ -255,7 +255,7 @@ export class FirebaseStorageManager extends StorageInterface {
                     batch2.set(docRef, {
                         ...workout,
                         date: workout.date,
-                        time: workout.startTime || '12:00',
+                        time: workout.startTime || '',
                         exercises: workout.exercises || [],
                         notes: workout.notes || {},
                         timestamp: workout.timestamp || Date.now()

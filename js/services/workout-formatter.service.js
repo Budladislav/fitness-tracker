@@ -10,7 +10,7 @@ export class WorkoutFormatterService {
             ...workout,
             date: DateFormatter.toStorageFormat(date),
             displayDate: DateFormatter.formatWorkoutDate(date),
-            startTime: workout.startTime || date.toTimeString().slice(0, 5),
+            startTime: workout.startTime || '',
             notes: workout.notes || {},
             id: workout.id || crypto.randomUUID()
         };
