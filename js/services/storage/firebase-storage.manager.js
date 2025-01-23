@@ -47,15 +47,16 @@ export class FirebaseStorageManager extends StorageInterface {
                 const data = doc.data();
                 workouts.push({
                     id: doc.id,
-                    date: data.date,
+                    date: data.date || '',
+                    startTime: data.time || '',
                     exercises: data.exercises || [],
                     notes: data.notes || {},
-                    timestamp: data.timestamp || new Date(data.date).getTime()
+                    timestamp: data.timestamp || Date.now()
                 });
             });
             
             console.log('Firebase workouts:', workouts);
-            return workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+            return workouts.sort((a, b) => b.timestamp - a.timestamp);
         } catch (error) {
             console.error('Error getting workout history:', error);
             return [];
@@ -69,8 +70,18 @@ export class FirebaseStorageManager extends StorageInterface {
             // Используем тот же форматтер, что и в локальной версии
             const formatted = WorkoutFormatterService.formatWorkoutData(workout);
             
+            // Сохраняем дату и время
+            const workoutToSave = {
+                ...formatted,
+                date: formatted.date,
+                time: formatted.startTime || '12:00',
+                timestamp: Date.now(),
+                exercises: formatted.exercises || [],
+                notes: formatted.notes || {}
+            };
+            
             // Создаем документ
-            const docRef = await addDoc(workoutsRef, formatted);
+            const docRef = await addDoc(workoutsRef, workoutToSave);
             formatted.id = docRef.id;
             
             // Создаем бэкап после успешного сохранения
@@ -243,6 +254,8 @@ export class FirebaseStorageManager extends StorageInterface {
                     const docRef = doc(this.getCollection('workouts'));
                     batch2.set(docRef, {
                         ...workout,
+                        date: workout.date,
+                        time: workout.startTime || '12:00',
                         exercises: workout.exercises || [],
                         notes: workout.notes || {},
                         timestamp: workout.timestamp || Date.now()
