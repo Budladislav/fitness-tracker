@@ -55,7 +55,6 @@ export class FirebaseStorageManager extends StorageInterface {
                 });
             });
             
-            console.log('Firebase workouts:', workouts);
             return workouts.sort((a, b) => b.timestamp - a.timestamp);
         } catch (error) {
             console.error('Error getting workout history:', error);

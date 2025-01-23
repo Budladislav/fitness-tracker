@@ -52,7 +52,6 @@ export class HistoryManager extends BaseComponent {
     }
 
     displayWorkoutHistory(workouts = []) {
-        console.log('Display history called with workouts:', workouts); //отладка
         try {
             // Сохраняем контролы бэкапа перед очисткой
             const backupControls = this.elements.historyContainer.querySelector('.backup-controls');
