@@ -237,20 +237,23 @@ export class FirebaseStorageManager extends StorageInterface {
                 });
                 await batch.commit();
                 
-                // Сохраняем новые
+                // Сохраняем все тренировки в одной транзакции
+                const batch2 = writeBatch(this.db);
                 for (const workout of workouts) {
-                    const formatted = {
+                    const docRef = doc(this.getCollection('workouts'));
+                    batch2.set(docRef, {
                         ...workout,
-                        id: workout.id || String(Date.now()),
                         exercises: workout.exercises || [],
-                        notes: workout.notes || {}
-                    };
-                    const docRef = this.getDocument('workouts', formatted.id);
-                    await setDoc(docRef, formatted);
+                        notes: workout.notes || {},
+                        timestamp: workout.timestamp || Date.now()
+                    });
                 }
+                await batch2.commit();
+                
                 return true;
             }
     
+            // Для других ключей используем коллекцию settings
             const docRef = this.getDocument('settings', key);
             await setDoc(docRef, { value });
             return true;
