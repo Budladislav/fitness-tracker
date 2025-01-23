@@ -65,15 +65,17 @@ export class FirebaseStorageManager extends StorageInterface {
         try {
             const workoutsRef = this.getCollection('workouts');
             
-            // Если у тренировки уже есть id, используем его
-            if (workout.id) {
-                const docRef = this.getDocument('workouts', workout.id);
-                await setDoc(docRef, workout);
-            } else {
-                // Иначе создаем новый документ
-                const docRef = await addDoc(workoutsRef, workout);
-                workout.id = docRef.id;
-            }
+            // Создаем копию тренировки без id
+            const workoutToSave = {
+                ...workout,
+                exercises: workout.exercises || [],
+                notes: workout.notes || {},
+                timestamp: Date.now()
+            };
+            
+            // Всегда создаем новый документ
+            const docRef = await addDoc(workoutsRef, workoutToSave);
+            workout.id = docRef.id;
             
             // Создаем бэкап после успешного сохранения
             this.createAutoBackup();
@@ -139,8 +141,13 @@ export class FirebaseStorageManager extends StorageInterface {
     async saveCurrentWorkout(workout) {
         try {
             const docRef = this.getDocument('currentWorkout', 'active');
-            await setDoc(docRef, workout);
-            return workout;
+            // Преобразуем дату в строку перед сохранением
+            const workoutToSave = {
+                ...workout,
+                date: workout.date instanceof Date ? workout.date.toISOString().split('T')[0] : workout.date
+            };
+            await setDoc(docRef, workoutToSave);
+            return workoutToSave;
         } catch (error) {
             console.error('Error saving current workout:', error);
             return null;
