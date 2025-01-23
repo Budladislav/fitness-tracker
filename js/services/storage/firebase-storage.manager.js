@@ -1,6 +1,7 @@
 import { StorageInterface } from './storage.interface.js';
 import { firebaseService } from '../firebase.service.js';
 import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { WorkoutFormatterService } from '../workout-formatter.service.js';
 
 // Функция для генерации ID
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -65,17 +66,12 @@ export class FirebaseStorageManager extends StorageInterface {
         try {
             const workoutsRef = this.getCollection('workouts');
             
-            // Создаем копию тренировки без id
-            const workoutToSave = {
-                ...workout,
-                exercises: workout.exercises || [],
-                notes: workout.notes || {},
-                timestamp: Date.now()
-            };
+            // Используем тот же форматтер, что и в локальной версии
+            const formatted = WorkoutFormatterService.formatWorkoutData(workout);
             
-            // Всегда создаем новый документ
-            const docRef = await addDoc(workoutsRef, workoutToSave);
-            workout.id = docRef.id;
+            // Создаем документ
+            const docRef = await addDoc(workoutsRef, formatted);
+            formatted.id = docRef.id;
             
             // Создаем бэкап после успешного сохранения
             this.createAutoBackup();
