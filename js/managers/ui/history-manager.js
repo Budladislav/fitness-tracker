@@ -16,7 +16,7 @@ export class HistoryManager extends BaseComponent {
     constructor(notifications, storage, notesModal) {
         super(notifications, storage);
         this.notesModal = notesModal;
-        this.backupManager = new BackupManager(storage);
+        this.backupManager = new BackupManager(storage, this);
         this.backupManager.notifications = notifications;
         this.elements = this.initializeElements();
         this.workoutStates = this.loadWorkoutStates();

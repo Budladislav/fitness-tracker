@@ -3,8 +3,9 @@ import { NotificationManager } from '../managers/notification-manager.js';
 import { WorkoutFormatterService } from './workout-formatter.service.js';
 
 export class BackupManager {
-    constructor(storage) {
+    constructor(storage, ui) {
         this.storage = storage || StorageFactory.createStorage();
+        this.ui = ui;
     }
 
     /**
@@ -113,14 +114,17 @@ export class BackupManager {
                     WorkoutFormatterService.formatWorkoutData(workout)
                 );
                 
-                const success = this.storage.saveToStorage(
+                const success = await this.storage.saveToStorage(
                     this.storage.EXERCISES_KEY, 
                     formattedWorkouts
                 );
                 
                 if (success) {
                     // Создаем автобэкап после успешного восстановления
-                    this.storage.createAutoBackup();
+                    await this.storage.createAutoBackup();
+                    // Получаем обновленную историю и отображаем её
+                    const updatedWorkouts = await this.storage.getWorkoutHistory();
+                    this.ui.displayWorkoutHistory(updatedWorkouts);
                     return true;
                 }
             }
