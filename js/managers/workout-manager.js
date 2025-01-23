@@ -40,13 +40,15 @@ export class WorkoutManager {
                 // Если есть активная тренировка - восстанавливаем её
                 await this.restoreWorkoutState();
             } else {
-                // Если нет - показываем историю
+                // Если нет - показываем историю и убираем класс активной тренировки
+                document.body.classList.remove('workout-active');
                 await this.displayWorkoutHistory();
                 this.ui.navigation.switchToTab('history');
             }
         } catch (error) {
             console.error('Error initializing app state:', error);
             // В случае ошибки показываем историю
+            document.body.classList.remove('workout-active');
             await this.displayWorkoutHistory();
             this.ui.navigation.switchToTab('history');
         }

@@ -260,4 +260,20 @@ export class FirebaseStorageManager extends StorageInterface {
     async deleteWorkoutFromHistory(workoutId) {
         return this.deleteWorkout(workoutId);
     }
+
+    async setActiveWorkout(workout) {
+        try {
+            if (!workout) return;
+            
+            const activeWorkout = {
+                date: workout.date,
+                timestamp: Date.now()
+            };
+            
+            const docRef = this.getDocument('currentWorkout', 'active');
+            await setDoc(docRef, activeWorkout);
+        } catch (error) {
+            console.error('Error setting active workout:', error);
+        }
+    }
 } 
