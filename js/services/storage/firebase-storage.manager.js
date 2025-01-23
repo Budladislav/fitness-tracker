@@ -1,6 +1,6 @@
 import { StorageInterface } from './storage.interface.js';
 import { firebaseService } from '../firebase.service.js';
-import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { WorkoutFormatterService } from '../workout-formatter.service.js';
 
 // Функция для генерации ID
@@ -40,7 +40,9 @@ export class FirebaseStorageManager extends StorageInterface {
     async getWorkoutHistory() {
         try {
             const workoutsRef = this.getCollection('workouts');
-            const snapshot = await getDocs(workoutsRef);
+            // Добавляем orderBy при запросе
+            const q = query(workoutsRef, orderBy('date', 'desc'));
+            const snapshot = await getDocs(q);
             
             const workouts = [];
             snapshot.forEach(doc => {
@@ -55,7 +57,7 @@ export class FirebaseStorageManager extends StorageInterface {
                 });
             });
             
-            return workouts.sort((a, b) => b.timestamp - a.timestamp);
+            return workouts;
         } catch (error) {
             console.error('Error getting workout history:', error);
             return [];
