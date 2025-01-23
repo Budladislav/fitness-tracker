@@ -25,23 +25,42 @@ export class WorkoutManager {
             
             this.initializeEventListeners();
             
-            // Проверяем наличие активной тренировки
-            this.restoreWorkoutState();
-            
-            setTimeout(() => {
-                this.displayWorkoutHistory();
-            }, 0);
+            // Инициализируем состояние приложения
+            this.initializeAppState();
         } catch (error) {
             console.error('Error in WorkoutManager constructor:', error);
         }
     }
 
-    async restoreWorkoutState() {
-        this.ui.showLoader();
+    async initializeAppState() {
         try {
             const currentWorkout = await this.stateManager.getCurrentWorkout();
             
             if (currentWorkout && currentWorkout.date) {
+                // Если есть активная тренировка - восстанавливаем её
+                await this.restoreWorkoutState();
+            } else {
+                // Если нет - показываем историю
+                await this.displayWorkoutHistory();
+                this.ui.navigation.switchToTab('history');
+            }
+        } catch (error) {
+            console.error('Error initializing app state:', error);
+            // В случае ошибки показываем историю
+            await this.displayWorkoutHistory();
+            this.ui.navigation.switchToTab('history');
+        }
+    }
+
+    async restoreWorkoutState() {
+        console.log('1. Start restoring state');
+        this.ui.showLoader();
+        try {
+            const currentWorkout = await this.stateManager.getCurrentWorkout();
+            console.log('2. Current workout:', currentWorkout);
+            
+            if (currentWorkout && currentWorkout.date) {
+                console.log('3a. Has active workout');
                 if (!this.stateManager.isFormShown()) {
                     this.stateManager.setFormShown(true);
                     this.ui.navigation.switchToTab('workout');
@@ -64,11 +83,11 @@ export class WorkoutManager {
                     this.notifications.info('Восстановлена текущая тренировка');
                 }
             } else {
-                // Добавляем переключение на историю если нет активной тренировки
-                this.ui.navigation.switchToTab('history');
+                console.log('3b. No active workout, switching to history');
                 await this.displayWorkoutHistory();
             }
         } finally {
+            console.log('4. Restore state finished');
             this.ui.hideLoader();
         }
     }

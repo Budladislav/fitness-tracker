@@ -118,13 +118,17 @@ export class FirebaseStorageManager extends StorageInterface {
 
     async getCurrentWorkout() {
         try {
+            console.log('Getting current workout...');
             const docRef = this.getDocument('currentWorkout', 'active');
             const docSnap = await getDoc(docRef);
             
+            console.log('Document exists:', docSnap.exists());
             if (docSnap.exists()) {
-                console.log('Firebase current workout:', docSnap.data()); //отладка
-                return docSnap.data();
+                const data = docSnap.data();
+                console.log('Current workout data:', data);
+                return data;
             }
+            console.log('No current workout found');
             return null;
         } catch (error) {
             console.error('Error getting current workout:', error);
