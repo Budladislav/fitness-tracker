@@ -367,44 +367,45 @@ export class HistoryManager extends BaseComponent {
         return section;
     }
 
-    handleNotesEdit(workoutId, notes) {
-        // Получаем историю синхронно
-        const workouts = this.storage.getFromStorage(this.storage.EXERCISES_KEY) || [];
-        const workout = workouts.find(w => w.id === workoutId);
-        
-        if (!workout) {
-            this.notifications.error('Тренировка не найдена');
-            return;
+    async handleNotesEdit(workoutId, notes) {
+        try {
+            // Получаем историю асинхронно
+            const workouts = await this.storage.getWorkoutHistory();
+            const workout = workouts.find(w => w.id === workoutId);
+            
+            if (!workout) {
+                this.notifications.error('Тренировка не найдена');
+                return;
+            }
+
+            this.notesModal.show(notes);
+
+            const saveButton = this.notesModal.modal.querySelector('.save-notes');
+            const oldHandler = saveButton.onclick;
+            
+            saveButton.onclick = async () => {
+                const updatedNotes = this.notesModal.getValues();
+                workout.notes = updatedNotes;
+                
+                // Обновляем тренировку через метод updateWorkout
+                const success = await this.storage.updateWorkout(workout);
+                
+                if (success) {
+                    // Получаем обновленную историю
+                    const updatedWorkouts = await this.storage.getWorkoutHistory();
+                    this.displayWorkoutHistory(updatedWorkouts);
+                    this.notifications.success('Заметки обновлены');
+                } else {
+                    this.notifications.error('Ошибка при обновлении заметок');
+                }
+                
+                this.notesModal.hide();
+                saveButton.onclick = oldHandler;
+            };
+        } catch (error) {
+            console.error('Error in handleNotesEdit:', error);
+            this.notifications.error('Ошибка при редактировании заметок');
         }
-
-        this.notesModal.show(notes);
-
-        const saveButton = this.notesModal.modal.querySelector('.save-notes');
-        const oldHandler = saveButton.onclick;
-        
-        saveButton.onclick = () => {
-            const updatedNotes = this.notesModal.getValues();
-            workout.notes = updatedNotes;
-            
-            // Обновляем тренировку в массиве
-            const index = workouts.findIndex(w => w.id === workoutId);
-            if (index !== -1) {
-                workouts[index] = workout;
-            }
-            
-            // Сохраняем обновленный массив
-            if (this.storage.saveToStorage(this.storage.EXERCISES_KEY, workouts)) {
-                this.displayWorkoutHistory(workouts);
-                this.notifications.success('Заметки обновлены');
-                // Создаем автобэкап после обновления
-                this.storage.createAutoBackup();
-            } else {
-                this.notifications.error('Ошибка при обновлении заметок');
-            }
-            
-            this.notesModal.hide();
-            saveButton.onclick = oldHandler;
-        };
     }
 
     createExerciseElement(exercise) {
