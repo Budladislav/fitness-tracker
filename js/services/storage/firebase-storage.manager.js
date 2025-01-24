@@ -134,11 +134,11 @@ export class FirebaseStorageManager extends StorageInterface {
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                console.log('Current workout data:', data);
+                console.log('Current workout data from Firestore:', data);
                 return data;
             }
             
-            // Возвращаем null вместо начальных значений
+            console.log('No active workout found');
             return null;
         } catch (error) {
             console.error('Error getting current workout:', error);
@@ -299,7 +299,7 @@ export class FirebaseStorageManager extends StorageInterface {
             if (!workout) return;
             
             const activeWorkout = {
-                date: workout.date,
+                ...workout,
                 timestamp: Date.now()
             };
             
