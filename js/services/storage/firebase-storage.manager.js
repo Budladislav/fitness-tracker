@@ -138,14 +138,8 @@ export class FirebaseStorageManager extends StorageInterface {
                 return data;
             }
             
-            // Возвращаем объект с начальными значениями, если нет активной тренировки
-            return {
-                date: new Date().toISOString().split('T')[0],
-                exercises: [],
-                startTime: new Date().toTimeString().split(' ')[0],
-                defaultReps: '10',
-                defaultWeight: '100'
-            };
+            // Возвращаем null вместо начальных значений
+            return null;
         } catch (error) {
             console.error('Error getting current workout:', error);
             return null;
