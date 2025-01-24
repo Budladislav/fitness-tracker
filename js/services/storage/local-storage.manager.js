@@ -206,4 +206,30 @@ export class LocalStorageManager extends StorageInterface {
         
         return this.saveToStorage(this.EXERCISES_KEY, formattedWorkouts);
     }
+
+    async getExerciseHistory(exerciseName, limit = 3) {
+        try {
+            const workouts = await this.getWorkoutHistory();
+            const exercises = [];
+            
+            workouts.forEach(workout => {
+                workout.exercises?.forEach(exercise => {
+                    if (exercise.name.toLowerCase() === exerciseName.toLowerCase()) {
+                        exercises.push({
+                            date: workout.date,
+                            ...exercise
+                        });
+                    }
+                });
+            });
+            
+            // Сортируем по дате и берем последние limit записей
+            return exercises
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, limit);
+        } catch (error) {
+            console.error('Error getting exercise history:', error);
+            return [];
+        }
+    }
 } 
