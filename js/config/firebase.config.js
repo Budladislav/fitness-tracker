@@ -9,4 +9,4 @@ export const firebaseConfig = {
 };
 
 // Флаг для переключения между локальным и Firebase хранилищем
-export const useFirebase = false;
+export const useFirebase = true;

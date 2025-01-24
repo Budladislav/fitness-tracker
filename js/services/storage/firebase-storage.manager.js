@@ -170,10 +170,23 @@ export class FirebaseStorageManager extends StorageInterface {
 
     async clearCurrentWorkout() {
         try {
+            // Удаляем документ активной тренировки
             const docRef = this.getDocument('currentWorkout', 'active');
             await deleteDoc(docRef);
+            
+            // Очищаем все поля в документе (на случай, если deleteDoc не сработает)
+            await setDoc(docRef, {
+                date: null,
+                exercises: [],
+                startTime: null,
+                timestamp: null
+            });
+            
+            console.log('Current workout cleared');
+            return true;
         } catch (error) {
             console.error('Error clearing current workout:', error);
+            return false;
         }
     }
 
