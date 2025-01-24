@@ -129,13 +129,27 @@ export class FirebaseStorageManager extends StorageInterface {
     async getCurrentWorkout() {
         try {
             console.log('Getting current workout...');
+            
+            // Сначала проверяем sessionStorage
+            const sessionData = this.getFromStorage(this.CURRENT_WORKOUT_KEY, sessionStorage);
+            if (sessionData) {
+                console.log('Found workout in sessionStorage:', sessionData);
+                return sessionData; // Убираем повторное форматирование
+            }
+            
+            // Затем проверяем Firestore
             const docRef = this.getDocument('currentWorkout', 'active');
             const docSnap = await getDoc(docRef);
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                console.log('Current workout data from Firestore:', data);
-                return data;
+                console.log('Found workout in Firestore:', data);
+                
+                if (data.exercises && data.exercises.length > 0) {
+                    // Сохраняем в sessionStorage как есть
+                    this.saveToStorage(this.CURRENT_WORKOUT_KEY, data, sessionStorage);
+                    return data;
+                }
             }
             
             console.log('No active workout found');
@@ -149,13 +163,13 @@ export class FirebaseStorageManager extends StorageInterface {
     async saveCurrentWorkout(workout) {
         try {
             const docRef = this.getDocument('currentWorkout', 'active');
-            // Преобразуем дату в строку перед сохранением
-            const workoutToSave = {
-                ...workout,
-                date: workout.date instanceof Date ? workout.date.toISOString().split('T')[0] : workout.date
-            };
-            await setDoc(docRef, workoutToSave);
-            return workoutToSave;
+            const formatted = WorkoutFormatterService.formatWorkoutData(workout);
+            
+            // Сохраняем в оба места
+            this.saveToStorage(this.CURRENT_WORKOUT_KEY, formatted, sessionStorage);
+            await setDoc(docRef, formatted);
+            
+            return formatted;
         } catch (error) {
             console.error('Error saving current workout:', error);
             return null;
