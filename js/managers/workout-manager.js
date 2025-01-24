@@ -58,6 +58,9 @@ export class WorkoutManager {
         console.log('1. Start restoring state');
         this.ui.showLoader();
         try {
+            // Загружаем историю независимо от наличия активной тренировки
+            await this.displayWorkoutHistory();
+            
             const currentWorkout = await this.stateManager.getCurrentWorkout();
             console.log('2. Current workout:', currentWorkout);
             
@@ -84,12 +87,10 @@ export class WorkoutManager {
                     
                     this.notifications.info('Восстановлена текущая тренировка');
                 }
-            } else {
-                console.log('3b. No active workout, switching to history');
-                await this.displayWorkoutHistory();
             }
+        } catch (error) {
+            console.error('Error restoring state:', error);
         } finally {
-            console.log('4. Restore state finished');
             this.ui.hideLoader();
         }
     }
