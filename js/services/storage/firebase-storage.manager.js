@@ -131,10 +131,11 @@ export class FirebaseStorageManager extends StorageInterface {
             console.log('Getting current workout...');
             
             // Сначала проверяем sessionStorage
-            const sessionData = this.getFromStorage(this.CURRENT_WORKOUT_KEY, sessionStorage);
+            const sessionData = sessionStorage.getItem(this.CURRENT_WORKOUT_KEY);
             if (sessionData) {
-                console.log('Found workout in sessionStorage:', sessionData);
-                return sessionData; // Убираем повторное форматирование
+                const parsed = JSON.parse(sessionData);
+                console.log('Found workout in sessionStorage:', parsed);
+                return parsed;
             }
             
             // Затем проверяем Firestore
@@ -146,8 +147,8 @@ export class FirebaseStorageManager extends StorageInterface {
                 console.log('Found workout in Firestore:', data);
                 
                 if (data.exercises && data.exercises.length > 0) {
-                    // Сохраняем в sessionStorage как есть
-                    this.saveToStorage(this.CURRENT_WORKOUT_KEY, data, sessionStorage);
+                    // Сохраняем в sessionStorage
+                    sessionStorage.setItem(this.CURRENT_WORKOUT_KEY, JSON.stringify(data));
                     return data;
                 }
             }
@@ -165,11 +166,33 @@ export class FirebaseStorageManager extends StorageInterface {
             const docRef = this.getDocument('currentWorkout', 'active');
             const formatted = WorkoutFormatterService.formatWorkoutData(workout);
             
-            // Сохраняем в оба места
-            this.saveToStorage(this.CURRENT_WORKOUT_KEY, formatted, sessionStorage);
-            await setDoc(docRef, formatted);
+            // Получаем текущее состояние, чтобы сохранить тип упражнений
+            const currentState = await this.getCurrentWorkout() || {};
             
-            return formatted;
+            // Сохраняем полное состояние тренировки
+            const workoutToSave = {
+                ...formatted,
+                exerciseType: workout.exerciseType || currentState.exerciseType || 'bodyweight',
+                lastSelectedExercises: workout.lastSelectedExercises || currentState.lastSelectedExercises || {
+                    weighted: '',
+                    bodyweight: ''
+                },
+                date: formatted.date instanceof Date ? formatted.date.toISOString().split('T')[0] : formatted.date,
+                exercises: formatted.exercises || [],
+                startTime: formatted.startTime || null,
+                timestamp: Date.now()
+            };
+            
+            // Сохраняем в sessionStorage
+            sessionStorage.setItem(this.CURRENT_WORKOUT_KEY, JSON.stringify(workoutToSave));
+            
+            // Сохраняем в Firestore
+            await setDoc(docRef, workoutToSave);
+            
+            // Сохраняем активную тренировку
+            await this.setActiveWorkout(workoutToSave);
+            
+            return workoutToSave;
         } catch (error) {
             console.error('Error saving current workout:', error);
             return null;
@@ -312,8 +335,16 @@ export class FirebaseStorageManager extends StorageInterface {
         try {
             if (!workout) return;
             
+            // Получаем текущее состояние
+            const currentState = await this.getCurrentWorkout() || {};
+            
             const activeWorkout = {
-                ...workout,
+                date: workout.date,
+                exerciseType: workout.exerciseType || currentState.exerciseType || 'bodyweight',
+                lastSelectedExercises: workout.lastSelectedExercises || currentState.lastSelectedExercises || {
+                    weighted: '',
+                    bodyweight: ''
+                },
                 timestamp: Date.now()
             };
             
