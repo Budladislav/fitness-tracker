@@ -1,6 +1,6 @@
 import { StorageInterface } from './storage.interface.js';
 import { firebaseService } from '../firebase.service.js';
-import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { WorkoutFormatterService } from '../workout-formatter.service.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
@@ -30,31 +30,43 @@ export class FirebaseStorageManager extends StorageInterface {
             settings: 'settings'  // Добавляем коллекцию для настроек
         };
 
-        // Проверяем аутентификацию
-        if (!this.auth.currentUser) {
-            console.warn('User not authenticated. Some operations may fail.');
-        }
+        // Убираем предупреждение о неаутентифицированном пользователе
+        this.isGuest = !this.auth.currentUser;
+
+        // Добавляем префикс для гостевых данных
+        this.guestPrefix = 'guest_';
+        this.userId = this.auth.currentUser?.uid || this.guestPrefix + generateId();
     }
 
     // Вспомогательный метод для получения ссылки на коллекцию
     getCollection(name) {
-        return collection(this.db, this.collections[name]);
+        const collectionPath = this.isGuest ? 
+            `${this.guestPrefix}${this.collections[name]}` : 
+            this.collections[name];
+        return collection(this.db, collectionPath);
     }
 
     // Вспомогательный метод для получения ссылки на документ
     getDocument(collectionName, docId) {
-        return doc(this.db, this.collections[collectionName], docId);
+        const collectionPath = this.isGuest ? 
+            `${this.guestPrefix}${this.collections[collectionName]}` : 
+            this.collections[collectionName];
+        return doc(this.db, collectionPath, docId);
     }
 
     // Реализация методов интерфейса
     async getWorkoutHistory() {
         try {
             const workoutsRef = this.getCollection('workouts');
-            // Добавляем orderBy при запросе
-            const q = query(workoutsRef, orderBy('date', 'desc'));
-            const snapshot = await getDocs(q);
+            const q = query(
+                workoutsRef, 
+                where('userId', '==', this.userId),
+                orderBy('timestamp', 'desc')
+            );
             
+            const snapshot = await getDocs(q);
             const workouts = [];
+            
             snapshot.forEach(doc => {
                 const data = doc.data();
                 workouts.push({
@@ -77,13 +89,11 @@ export class FirebaseStorageManager extends StorageInterface {
     async saveWorkoutToHistory(workout) {
         try {
             const workoutsRef = this.getCollection('workouts');
-            
-            // Используем тот же форматтер, что и в локальной версии
             const formatted = WorkoutFormatterService.formatWorkoutData(workout);
             
-            // Сохраняем дату и время
             const workoutToSave = {
                 ...formatted,
+                userId: this.userId,  // Добавляем userId
                 date: formatted.date,
                 time: formatted.startTime,
                 timestamp: Date.now(),
@@ -91,13 +101,10 @@ export class FirebaseStorageManager extends StorageInterface {
                 notes: formatted.notes || {}
             };
             
-            // Создаем документ
             const docRef = await addDoc(workoutsRef, workoutToSave);
             formatted.id = docRef.id;
             
-            // Создаем бэкап после успешного сохранения
             this.createAutoBackup();
-            
             return true;
         } catch (error) {
             console.error('Error saving workout:', error);
@@ -151,9 +158,7 @@ export class FirebaseStorageManager extends StorageInterface {
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                
-                if (data.exercises && data.exercises.length > 0) {
-                    // Сохраняем в sessionStorage
+                if (data.userId === this.userId && data.exercises && data.exercises.length > 0) {
                     sessionStorage.setItem(this.CURRENT_WORKOUT_KEY, JSON.stringify(data));
                     return data;
                 }
@@ -171,12 +176,11 @@ export class FirebaseStorageManager extends StorageInterface {
             const docRef = this.getDocument('currentWorkout', 'active');
             const formatted = WorkoutFormatterService.formatWorkoutData(workout);
             
-            // Получаем текущее состояние, чтобы сохранить тип упражнений
             const currentState = await this.getCurrentWorkout() || {};
             
-            // Сохраняем полное состояние тренировки
             const workoutToSave = {
                 ...formatted,
+                userId: this.userId,
                 exerciseType: workout.exerciseType || currentState.exerciseType || 'bodyweight',
                 lastSelectedExercises: workout.lastSelectedExercises || currentState.lastSelectedExercises || {
                     weighted: '',
@@ -188,13 +192,8 @@ export class FirebaseStorageManager extends StorageInterface {
                 timestamp: Date.now()
             };
             
-            // Сохраняем в sessionStorage
             sessionStorage.setItem(this.CURRENT_WORKOUT_KEY, JSON.stringify(workoutToSave));
-            
-            // Сохраняем в Firestore
             await setDoc(docRef, workoutToSave);
-            
-            // Сохраняем активную тренировку
             await this.setActiveWorkout(workoutToSave);
             
             return workoutToSave;
@@ -206,18 +205,18 @@ export class FirebaseStorageManager extends StorageInterface {
 
     async clearCurrentWorkout() {
         try {
-            // Удаляем документ активной тренировки
             const docRef = this.getDocument('currentWorkout', 'active');
             await deleteDoc(docRef);
             
-            // Очищаем все поля в документе (на случай, если deleteDoc не сработает)
             await setDoc(docRef, {
+                userId: this.userId,
                 date: null,
                 exercises: [],
                 startTime: null,
                 timestamp: null
             });
             
+            sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
             return true;
         } catch (error) {
             console.error('Error clearing current workout:', error);
@@ -228,9 +227,15 @@ export class FirebaseStorageManager extends StorageInterface {
     async getExerciseHistory(exerciseName, limit = 3) {
         try {
             const workoutsRef = this.getCollection('workouts');
-            const snapshot = await getDocs(workoutsRef);
+            const q = query(
+                workoutsRef,
+                where('userId', '==', this.userId),
+                orderBy('timestamp', 'desc')
+            );
             
+            const snapshot = await getDocs(q);
             const exercises = [];
+            
             snapshot.forEach(doc => {
                 const workout = doc.data();
                 workout.exercises?.forEach(exercise => {
@@ -243,10 +248,7 @@ export class FirebaseStorageManager extends StorageInterface {
                 });
             });
             
-            // Сортируем по дате и берем последние limit записей
-            return exercises
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, limit);
+            return exercises.slice(0, limit);
         } catch (error) {
             console.error('Error getting exercise history:', error);
             return [];
@@ -263,6 +265,7 @@ export class FirebaseStorageManager extends StorageInterface {
             
             const backupData = {
                 workouts: workouts,
+                userId: this.userId,
                 timestamp: new Date().toISOString()
             };
             
