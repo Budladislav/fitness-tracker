@@ -2,6 +2,7 @@ import { StorageInterface } from './storage.interface.js';
 import { firebaseService } from '../firebase.service.js';
 import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { WorkoutFormatterService } from '../workout-formatter.service.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
 // Функция для генерации ID
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -10,6 +11,7 @@ export class FirebaseStorageManager extends StorageInterface {
     constructor() {
         super();
         this.db = firebaseService.getDb();
+        this.auth = getAuth(firebaseService.app);
         
         // Добавляем константы для ключей
         this.EXERCISES_KEY = 'exercises';
@@ -24,6 +26,11 @@ export class FirebaseStorageManager extends StorageInterface {
             backup: 'backup',
             settings: 'settings'  // Добавляем коллекцию для настроек
         };
+
+        // Проверяем аутентификацию
+        if (!this.auth.currentUser) {
+            console.warn('User not authenticated. Some operations may fail.');
+        }
     }
 
     // Вспомогательный метод для получения ссылки на коллекцию
