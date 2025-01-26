@@ -5,6 +5,7 @@ export class ImportModule {
     constructor(workoutManager, notifications) {
         this.workoutManager = workoutManager;
         this.notifications = notifications;
+        this.storage = workoutManager.storage;
         this.importButton = null;
     }
 
@@ -39,13 +40,12 @@ export class ImportModule {
                 return;
             }
 
-            const storage = StorageFactory.createStorage();
             const parsedWorkouts = parseWorkoutData(rawWorkoutData);
             
             localStorage.removeItem('exercises');
             
             parsedWorkouts.forEach(workout => {
-                storage.saveWorkoutToHistory(workout);
+                this.storage.saveWorkoutToHistory(workout);
             });
             
             this.notifications.show(`Импортировано ${parsedWorkouts.length} тренировок`, 'success');

@@ -9,6 +9,10 @@ class FirebaseService {
     }
 
     async initialize() {
+        if (this.app) {
+            return true;
+        }
+
         try {
             this.app = initializeApp(firebaseConfig);
             this.db = getFirestore(this.app);
@@ -29,6 +33,9 @@ class FirebaseService {
     }
 
     getDb() {
+        if (!this.db) {
+            throw new Error('Firebase DB not initialized');
+        }
         return this.db;
     }
 }

@@ -10,6 +10,9 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 export class FirebaseStorageManager extends StorageInterface {
     constructor() {
         super();
+        if (!firebaseService.app) {
+            throw new Error('Firebase must be initialized before creating FirebaseStorageManager');
+        }
         this.db = firebaseService.getDb();
         this.auth = getAuth(firebaseService.app);
         

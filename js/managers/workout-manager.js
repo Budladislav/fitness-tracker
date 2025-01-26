@@ -14,7 +14,7 @@ export class WorkoutManager {
     constructor(notifications, storage, ui, validator) {
         try {
             this.notifications = notifications;
-            this.storage = StorageFactory.createStorage();
+            this.storage = storage;
             this.ui = ui;
             this.validator = validator;
             
