@@ -10,3 +10,25 @@ export const firebaseConfig = {
 
 // Флаг для переключения между локальным и Firebase хранилищем
 export const useFirebase = true;
+
+// Добавляем конфигурацию для авторизации
+export const authConfig = {
+    // URL для перенаправления после авторизации
+    redirectUrl: window.location.origin + window.location.pathname,
+    // Дополнительные настройки для email авторизации
+    actionCodeSettings: {
+        handleCodeInApp: true,
+        // iOS
+        iOS: {
+            bundleId: 'com.yourapp.ios'
+        },
+        // Android
+        android: {
+            packageName: 'com.yourapp.android',
+            installApp: true,
+            minimumVersion: '12'
+        },
+        // URL динамических ссылок
+        dynamicLinkDomain: 'yourapp.page.link'
+    }
+};

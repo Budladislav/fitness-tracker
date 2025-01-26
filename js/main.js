@@ -7,27 +7,32 @@ import { ImportModule } from './modules/import-module.js';
 import { DeviceDetector } from './utils/device-detector.js';
 import { firebaseService } from './services/firebase.service.js';
 import { useFirebase } from './config/firebase.config.js';
+import { AuthModal } from './components/auth-modal.js';
+import { AuthButton } from './components/auth-button.js';
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
     // Определяем тип устройства
     DeviceDetector.addDeviceClass();
     
-    // Инициализируем Firebase если он включен
-    if (useFirebase) {
-        const isInitialized = firebaseService.initialize();
-        if (!isInitialized) {
-            console.error('Failed to initialize Firebase');
-            // Можно добавить уведомление пользователю
-            return;
-        }
-    }
-    
     // Создаем все необходимые менеджеры
     const notifications = new NotificationManager();
     const storage = StorageFactory.createStorage();
     const ui = new UIManager(notifications, storage);
     const validator = new ExerciseValidator(notifications);
+    
+    // Инициализируем Firebase если он включен
+    if (useFirebase) {
+        const isInitialized = firebaseService.initialize();
+        if (!isInitialized) {
+            notifications.error('Ошибка инициализации Firebase');
+            return;
+        }
+        
+        // Инициализируем компоненты авторизации
+        const authModal = new AuthModal(notifications);
+        const authButton = new AuthButton(authModal);
+    }
     
     // Создаем основной менеджер приложения
     const workoutManager = new WorkoutManager(notifications, storage, ui, validator);

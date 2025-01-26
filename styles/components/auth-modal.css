@@ -1,0 +1,33 @@
+.auth-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.auth-button img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.auth-modal .modal-content {
+    max-width: 400px;
+}
+
+.auth-modal input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+} 
