@@ -55,17 +55,14 @@ export class WorkoutManager {
     }
 
     async restoreWorkoutState() {
-        console.log('1. Start restoring state');
         this.ui.showLoader();
         try {
             // Загружаем историю независимо от наличия активной тренировки
             await this.displayWorkoutHistory();
             
             const currentWorkout = await this.stateManager.getCurrentWorkout();
-            console.log('2. Current workout:', currentWorkout);
             
             if (currentWorkout && currentWorkout.date) {
-                console.log('3a. Has active workout');
                 if (!this.stateManager.isFormShown()) {
                     this.stateManager.setFormShown(true);
                     this.ui.navigation.switchToTab('workout');

@@ -127,14 +127,11 @@ export class FirebaseStorageManager extends StorageInterface {
     }
 
     async getCurrentWorkout() {
-        try {
-            console.log('Getting current workout...');
-            
+        try {            
             // Сначала проверяем sessionStorage
             const sessionData = sessionStorage.getItem(this.CURRENT_WORKOUT_KEY);
             if (sessionData) {
                 const parsed = JSON.parse(sessionData);
-                console.log('Found workout in sessionStorage:', parsed);
                 return parsed;
             }
             
@@ -144,7 +141,6 @@ export class FirebaseStorageManager extends StorageInterface {
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                console.log('Found workout in Firestore:', data);
                 
                 if (data.exercises && data.exercises.length > 0) {
                     // Сохраняем в sessionStorage
@@ -153,7 +149,6 @@ export class FirebaseStorageManager extends StorageInterface {
                 }
             }
             
-            console.log('No active workout found');
             return null;
         } catch (error) {
             console.error('Error getting current workout:', error);
@@ -213,7 +208,6 @@ export class FirebaseStorageManager extends StorageInterface {
                 timestamp: null
             });
             
-            console.log('Current workout cleared');
             return true;
         } catch (error) {
             console.error('Error clearing current workout:', error);
