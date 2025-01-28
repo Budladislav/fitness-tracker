@@ -38,28 +38,47 @@ export class FirebaseStorageManager extends StorageInterface {
             localStorage.setItem('guestId', this.userId);
         }
         
-        // Слушаем изменения авторизации
-        this.auth.onAuthStateChanged((user) => {
-            console.log('Auth state changed:', user);
-            const oldUserId = this.userId; // Сохраняем старый ID
+        // Добавляем слушатель изменения авторизации
+        this.auth.onAuthStateChanged(async (user) => {
+            console.log('[FirebaseStorage] Auth state changed:', user);
             
-            if (user) {
-                this.userId = user.uid;
+            // Определяем новый userId
+            let newUserId;
+            const testUser = localStorage.getItem('testUser');
+            
+            if (testUser) {
+                const parsed = JSON.parse(testUser);
+                newUserId = parsed.uid;
+            } else if (user) {
+                newUserId = user.uid;
             } else {
-                const testUser = localStorage.getItem('testUser');
-                if (testUser) {
-                    const parsed = JSON.parse(testUser);
-                    this.userId = parsed.uid;
-                } else {
-                    this.userId = localStorage.getItem('guestId');
-                }
+                newUserId = localStorage.getItem('guestId');
             }
             
-            // Если ID изменился, очищаем кэш
-            if (oldUserId !== this.userId) {
+            console.log('[FirebaseStorage] User ID change:', {
+                old: this.userId,
+                new: newUserId
+            });
+            
+            if (this.userId !== newUserId) {
+                this.userId = newUserId;
                 sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
             }
         });
+    }
+
+    // Добавляем метод для принудительного обновления userId
+    updateUserId() {
+        const testUser = localStorage.getItem('testUser');
+        if (testUser) {
+            const parsed = JSON.parse(testUser);
+            this.userId = parsed.uid;
+        } else if (this.auth.currentUser) {
+            this.userId = this.auth.currentUser.uid;
+        } else {
+            this.userId = localStorage.getItem('guestId');
+        }
+        return this.userId;
     }
 
     // Изменяем методы получения ссылок
@@ -73,6 +92,9 @@ export class FirebaseStorageManager extends StorageInterface {
 
     // Реализация методов интерфейса
     async getWorkoutHistory() {
+        // Принудительно обновляем userId перед запросом
+        this.updateUserId();
+        console.log('[FirebaseStorage] Getting workout history for userId:', this.userId);
         try {
             const workoutsRef = this.getCollection('workouts');
             console.log('Collection path:', workoutsRef.path);

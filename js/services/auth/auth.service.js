@@ -30,8 +30,10 @@ export class AuthService {
         
         // Слушаем изменения авторизации
         this.auth.onAuthStateChanged((user) => {
+            console.log('[AuthService] Auth state changed:', user);
             if (authConfig.testMode?.enabled) {
                 const testUser = localStorage.getItem('testUser');
+                console.log('[AuthService] Test user from storage:', testUser);
                 if (testUser) {
                     this.currentUser = JSON.parse(testUser);
                 } else {
@@ -40,13 +42,21 @@ export class AuthService {
             } else {
                 this.currentUser = user;
             }
+            console.log('[AuthService] Current user set to:', this.currentUser);
             this.updateUI();
             this.notifyListeners(this.currentUser);
+        });
+
+        // Восстанавливаем состояние UI при загрузке
+        window.addEventListener('load', () => {
+            console.log('[AuthService] Window loaded, updating UI');
+            this.updateUI();
         });
     }
 
     updateUI() {
         const authButton = document.querySelector('.auth-button');
+        console.log('[AuthService] Updating UI, currentUser:', this.currentUser);
         if (!authButton) return;
 
         if (this.currentUser) {
@@ -82,13 +92,26 @@ export class AuthService {
                 localStorage.setItem('testUser', JSON.stringify(this.currentUser));
                 localStorage.setItem('testUser_' + email, JSON.stringify(this.currentUser));
                 
-                this.updateUI();
+                // Сначала уведомляем о смене пользователя
                 this.notifyListeners(this.currentUser);
+                
+                // Даем время на обновление userId в FirebaseStorageManager
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Затем обновляем UI и историю
+                this.updateUI();
+                window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
+                
                 return true;
             }
             
             await sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings);
             window.localStorage.setItem('emailForSignIn', email);
+            
+            // Добавляем задержку перед обновлением истории
+            await new Promise(resolve => setTimeout(resolve, 100));
+            window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
+            
             return true;
         } catch (error) {
             console.error('Error sending login link:', error);

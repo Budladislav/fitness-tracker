@@ -45,6 +45,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Создаем основной менеджер приложения
         const workoutManager = new WorkoutManager(notifications, storage, ui, validator, authService);
+
+        // После создания workoutManager
+        window.addEventListener('workoutHistoryUpdate', async () => {
+            console.log('[Main] Workout history update event received');
+            const workouts = await workoutManager.displayWorkoutHistory();
+            console.log('[Main] History updated with workouts:', workouts);
+        });
     } catch (error) {
         notifications.error('Ошибка инициализации приложения');
         console.error('Initialization error:', error);
