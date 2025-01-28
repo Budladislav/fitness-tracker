@@ -19,7 +19,7 @@
 @import 'components/touch-input.css';
 @import 'components/modal.css';
 @import 'components/loader.css';
-
+@import 'components/auth.css';
 /* Pages */
 @import 'pages/workout.css';
 @import 'pages/history.css';

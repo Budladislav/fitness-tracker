@@ -1,6 +1,6 @@
 import { StorageInterface } from './storage.interface.js';
 import { firebaseService } from '../firebase.service.js';
-import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy, where, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { WorkoutFormatterService } from '../workout-formatter.service.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
@@ -58,11 +58,23 @@ export class FirebaseStorageManager extends StorageInterface {
     async getWorkoutHistory() {
         try {
             const workoutsRef = this.getCollection('workouts');
+            console.log('Collection path:', workoutsRef.path);
+            
             const q = query(
                 workoutsRef, 
                 where('userId', '==', this.userId),
                 orderBy('timestamp', 'desc')
             );
+            
+            // Попытка получить первый документ для проверки структуры
+            const testSnapshot = await getDocs(query(workoutsRef, 
+                where('userId', '==', this.userId),
+                orderBy('timestamp', 'desc'),
+                limit(1)
+            ));
+            if (!testSnapshot.empty) {
+                console.log('Document structure:', testSnapshot.docs[0].data());
+            }
             
             const snapshot = await getDocs(q);
             const workouts = [];

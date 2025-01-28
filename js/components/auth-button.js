@@ -12,6 +12,7 @@ export class AuthButton extends BaseComponent {
     }
 
     createButton() {
+        console.log('Creating auth button...');
         this.button = document.createElement('button');
         this.button.className = 'auth-button';
         this.button.innerHTML = '<img src="icons/user.svg" alt="Профиль">';

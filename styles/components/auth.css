@@ -1,12 +1,13 @@
 .user-menu {
     position: fixed;
-    top: 70px;
-    right: 20px;
+    top: 50px;
+    right: 12px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     padding: 12px;
     z-index: 1000;
+    min-width: 200px;
 }
 
 .user-email {
@@ -29,12 +30,53 @@
     border-radius: 4px;
 }
 
+.auth-button {
+    position: fixed !important;
+    top: 8px !important;
+    right: 8px !important;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 6px;
+    transition: transform 0.2s ease;
+    margin: 0px;
+}
+
+.auth-button::before {
+    display: none;
+}
+
+.auth-button:hover {
+    transform: scale(1.1);
+    background: var(--primary-hover);
+}
+
 .auth-button img {
-    width: 24px;
-    height: 24px;
-    color: white; /* Для SVG иконок */
+    width: 18px;
+    height: 18px;
+    color: white;
 }
 
 .auth-button svg {
     stroke: white;
+} 
+
+
+.auth-modal .modal-content {
+    max-width: 400px;
+}
+
+.auth-modal input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
 } 

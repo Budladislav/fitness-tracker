@@ -2,6 +2,7 @@ import { WorkoutFactory } from '../factories/workout.factory.js';
 import { NotesModal } from '../components/notes-modal.js';
 import { StateManager } from '../services/state-manager.js';
 import { StorageFactory } from '../services/storage/storage.factory.js';
+import { AuthManager } from '../services/auth/auth.manager.js';
 
 /**
  * Основной класс управления приложением
@@ -17,6 +18,9 @@ export class WorkoutManager {
             this.storage = storage;
             this.ui = ui;
             this.validator = validator;
+            
+            // Инициализируем AuthManager
+            this.authManager = new AuthManager(notifications);
             
             // Передаем зависимости в NotesModal
             this.notesModal = new NotesModal(notifications, storage);
@@ -34,20 +38,20 @@ export class WorkoutManager {
 
     async initializeAppState() {
         try {
+            // Инициализируем авторизацию
+            await this.authManager.initialize();
+            
             const currentWorkout = await this.stateManager.getCurrentWorkout();
             
             if (currentWorkout && currentWorkout.date) {
-                // Если есть активная тренировка - восстанавливаем её
                 await this.restoreWorkoutState();
             } else {
-                // Если нет - показываем историю и убираем класс активной тренировки
                 document.body.classList.remove('workout-active');
                 await this.displayWorkoutHistory();
                 this.ui.navigation.switchToTab('history');
             }
         } catch (error) {
             console.error('Error initializing app state:', error);
-            // В случае ошибки показываем историю
             document.body.classList.remove('workout-active');
             await this.displayWorkoutHistory();
             this.ui.navigation.switchToTab('history');
