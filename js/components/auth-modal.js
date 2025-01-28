@@ -1,11 +1,10 @@
 import { BaseComponent } from './base-component.js';
-import { AuthService } from '../services/auth.service.js';
 
 export class AuthModal extends BaseComponent {
-    constructor(notifications) {
+    constructor(notifications, authService) {
         super();
         this.notifications = notifications;
-        this.authService = new AuthService();
+        this.authService = authService;
         this.createModal();
         this.initializeEvents();
     }

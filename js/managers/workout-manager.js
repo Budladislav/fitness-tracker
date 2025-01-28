@@ -2,7 +2,7 @@ import { WorkoutFactory } from '../factories/workout.factory.js';
 import { NotesModal } from '../components/notes-modal.js';
 import { StateManager } from '../services/state-manager.js';
 import { StorageFactory } from '../services/storage/storage.factory.js';
-import { AuthManager } from '../services/auth/auth.manager.js';
+import { AuthService } from '../services/auth/auth.service.js';
 
 /**
  * Основной класс управления приложением
@@ -12,15 +12,13 @@ export class WorkoutManager {
     /**
      * Инициализирует приложение и создает необходимые менеджеры
      */
-    constructor(notifications, storage, ui, validator) {
+    constructor(notifications, storage, ui, validator, authService = null) {
         try {
             this.notifications = notifications;
             this.storage = storage;
             this.ui = ui;
             this.validator = validator;
-            
-            // Инициализируем AuthManager
-            this.authManager = new AuthManager(notifications);
+            this.authService = authService;
             
             // Передаем зависимости в NotesModal
             this.notesModal = new NotesModal(notifications, storage);
@@ -38,9 +36,6 @@ export class WorkoutManager {
 
     async initializeAppState() {
         try {
-            // Инициализируем авторизацию
-            await this.authManager.initialize();
-            
             const currentWorkout = await this.stateManager.getCurrentWorkout();
             
             if (currentWorkout && currentWorkout.date) {

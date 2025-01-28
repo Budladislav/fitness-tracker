@@ -8,6 +8,7 @@ import { firebaseService } from './services/firebase.service.js';
 import { useFirebase } from './config/firebase.config.js';
 import { AuthModal } from './components/auth-modal.js';
 import { AuthButton } from './components/auth-button.js';
+import { AuthService } from './services/auth/auth.service.js';
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Создаем notifications до инициализации Firebase
     const notifications = new NotificationManager();
+    let authService = null;
     
     try {
         // Инициализируем Firebase если он включен
@@ -25,6 +27,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notifications.error('Ошибка инициализации Firebase');
                 return;
             }
+            
+            // Создаем authService здесь, но выносим его объявление наружу
+            authService = new AuthService(notifications);
         }
         
         // Создаем остальные менеджеры после инициализации Firebase
@@ -33,13 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const validator = new ExerciseValidator(notifications);
         
         // Инициализируем компоненты авторизации
-        if (useFirebase) {
-            const authModal = new AuthModal(notifications);
-            const authButton = new AuthButton(authModal);
+        if (useFirebase && authService) {
+            const authModal = new AuthModal(notifications, authService);
+            const authButton = new AuthButton(authModal, authService);
         }
         
         // Создаем основной менеджер приложения
-        const workoutManager = new WorkoutManager(notifications, storage, ui, validator);
+        const workoutManager = new WorkoutManager(notifications, storage, ui, validator, authService);
     } catch (error) {
         notifications.error('Ошибка инициализации приложения');
         console.error('Initialization error:', error);

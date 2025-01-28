@@ -1,18 +1,16 @@
 import { BaseComponent } from './base-component.js';
-import { AuthService } from '../services/auth.service.js';
 
 export class AuthButton extends BaseComponent {
-    constructor(authModal) {
+    constructor(authModal, authService) {
         super();
         this.authModal = authModal;
-        this.authService = new AuthService();
+        this.authService = authService;
         this.createButton();
         this.initializeEvents();
         this.initializeAuthStateListener();
     }
 
     createButton() {
-        console.log('Creating auth button...');
         this.button = document.createElement('button');
         this.button.className = 'auth-button';
         this.button.innerHTML = '<img src="icons/user.svg" alt="Профиль">';
