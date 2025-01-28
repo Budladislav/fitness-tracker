@@ -22,36 +22,38 @@ export class FirebaseStorageManager extends StorageInterface {
         this.ACTIVE_WORKOUT_KEY = 'active_workout';
         this.BACKUP_KEY = 'backup';
         
-        // Определяем коллекции в Firestore
+        // Изменяем определение коллекций
         this.collections = {
             workouts: 'workouts',
-            currentWorkout: 'current_workout',
-            backup: 'backup',
-            settings: 'settings'  // Добавляем коллекцию для настроек
+            currentWorkout: 'current_workouts',
+            backup: 'backups',
+            settings: 'settings'
         };
 
-        // Убираем предупреждение о неаутентифицированном пользователе
-        this.isGuest = !this.auth.currentUser;
-
-        // Добавляем префикс для гостевых данных
-        this.guestPrefix = 'guest_';
-        this.userId = this.auth.currentUser?.uid || this.guestPrefix + generateId();
+        // Восстанавливаем или создаем гостевой ID
+        this.userId = localStorage.getItem('guestId') || `guest_${generateId()}`;
+        if (!localStorage.getItem('guestId')) {
+            localStorage.setItem('guestId', this.userId);
+        }
+        
+        // Слушаем изменения авторизации
+        this.auth.onAuthStateChanged((user) => {
+            if (user) {
+                this.userId = user.uid;
+            } else {
+                // Возвращаемся к гостевому ID
+                this.userId = localStorage.getItem('guestId');
+            }
+        });
     }
 
-    // Вспомогательный метод для получения ссылки на коллекцию
+    // Изменяем методы получения ссылок
     getCollection(name) {
-        const collectionPath = this.isGuest ? 
-            `${this.guestPrefix}${this.collections[name]}` : 
-            this.collections[name];
-        return collection(this.db, collectionPath);
+        return collection(this.db, this.collections[name]);
     }
 
-    // Вспомогательный метод для получения ссылки на документ
     getDocument(collectionName, docId) {
-        const collectionPath = this.isGuest ? 
-            `${this.guestPrefix}${this.collections[collectionName]}` : 
-            this.collections[collectionName];
-        return doc(this.db, collectionPath, docId);
+        return doc(this.db, this.collections[collectionName], docId);
     }
 
     // Реализация методов интерфейса
