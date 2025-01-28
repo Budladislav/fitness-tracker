@@ -41,6 +41,8 @@ export class FirebaseStorageManager extends StorageInterface {
         // Слушаем изменения авторизации
         this.auth.onAuthStateChanged((user) => {
             console.log('Auth state changed:', user);
+            const oldUserId = this.userId; // Сохраняем старый ID
+            
             if (user) {
                 this.userId = user.uid;
             } else {
@@ -52,7 +54,11 @@ export class FirebaseStorageManager extends StorageInterface {
                     this.userId = localStorage.getItem('guestId');
                 }
             }
-            sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
+            
+            // Если ID изменился, очищаем кэш
+            if (oldUserId !== this.userId) {
+                sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
+            }
         });
     }
 

@@ -68,12 +68,20 @@ export class AuthService {
     async sendLoginLink(email) {
         try {
             if (authConfig.testMode?.enabled) {
-                const testUser = {
-                    email: email,
-                    uid: `test_${Date.now()}`
-                };
-                this.currentUser = testUser;
-                localStorage.setItem('testUser', JSON.stringify(testUser));
+                // Проверяем, был ли уже такой пользователь
+                const existingTestUser = localStorage.getItem('testUser_' + email);
+                if (existingTestUser) {
+                    this.currentUser = JSON.parse(existingTestUser);
+                } else {
+                    this.currentUser = {
+                        email: email,
+                        uid: `test_${email}_${Date.now()}`
+                    };
+                }
+                
+                localStorage.setItem('testUser', JSON.stringify(this.currentUser));
+                localStorage.setItem('testUser_' + email, JSON.stringify(this.currentUser));
+                
                 this.updateUI();
                 this.notifyListeners(this.currentUser);
                 return true;
@@ -129,10 +137,15 @@ export class AuthService {
                 localStorage.removeItem('testUser');
                 this.currentUser = null;
                 this.updateUI();
+                this.notifyListeners(null);
                 return true;
             }
             
-            await this.auth.signOut();
+            await signOut(this.auth);
+            this.currentUser = null;
+            this.updateUI();
+            this.notifyListeners(null);
+            
             if (this.notifications) {
                 this.notifications.success('Вы вышли из системы');
             }
