@@ -15,10 +15,7 @@ export class AuthService {
         this.auth = getAuth(firebaseService.app);
         this.listeners = new Set();
         
-        // Сначала проверяем Firebase Auth
-        this.currentUser = this.auth.currentUser;
-        
-        // Затем тестовый режим
+        // Сначала проверяем тестовый режим
         if (authConfig.testMode?.enabled) {
             const testUser = localStorage.getItem('testUser');
             if (testUser) {
@@ -31,18 +28,19 @@ export class AuthService {
         // Слушаем изменения авторизации
         this.auth.onAuthStateChanged((user) => {
             console.log('[AuthService] Auth state changed:', user);
+            
+            // В тестовом режиме игнорируем null от Firebase
             if (authConfig.testMode?.enabled) {
                 const testUser = localStorage.getItem('testUser');
-                console.log('[AuthService] Test user from storage:', testUser);
-                if (testUser) {
+                if (testUser && !user) {
                     this.currentUser = JSON.parse(testUser);
                 } else {
-                    this.currentUser = null;
+                    this.currentUser = user;
                 }
             } else {
                 this.currentUser = user;
             }
-            console.log('[AuthService] Current user set to:', this.currentUser);
+            
             this.updateUI();
             this.notifyListeners(this.currentUser);
         });
@@ -161,6 +159,11 @@ export class AuthService {
                 this.currentUser = null;
                 this.updateUI();
                 this.notifyListeners(null);
+                
+                // Добавляем обновление истории
+                await new Promise(resolve => setTimeout(resolve, 100));
+                window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
+                
                 return true;
             }
             
@@ -169,6 +172,10 @@ export class AuthService {
             this.updateUI();
             this.notifyListeners(null);
             
+            // Добавляем обновление истории
+            await new Promise(resolve => setTimeout(resolve, 100));
+            window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
+            
             if (this.notifications) {
                 this.notifications.success('Вы вышли из системы');
             }
@@ -176,7 +183,7 @@ export class AuthService {
         } catch (error) {
             console.error('Error signing out:', error);
             if (this.notifications) {
-                this.notifications.error('Ошибка выхода из системы');
+                this.notifications.error('Ошибка при выходе');
             }
             return false;
         }
