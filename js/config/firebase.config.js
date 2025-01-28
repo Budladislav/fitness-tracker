@@ -19,5 +19,10 @@ export const authConfig = {
     actionCodeSettings: {
         handleCodeInApp: true,
         url: window.location.origin + window.location.pathname
+    },
+    // Добавляем настройки для тестирования
+    testMode: {
+        enabled: true,
+        autoSignIn: true // автоматически "подтверждает" email
     }
 };

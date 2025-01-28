@@ -3,7 +3,8 @@ import {
     sendSignInLinkToEmail,
     isSignInWithEmailLink,
     signInWithEmailLink,
-    signOut
+    signOut,
+    signInAnonymously
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { firebaseService } from '../firebase.service.js';
 import { authConfig } from '../../config/firebase.config.js';
@@ -12,16 +13,35 @@ export class AuthService {
     constructor(notifications = null) {
         this.notifications = notifications;
         this.auth = getAuth(firebaseService.app);
-        this.currentUser = null;
-        this.actionCodeSettings = {
-            ...authConfig.actionCodeSettings,
-            url: authConfig.redirectUrl
-        };
+        this.listeners = new Set();
         
-        // Инициализируем слушатель состояния
+        // Сначала проверяем Firebase Auth
+        this.currentUser = this.auth.currentUser;
+        
+        // Затем тестовый режим
+        if (authConfig.testMode?.enabled) {
+            const testUser = localStorage.getItem('testUser');
+            if (testUser) {
+                this.currentUser = JSON.parse(testUser);
+                this.updateUI();
+                this.notifyListeners(this.currentUser);
+            }
+        }
+        
+        // Слушаем изменения авторизации
         this.auth.onAuthStateChanged((user) => {
-            this.currentUser = user;
+            if (authConfig.testMode?.enabled) {
+                const testUser = localStorage.getItem('testUser');
+                if (testUser) {
+                    this.currentUser = JSON.parse(testUser);
+                } else {
+                    this.currentUser = null;
+                }
+            } else {
+                this.currentUser = user;
+            }
             this.updateUI();
+            this.notifyListeners(this.currentUser);
         });
     }
 
@@ -32,16 +52,33 @@ export class AuthService {
         if (this.currentUser) {
             authButton.classList.add('logged-in');
             authButton.title = this.currentUser.email;
-            authButton.querySelector('img').src = 'icons/user-logged.svg';
+            authButton.innerHTML = `
+                <img src="icons/user-logged.svg" alt="Logged in user">
+                <span class="user-status"></span>
+            `;
         } else {
             authButton.classList.remove('logged-in');
             authButton.title = 'Войти';
-            authButton.querySelector('img').src = 'icons/user.svg';
+            authButton.innerHTML = `
+                <img src="icons/user.svg" alt="Login">
+            `;
         }
     }
 
     async sendLoginLink(email) {
         try {
+            if (authConfig.testMode?.enabled) {
+                const testUser = {
+                    email: email,
+                    uid: `test_${Date.now()}`
+                };
+                this.currentUser = testUser;
+                localStorage.setItem('testUser', JSON.stringify(testUser));
+                this.updateUI();
+                this.notifyListeners(this.currentUser);
+                return true;
+            }
+            
             await sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings);
             window.localStorage.setItem('emailForSignIn', email);
             return true;
@@ -88,6 +125,13 @@ export class AuthService {
 
     async signOut() {
         try {
+            if (authConfig.testMode?.enabled) {
+                localStorage.removeItem('testUser');
+                this.currentUser = null;
+                this.updateUI();
+                return true;
+            }
+            
             await this.auth.signOut();
             if (this.notifications) {
                 this.notifications.success('Вы вышли из системы');
@@ -104,5 +148,17 @@ export class AuthService {
 
     isAuthenticated() {
         return !!this.currentUser;
+    }
+
+    addAuthStateListener(callback) {
+        this.listeners.add(callback);
+    }
+
+    removeAuthStateListener(callback) {
+        this.listeners.delete(callback);
+    }
+
+    notifyListeners(user) {
+        this.listeners.forEach(callback => callback(user));
     }
 } 

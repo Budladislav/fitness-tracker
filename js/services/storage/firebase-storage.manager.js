@@ -22,7 +22,6 @@ export class FirebaseStorageManager extends StorageInterface {
         this.ACTIVE_WORKOUT_KEY = 'active_workout';
         this.BACKUP_KEY = 'backup';
         
-        // Изменяем определение коллекций
         this.collections = {
             workouts: 'workouts',
             currentWorkout: 'current_workouts',
@@ -30,20 +29,30 @@ export class FirebaseStorageManager extends StorageInterface {
             settings: 'settings'
         };
 
-        // Восстанавливаем или создаем гостевой ID
-        this.userId = localStorage.getItem('guestId') || `guest_${generateId()}`;
-        if (!localStorage.getItem('guestId')) {
+        // Инициализируем userId из текущего пользователя
+        const currentUser = this.auth.currentUser;
+        this.userId = currentUser ? currentUser.uid : localStorage.getItem('guestId');
+        
+        if (!this.userId) {
+            this.userId = `guest_${generateId()}`;
             localStorage.setItem('guestId', this.userId);
         }
         
         // Слушаем изменения авторизации
         this.auth.onAuthStateChanged((user) => {
+            console.log('Auth state changed:', user);
             if (user) {
                 this.userId = user.uid;
             } else {
-                // Возвращаемся к гостевому ID
-                this.userId = localStorage.getItem('guestId');
+                const testUser = localStorage.getItem('testUser');
+                if (testUser) {
+                    const parsed = JSON.parse(testUser);
+                    this.userId = parsed.uid;
+                } else {
+                    this.userId = localStorage.getItem('guestId');
+                }
             }
+            sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
         });
     }
 
@@ -145,11 +154,12 @@ export class FirebaseStorageManager extends StorageInterface {
             }
             
             const docRef = this.getDocument('workouts', workout.id);
-            await updateDoc(docRef, workout);
+            await updateDoc(docRef, {
+                ...workout,
+                userId: this.userId
+            });
             
-            // Создаем бэкап после успешного обновления
             this.createAutoBackup();
-            
             return true;
         } catch (error) {
             console.error('Error updating workout:', error);
@@ -326,6 +336,7 @@ export class FirebaseStorageManager extends StorageInterface {
                     const docRef = doc(this.getCollection('workouts'));
                     batch2.set(docRef, {
                         ...workout,
+                        userId: this.userId,  // Добавляем userId
                         date: workout.date,
                         time: workout.startTime || '',
                         exercises: workout.exercises || [],
@@ -340,7 +351,10 @@ export class FirebaseStorageManager extends StorageInterface {
     
             // Для других ключей используем коллекцию settings
             const docRef = this.getDocument('settings', key);
-            await setDoc(docRef, { value });
+            await setDoc(docRef, { 
+                value,
+                userId: this.userId  // Добавляем userId
+            });
             return true;
         } catch (error) {
             console.error(`Error saving to storage for key "${key}":`, error);
