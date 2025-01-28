@@ -18,17 +18,6 @@ export const authConfig = {
     // Дополнительные настройки для email авторизации
     actionCodeSettings: {
         handleCodeInApp: true,
-        // iOS
-        iOS: {
-            bundleId: 'com.yourapp.ios'
-        },
-        // Android
-        android: {
-            packageName: 'com.yourapp.android',
-            installApp: true,
-            minimumVersion: '12'
-        },
-        // URL динамических ссылок
-        dynamicLinkDomain: 'yourapp.page.link'
+        url: window.location.origin + window.location.pathname
     }
 };

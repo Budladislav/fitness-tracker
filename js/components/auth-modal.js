@@ -47,6 +47,7 @@ export class AuthModal extends BaseComponent {
     }
 
     show() {
+        console.log('Showing auth modal');
         this.modal.classList.remove('hidden');
     }
 
