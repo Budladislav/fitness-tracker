@@ -13,16 +13,11 @@ export const useFirebase = true;
 
 // Добавляем конфигурацию для авторизации
 export const authConfig = {
-    // URL для перенаправления после авторизации
-    redirectUrl: window.location.origin + window.location.pathname,
-    // Дополнительные настройки для email авторизации
-    actionCodeSettings: {
-        handleCodeInApp: true,
-        url: window.location.origin + window.location.pathname
-    },
-    // Добавляем настройки для тестирования
     testMode: {
-        enabled: true,
-        autoSignIn: true // автоматически "подтверждает" email
+        enabled: false
+    },
+    actionCodeSettings: {
+        url: window.location.origin,
+        handleCodeInApp: true
     }
 };

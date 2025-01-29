@@ -16,6 +16,9 @@ export class AuthService {
         this.notifications = notifications;
         this.auth = getAuth(firebaseService.app);
         
+        // Используем настройки из конфига
+        this.actionCodeSettings = authConfig.actionCodeSettings;
+        
         // Устанавливаем persistence в sessionStorage
         setPersistence(this.auth, browserSessionPersistence)
             .catch(error => console.error('Error setting persistence:', error));
@@ -131,15 +134,31 @@ export class AuthService {
             return false;
         }
 
-        const email = sessionStorage.getItem('emailForSignIn');
+        let email = sessionStorage.getItem('emailForSignIn');
+        if (!email) {
+            // Если email не найден в sessionStorage, запросим его у пользователя
+            email = window.prompt('Пожалуйста, введите email для подтверждения входа');
+        }
+        
         if (!email) return false;
 
         try {
-            await signInWithEmailLink(this.auth, email, window.location.href);
+            const result = await signInWithEmailLink(this.auth, email, window.location.href);
             sessionStorage.removeItem('emailForSignIn');
+            
+            // Сохраняем информацию о пользователе
+            this.currentUser = result.user;
+            
+            // Обновляем UI и уведомляем слушателей
+            this.updateUI();
+            this.notifyListeners(this.currentUser);
+            
             if (this.notifications) {
                 this.notifications.success('Вы успешно вошли в систему');
             }
+            
+            // Перенаправляем на главную страницу
+            window.location.href = window.location.origin;
             return true;
         } catch (error) {
             console.error('Error signing in:', error);

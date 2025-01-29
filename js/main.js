@@ -30,6 +30,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Создаем authService здесь, но выносим его объявление наружу
             authService = new AuthService(notifications);
+            
+            // Проверяем наличие ссылки для входа
+            if (await authService.completeSignIn()) {
+                return; // Прерываем выполнение, так как будет редирект
+            }
         }
         
         // Создаем остальные менеджеры после инициализации Firebase
@@ -53,8 +58,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log('[Main] History updated with workouts:', workouts);
         });
     } catch (error) {
+        console.error('Error initializing app:', error);
         notifications.error('Ошибка инициализации приложения');
-        console.error('Initialization error:', error);
     }
 
     // Добавляем методы активации/деактивации импорта в глобальную область
