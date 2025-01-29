@@ -92,28 +92,81 @@
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     position: relative;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Добавляем специальные стили для мобильных устройств */
+.mobile-device .auth-modal .modal-content {
+    width: 90%;
+    padding: 20px;
+    margin: 0 16px;
+}
+
+.mobile-device .auth-modal input[type="email"] {
+    font-size: 16px; /* Предотвращает автоматическое масштабирование на iOS */
+    padding: 12px 8px;
+}
+
+.mobile-device .auth-modal button[type="submit"] {
+    width: 100%;
+    padding: 14px 20px;
 }
 
 .auth-modal .close-btn {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 8px;
+    right: 8px;
     border: none;
     background: none;
     font-size: 24px;
     cursor: pointer;
     color: var(--text-color);
-    padding: 4px;
+    padding: 8px;
+    line-height: 1;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0;
 }
 
 .auth-modal .close-btn:hover {
     color: var(--danger-color);
+    background: var(--danger-light);
+}
+
+.auth-modal h2 {
+    margin: 0 0 16px;
+    color: var(--text-color);
+}
+
+.auth-modal p {
+    margin: 0 0 24px;
+    color: var(--text-secondary);
+}
+
+.auth-modal form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
 }
 
 .auth-modal input[type="email"] {
     width: 100%;
-    padding: 10px;
-    margin: 10px 0;
+    padding: 12px;
+    margin: 0;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.auth-modal button[type="submit"] {
+    min-width: 200px;
+    padding: 12px 24px;
 } 

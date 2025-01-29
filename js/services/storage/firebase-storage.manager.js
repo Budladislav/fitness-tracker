@@ -31,18 +31,17 @@ export class FirebaseStorageManager extends StorageInterface {
 
         // Инициализируем userId из текущего пользователя
         const currentUser = this.auth.currentUser;
-        this.userId = currentUser ? currentUser.uid : sessionStorage.getItem('guestId');
+        this.userId = currentUser ? currentUser.uid : localStorage.getItem('guestId');
         
         if (!this.userId) {
             this.userId = `guest_${generateId()}`;
-            sessionStorage.setItem('guestId', this.userId);
+            localStorage.setItem('guestId', this.userId);
         }
         
         // Добавляем слушатель изменения авторизации
         this.auth.onAuthStateChanged(async (user) => {
             console.log('[FirebaseStorage] Auth state changed:', user);
             
-            // Определяем новый userId
             let newUserId;
             const testUser = sessionStorage.getItem('testUser');
             
@@ -52,7 +51,11 @@ export class FirebaseStorageManager extends StorageInterface {
             } else if (user) {
                 newUserId = user.uid;
             } else {
-                newUserId = sessionStorage.getItem('guestId');
+                newUserId = localStorage.getItem('guestId');
+                if (!newUserId) {
+                    newUserId = `guest_${generateId()}`;
+                    localStorage.setItem('guestId', newUserId);
+                }
             }
             
             console.log('[FirebaseStorage] User ID change:', {
@@ -76,7 +79,11 @@ export class FirebaseStorageManager extends StorageInterface {
         } else if (this.auth.currentUser) {
             this.userId = this.auth.currentUser.uid;
         } else {
-            this.userId = sessionStorage.getItem('guestId');
+            this.userId = localStorage.getItem('guestId');
+            if (!this.userId) {
+                this.userId = `guest_${generateId()}`;
+                localStorage.setItem('guestId', this.userId);
+            }
         }
         return this.userId;
     }
