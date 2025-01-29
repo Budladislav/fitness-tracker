@@ -14,15 +14,17 @@
     padding: 8px;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 8px;
+    text-align: center;
 }
 
 .logout-btn {
     width: 100%;
     padding: 8px;
-    border: none;
-    background: none;
+    border: 1px solid violet;
+    background: var(--background-color);
     color: var(--danger-color);
     cursor: pointer;
+    margin: 0;
 }
 
 .logout-btn:hover {
@@ -169,4 +171,8 @@
 .auth-modal button[type="submit"] {
     min-width: 200px;
     padding: 12px 24px;
+}
+
+.mobile-device .nav-container {
+    padding-right: 30px; /* Отступ справа равен ширине кнопки + отступы */
 } 

@@ -17,7 +17,7 @@ export const authConfig = {
         enabled: false
     },
     actionCodeSettings: {
-        url: window.location.origin,
+        url: window.location.origin + window.location.pathname,
         handleCodeInApp: true
     }
 };
