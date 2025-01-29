@@ -17,7 +17,8 @@ export const authConfig = {
         enabled: false
     },
     actionCodeSettings: {
-        url: window.location.origin + window.location.pathname,
+        //url: window.location.origin + window.location.pathname,
+        url: 'https://budladislav.github.io/fitness-tracker/',
         handleCodeInApp: true
     }
 };

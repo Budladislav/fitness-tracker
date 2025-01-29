@@ -158,7 +158,7 @@ export class AuthService {
             }
             
             // Перенаправляем на главную страницу
-            window.location.href = window.location.origin;
+            window.location.href = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
             return true;
         } catch (error) {
             console.error('Error signing in:', error);
