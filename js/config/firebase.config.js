@@ -18,7 +18,7 @@ export const authConfig = {
     },
     actionCodeSettings: {
         //url: window.location.origin + window.location.pathname,
-        url: 'https://budladislav.github.io/fitness-tracker/',
+        url: 'https://budladislav.github.io/fitness-tracker/index.html',
         handleCodeInApp: true
     }
 };

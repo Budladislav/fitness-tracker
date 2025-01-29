@@ -130,26 +130,25 @@ export class AuthService {
     }
 
     async completeSignIn() {
-        if (!isSignInWithEmailLink(this.auth, window.location.href)) {
-            return false;
-        }
-
-        let email = sessionStorage.getItem('emailForSignIn');
-        if (!email) {
-            // Если email не найден в sessionStorage, запросим его у пользователя
-            email = window.prompt('Пожалуйста, введите email для подтверждения входа');
-        }
-        
-        if (!email) return false;
-
         try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const oobCode = urlParams.get('oobCode');
+            
+            if (!oobCode) {
+                return false;
+            }
+
+            let email = sessionStorage.getItem('emailForSignIn');
+            if (!email) {
+                email = window.prompt('Пожалуйста, введите email для подтверждения входа');
+            }
+            
+            if (!email) return false;
+
             const result = await signInWithEmailLink(this.auth, email, window.location.href);
             sessionStorage.removeItem('emailForSignIn');
             
-            // Сохраняем информацию о пользователе
             this.currentUser = result.user;
-            
-            // Обновляем UI и уведомляем слушателей
             this.updateUI();
             this.notifyListeners(this.currentUser);
             
@@ -157,8 +156,7 @@ export class AuthService {
                 this.notifications.success('Вы успешно вошли в систему');
             }
             
-            // Перенаправляем на главную страницу
-            window.location.href = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+            window.location.href = window.location.origin + '/fitness-tracker/';
             return true;
         } catch (error) {
             console.error('Error signing in:', error);
