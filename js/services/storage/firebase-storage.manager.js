@@ -206,7 +206,7 @@ export class FirebaseStorageManager extends StorageInterface {
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (data.userId === this.userId && data.exercises && data.exercises.length > 0) {
+                if (data.userId === this.userId) {  // Убираем проверку на exercises
                     sessionStorage.setItem(this.CURRENT_WORKOUT_KEY, JSON.stringify(data));
                     return data;
                 }
@@ -398,6 +398,8 @@ export class FirebaseStorageManager extends StorageInterface {
             const currentState = await this.getCurrentWorkout() || {};
             
             const activeWorkout = {
+                ...currentState,  // Сохраняем все текущие данные
+                userId: this.userId,
                 date: workout.date,
                 exerciseType: workout.exerciseType || currentState.exerciseType || 'bodyweight',
                 lastSelectedExercises: workout.lastSelectedExercises || currentState.lastSelectedExercises || {
