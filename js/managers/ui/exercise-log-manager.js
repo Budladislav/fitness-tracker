@@ -5,8 +5,9 @@ import { ExerciseCalculatorService } from '../../services/exercise-calculator.se
 import { WorkoutFactory } from '../../factories/workout.factory.js';
 
 export class ExerciseLogManager extends BaseComponent {
-    constructor(notifications, storage) {
+    constructor(notifications, storage, stateManager) {
         super(notifications, storage);
+        this.stateManager = stateManager;
         this.elements = this.initializeElements();
     }
 
@@ -84,7 +85,7 @@ export class ExerciseLogManager extends BaseComponent {
         deleteBtn.textContent = '×';
         deleteBtn.setAttribute('title', 'Удалить последний подход');
         
-        deleteBtn.onclick = (e) => {
+        deleteBtn.onclick = async (e) => {
             e.preventDefault();
             const data = JSON.parse(item.dataset.exercise);
             
@@ -100,6 +101,13 @@ export class ExerciseLogManager extends BaseComponent {
             } else {
                 item.classList.add('removing');
                 setTimeout(() => item.remove(), 300);
+            }
+
+            // Получаем все упражнения и сохраняем текущее состояние
+            const currentWorkout = await this.stateManager.getCurrentWorkout();
+            if (currentWorkout) {
+                currentWorkout.exercises = this.getExercisesFromLog();
+                await this.stateManager.setCurrentWorkout(currentWorkout);
             }
         };
 

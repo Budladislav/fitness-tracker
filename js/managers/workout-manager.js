@@ -3,6 +3,7 @@ import { NotesModal } from '../components/notes-modal.js';
 import { StateManager } from '../services/state-manager.js';
 import { StorageFactory } from '../services/storage/storage.factory.js';
 import { AuthService } from '../services/auth/auth.service.js';
+import { ExerciseLogManager } from '../managers/ui/exercise-log-manager.js';
 
 /**
  * Основной класс управления приложением
@@ -12,7 +13,7 @@ export class WorkoutManager {
     /**
      * Инициализирует приложение и создает необходимые менеджеры
      */
-    constructor(notifications, storage, ui, validator, authService = null) {
+    constructor(notifications, storage, ui, validator, authService) {
         try {
             this.notifications = notifications;
             this.storage = storage;
@@ -24,6 +25,9 @@ export class WorkoutManager {
             this.notesModal = new NotesModal(notifications, storage);
             
             this.stateManager = new StateManager(storage);
+            
+            // Обновляем создание exerciseLog
+            this.ui.exerciseLog = new ExerciseLogManager(notifications, storage, this.stateManager);
             
             this.initializeEventListeners();
             
