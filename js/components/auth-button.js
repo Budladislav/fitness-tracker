@@ -19,9 +19,7 @@ export class AuthButton extends BaseComponent {
 
     initializeEvents() {
         this.button.addEventListener('click', () => {
-            console.log('Auth button clicked');
             const user = this.authService.getCurrentUser();
-            console.log('Current user:', user);
             if (user) {
                 this.showUserMenu();
             } else {

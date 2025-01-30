@@ -53,9 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // После создания workoutManager
         window.addEventListener('workoutHistoryUpdate', async () => {
-            console.log('[Main] Workout history update event received');
             const workouts = await workoutManager.displayWorkoutHistory();
-            console.log('[Main] History updated with workouts:', workouts);
         });
     } catch (error) {
         console.error('Error initializing app:', error);

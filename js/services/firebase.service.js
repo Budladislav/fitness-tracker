@@ -23,8 +23,6 @@ class FirebaseService {
             } catch (err) {
                 console.warn('Failed to enable offline persistence:', err);
             }
-            
-            console.log('Firebase initialized successfully');
             return true;
         } catch (error) {
             console.error('Firebase initialization error:', error);

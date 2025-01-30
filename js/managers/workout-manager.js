@@ -238,7 +238,6 @@ export class WorkoutManager {
         this.ui.showLoader();
         try {
             const workouts = await this.stateManager.getWorkoutHistory();
-            console.log('[WorkoutManager] Got workouts:', workouts);
             this.ui.displayWorkoutHistory(workouts);
             return workouts;
         } finally {

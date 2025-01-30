@@ -6,7 +6,7 @@ import {
     signOut,
     signInAnonymously,
     setPersistence,
-    browserSessionPersistence
+    browserLocalPersistence
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { firebaseService } from '../firebase.service.js';
 import { authConfig } from '../../config/firebase.config.js';
@@ -20,7 +20,7 @@ export class AuthService {
         this.actionCodeSettings = authConfig.actionCodeSettings;
         
         // Устанавливаем persistence в sessionStorage
-        setPersistence(this.auth, browserSessionPersistence)
+        setPersistence(this.auth, browserLocalPersistence)
             .catch(error => console.error('Error setting persistence:', error));
             
         this.listeners = new Set();
@@ -37,7 +37,6 @@ export class AuthService {
         
         // Слушаем изменения авторизации
         this.auth.onAuthStateChanged((user) => {
-            console.log('[AuthService] Auth state changed:', user);
             
             // В тестовом режиме игнорируем null от Firebase
             if (authConfig.testMode?.enabled) {
@@ -57,14 +56,12 @@ export class AuthService {
 
         // Восстанавливаем состояние UI при загрузке
         window.addEventListener('load', () => {
-            console.log('[AuthService] Window loaded, updating UI');
             this.updateUI();
         });
     }
 
     updateUI() {
         const authButton = document.querySelector('.auth-button');
-        console.log('[AuthService] Updating UI, currentUser:', this.currentUser);
         if (!authButton) return;
 
         if (this.currentUser) {

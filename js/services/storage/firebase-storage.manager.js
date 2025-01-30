@@ -40,7 +40,6 @@ export class FirebaseStorageManager extends StorageInterface {
         
         // Добавляем слушатель изменения авторизации
         this.auth.onAuthStateChanged(async (user) => {
-            console.log('[FirebaseStorage] Auth state changed:', user);
             
             let newUserId;
             const testUser = sessionStorage.getItem('testUser');
@@ -57,11 +56,6 @@ export class FirebaseStorageManager extends StorageInterface {
                     localStorage.setItem('guestId', newUserId);
                 }
             }
-            
-            console.log('[FirebaseStorage] User ID change:', {
-                old: this.userId,
-                new: newUserId
-            });
             
             if (this.userId !== newUserId) {
                 this.userId = newUserId;
@@ -101,10 +95,8 @@ export class FirebaseStorageManager extends StorageInterface {
     async getWorkoutHistory() {
         // Принудительно обновляем userId перед запросом
         this.updateUserId();
-        console.log('[FirebaseStorage] Getting workout history for userId:', this.userId);
         try {
             const workoutsRef = this.getCollection('workouts');
-            console.log('Collection path:', workoutsRef.path);
             
             const q = query(
                 workoutsRef, 
@@ -118,10 +110,7 @@ export class FirebaseStorageManager extends StorageInterface {
                 orderBy('timestamp', 'desc'),
                 limit(1)
             ));
-            if (!testSnapshot.empty) {
-                console.log('Document structure:', testSnapshot.docs[0].data());
-            }
-            
+
             const snapshot = await getDocs(q);
             const workouts = [];
             
