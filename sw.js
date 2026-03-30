@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fitness-tracker-v1';
+const CACHE_NAME = 'fitness-tracker-v2.5.0';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -46,23 +46,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Для переходов по страницам всегда пробуем сеть первой, чтобы быстрее получать новую версию.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put('./index.html', networkResponse.clone());
+          });
+          return networkResponse;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  // Для остальных статических ресурсов: cache-first + фоновое обновление.
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Возвращаем из кэша, если есть, иначе идем в сеть
-      return response || fetch(event.request).then((fetchRes) => {
-        // Подкэшируем новые ресурсы на лету
-        return caches.open(CACHE_NAME).then((cache) => {
-          if (event.request.url.startsWith('http') && event.request.method === 'GET') {
-            cache.put(event.request, fetchRes.clone());
-          }
-          return fetchRes;
-        });
+    caches.match(event.request).then((cachedResponse) => {
+      const networkFetch = fetch(event.request).then((networkResponse) => {
+        if (event.request.url.startsWith('http') && event.request.method === 'GET') {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse.clone()));
+        }
+        return networkResponse;
       });
-    }).catch(() => {
-      // Fallback (например, можно возвращать index.html для SPA)
-      if (event.request.mode === 'navigate') {
-        return caches.match('./index.html');
-      }
+
+      return cachedResponse || networkFetch;
     })
   );
 });

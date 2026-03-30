@@ -15,9 +15,23 @@ import { ThemeService } from './services/theme.service.js';
 // Регистрация Service Worker для PWA (Vanilla JS)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => {
-            console.log('SW registration failed: ', err);
-        });
+        navigator.serviceWorker.register('./sw.js')
+            .then((registration) => {
+                // Принудительно проверяем обновление SW при загрузке.
+                registration.update();
+
+                // Когда новый SW активируется, перезагружаем страницу,
+                // чтобы пользователь сразу видел новую версию ресурсов.
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (refreshing) return;
+                    refreshing = true;
+                    window.location.reload();
+                });
+            })
+            .catch(err => {
+                console.log('SW registration failed: ', err);
+            });
     });
 }
 
