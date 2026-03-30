@@ -24,6 +24,21 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
+        screenshots: [
+          {
+            src: 'icons/screenshot.png',
+            sizes: '1024x1024',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Дневник тренировок'
+          },
+          {
+            src: 'icons/screenshot.png',
+            sizes: '1024x1024',
+            type: 'image/png',
+            label: 'Дневник тренировок'
+          }
+        ],
         icons: [
           {
             src: 'icons/android-chrome-192x192.png',

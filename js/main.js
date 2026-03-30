@@ -11,6 +11,10 @@ import { AuthButton } from './components/auth-button.js';
 import { SettingsModal } from './components/settings-modal.js';
 import { AuthService } from './services/auth/auth.service.js';
 import { ThemeService } from './services/theme.service.js';
+import { registerSW } from 'virtual:pwa-register';
+
+// Регистрация Service Worker для PWA
+registerSW({ immediate: true });
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
