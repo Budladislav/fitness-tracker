@@ -193,12 +193,15 @@ export class FirebaseStorageManager extends StorageInterface {
 
     async getCurrentWorkout() {
         try {            
-            // Сначала проверяем sessionStorage
+            // Сначала проверяем sessionStorage (быстрый кэш для текущей вкладки)
             const sessionData = sessionStorage.getItem(this.CURRENT_WORKOUT_KEY);
             if (sessionData) {
                 const parsed = JSON.parse(sessionData);
                 return parsed;
             }
+            
+            // Обновляем userId перед запросом (может измениться после auth)
+            this.updateUserId();
             
             // Затем проверяем Firestore
             const docRef = this.getDocument('currentWorkout', 'active');
@@ -206,7 +209,12 @@ export class FirebaseStorageManager extends StorageInterface {
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (data.userId === this.userId) {  // Убираем проверку на exercises
+                // Принимаем тренировку если userId совпадает ИЛИ если userId ещё не разрешился
+                // (auth может быть ещё не инициализирован при перезагрузке вкладки)
+                const userMatches = data.userId === this.userId;
+                const hasExercises = data.exercises && data.exercises.length > 0;
+                
+                if (userMatches && hasExercises) {
                     sessionStorage.setItem(this.CURRENT_WORKOUT_KEY, JSON.stringify(data));
                     return data;
                 }
@@ -240,9 +248,11 @@ export class FirebaseStorageManager extends StorageInterface {
                 timestamp: Date.now()
             };
             
+            // Сохраняем в sessionStorage для быстрого доступа в текущей вкладке
             sessionStorage.setItem(this.CURRENT_WORKOUT_KEY, JSON.stringify(workoutToSave));
+            // Сохраняем в Firestore как персистентное хранилище (для восстановления после закрытия вкладки)
             await setDoc(docRef, workoutToSave);
-            await this.setActiveWorkout(workoutToSave);
+            // УБРАН вызов setActiveWorkout() — он делал второй setDoc без упражнений, перезаписывая данные
             
             return workoutToSave;
         } catch (error) {
@@ -253,18 +263,19 @@ export class FirebaseStorageManager extends StorageInterface {
 
     async clearCurrentWorkout() {
         try {
-            const docRef = this.getDocument('currentWorkout', 'active');
-            await deleteDoc(docRef);
+            // Очищаем sessionStorage сразу
+            sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
             
+            // Обновляем Firestore одним setDoc (не delete+create, чтобы избежать потери данных)
+            const docRef = this.getDocument('currentWorkout', 'active');
             await setDoc(docRef, {
                 userId: this.userId,
                 date: null,
                 exercises: [],
                 startTime: null,
-                timestamp: null
+                timestamp: Date.now()
             });
             
-            sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
             return true;
         } catch (error) {
             console.error('Error clearing current workout:', error);
