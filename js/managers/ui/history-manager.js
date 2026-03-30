@@ -38,56 +38,86 @@ export class HistoryManager extends BaseComponent {
 
     displayWorkoutHistory(workouts = []) {
         try {
-            // Очищаем контейнер
             this.elements.historyContainer.innerHTML = '';
 
             if (!workouts || workouts.length === 0) {
                 this.elements.historyContainer.innerHTML = '<p>История тренировок пуста</p>';
-            } else {
-                // Получаем группы недель
-                const weekGroups = DateGrouping.getWeekBoundaries(workouts);
-                
-                // Сортируем группы по году и номеру недели (в обратном порядке)
-                const sortedGroups = weekGroups.sort((a, b) => {
-                    if (a.year !== b.year) {
-                        return b.year - a.year;
-                    }
-                    return b.weekNumber - a.weekNumber;
-                });
-                
-                // Создаем и добавляем группы в контейнер
-                sortedGroups.forEach(group => {
-                    const weekGroupElement = this.createElement('div', 'week-group');
-                    
-                    const label = this.createElement('div', 'group-label');
-                    label.textContent = `Неделя ${group.weekNumber}, ${group.count} трен.`;
-                    weekGroupElement.appendChild(label);
-                    
-                    // Сортируем тренировки внутри группы по убыванию даты и времени
-                    const weekWorkouts = group.workouts.sort((a, b) => {
-                        const dateA = new Date(a.date);
-                        const dateB = new Date(b.date);
-                        if (dateA.getTime() === dateB.getTime()) {
-                            const timeA = a.startTime || '00:00';
-                            const timeB = b.startTime || '00:00';
-                            return timeB.localeCompare(timeA);
-                        }
-                        return dateB - dateA;
-                    });
-                    
-                    weekWorkouts.forEach(workout => {
-                        const workoutEntry = this.createWorkoutEntry(workout);
-                        if (workoutEntry) {
-                            weekGroupElement.appendChild(workoutEntry);
-                        }
-                    });
-                    
-                    this.elements.historyContainer.appendChild(weekGroupElement);
-                });
+                return;
             }
+
+            const currentYear = new Date().getFullYear();
+
+            // Разбиваем недели на этот / прошлые года
+            const currentYearWorkouts = workouts.filter(w => new Date(w.date).getFullYear() === currentYear);
+            const pastYearWorkouts   = workouts.filter(w => new Date(w.date).getFullYear() <  currentYear);
+
+            // Рендерим текущий год
+            if (currentYearWorkouts.length > 0) {
+                this._renderWeekGroups(currentYearWorkouts, this.elements.historyContainer);
+            }
+
+            // Рендерим сворачивающийся блок прошлых лет
+            if (pastYearWorkouts.length > 0) {
+                const archive = document.createElement('div');
+                archive.className = 'history-archive';
+
+                const archiveToggle = document.createElement('button');
+                archiveToggle.className = 'history-archive-toggle';
+                archiveToggle.id = 'historyArchiveToggle';
+                archiveToggle.textContent = `▶ Архив (${pastYearWorkouts.length} трен. за ${new Set(pastYearWorkouts.map(w => new Date(w.date).getFullYear())).size} л.)`;
+
+                const archiveBody = document.createElement('div');
+                archiveBody.className = 'history-archive-body';
+                archiveBody.id = 'historyArchiveBody';
+
+                archiveToggle.addEventListener('click', () => {
+                    const isOpen = archiveBody.classList.toggle('open');
+                    archiveToggle.textContent = isOpen
+                        ? `▼ Архив (${pastYearWorkouts.length} трен. за ${new Set(pastYearWorkouts.map(w => new Date(w.date).getFullYear())).size} л.)`
+                        : `▶ Архив (${pastYearWorkouts.length} трен. за ${new Set(pastYearWorkouts.map(w => new Date(w.date).getFullYear())).size} л.)`;
+                });
+
+                this._renderWeekGroups(pastYearWorkouts, archiveBody);
+
+                archive.appendChild(archiveToggle);
+                archive.appendChild(archiveBody);
+                this.elements.historyContainer.appendChild(archive);
+            }
+
         } catch (error) {
             console.error('Error in displayWorkoutHistory:', error);
         }
+    }
+
+    _renderWeekGroups(workouts, container) {
+        const weekGroups = DateGrouping.getWeekBoundaries(workouts);
+        const sortedGroups = weekGroups.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.weekNumber - a.weekNumber;
+        });
+
+        sortedGroups.forEach(group => {
+            const weekGroupElement = this.createElement('div', 'week-group');
+
+            const label = this.createElement('div', 'group-label');
+            label.textContent = `Неделя ${group.weekNumber}, ${group.count} трен.`;
+            weekGroupElement.appendChild(label);
+
+            const weekWorkouts = group.workouts.sort((a, b) => {
+                const dateA = new Date(a.date), dateB = new Date(b.date);
+                if (dateA.getTime() === dateB.getTime()) {
+                    return (b.startTime || '00:00').localeCompare(a.startTime || '00:00');
+                }
+                return dateB - dateA;
+            });
+
+            weekWorkouts.forEach(workout => {
+                const workoutEntry = this.createWorkoutEntry(workout);
+                if (workoutEntry) weekGroupElement.appendChild(workoutEntry);
+            });
+
+            container.appendChild(weekGroupElement);
+        });
     }
 
     createWorkoutEntry(workout) {
@@ -117,7 +147,7 @@ export class HistoryManager extends BaseComponent {
         summaryRow.innerHTML = `
             <td>${formattedDate} <small>${startTime}</small></td>
             <td>Σ повторов: ${totalReps} раз</td>
-            <td>Тоннаж: ${totalWeight} кг</td>
+            <td>Тоннаж: ${Math.round(totalWeight)} кг</td>
             <td><button class="delete-btn" title="Удалить тренировку">×</button></td>
         `;
 
@@ -216,25 +246,23 @@ export class HistoryManager extends BaseComponent {
     }
 
     toggleAllWorkouts() {
-        // Проверяем фактическое состояние элементов в DOM
-        const entries = document.querySelectorAll('.workout-entry');
-        const allExpanded = Array.from(entries).every(entry => 
-            entry.classList.contains('expanded')
+        // Включаем все .workout-entry вне и внутри архива (open)
+        const archiveBody = document.getElementById('historyArchiveBody');
+        const archiveOpen  = archiveBody && archiveBody.classList.contains('open');
+        const entries = document.querySelectorAll(
+            archiveOpen ? '.workout-entry' : '#workoutHistory > .week-group .workout-entry'
         );
-        
-        // Выбираем новое состояние на основе текущего
+        const allExpanded = Array.from(entries).every(e => e.classList.contains('expanded'));
         const newState = allExpanded ? 'collapsed' : 'expanded';
-    
-        // Обновляем текст кнопки
+
         this.elements.toggleAllButton.textContent = allExpanded ? 'Развернуть всё' : 'Свернуть всё';
-    
-        // Применяем новое состояние
+
         entries.forEach(entry => {
             const workoutId = entry.dataset.id;
             this.workoutStates[workoutId] = newState;
             this.updateWorkoutEntryDisplay(entry, newState);
         });
-    
+
         this.saveWorkoutStates();
     }
 

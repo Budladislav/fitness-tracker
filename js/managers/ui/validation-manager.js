@@ -41,12 +41,13 @@ export class ValidationManager extends BaseComponent {
     }
 
     validateAndFormatData(formData) {
-        const { name, reps, weight, type } = formData;
+        const { name, reps, weight, type, doubleTonnage } = formData;
 
         return {
             name: name.trim(),
             type: type,
             reps: parseInt(reps, 10),
+            doubleTonnage: !!doubleTonnage,
             ...(type === 'weighted' && { weight: parseFloat(weight) })
         };
     }

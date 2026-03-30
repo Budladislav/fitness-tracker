@@ -55,3 +55,11 @@
 body:not(.desktop-device) .content-container {
     padding-bottom: calc(var(--spacing-xl) + 20px); /* Отступ для мобильных */
 }
+
+@media (min-width: 900px) {
+    .content-container {
+        width: 100%;
+        max-width: 980px;
+        margin: 0 auto;
+    }
+}

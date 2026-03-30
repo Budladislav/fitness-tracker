@@ -1,6 +1,6 @@
 import { ThemeService } from '../services/theme.service.js';
 
-const VERSION = 'v2.2.2';
+const VERSION = 'v2.5.0';
 
 export class SettingsModal {
     constructor(notifications, storage, backupManager) {
@@ -244,10 +244,16 @@ export class SettingsModal {
             const savedWeight = defaultWeights[displayName] ?? defaultWeights[ex.name];
             const currentWeight = savedWeight ?? ex.defaultWeight ?? '';
 
+            const isDouble = !!defaultWeights[`__double_${displayName}`];
+
             li.innerHTML = `
                 <span class="ex-name" title="Нажмите для редактирования">${displayName || '?'}</span>
                 <input type="text" class="ex-name-edit hidden" value="${displayName}" maxlength="50">
                 ${isWeighted ? `
+                    <label class="ex-double-label" title="Удвоить тоннаж (гантели — вес на каждую руку)">
+                        <input type="checkbox" class="ex-double-check"${isDouble ? ' checked' : ''}>
+                        <span class="ex-double-icon">×2</span>
+                    </label>
                     <input type="number" class="ex-weight-input" value="${currentWeight}" min="0" max="999" title="Вес по умолчанию">
                     <span class="ex-weight-unit">кг</span>
                 ` : ''}
@@ -301,11 +307,19 @@ export class SettingsModal {
                 weightInput.addEventListener('change', async () => {
                     const w = parseFloat(weightInput.value);
                     if (!isNaN(w) && w >= 0) {
-                        // Сохраняем по текущему отображаемому имени
                         await this.storage.updateDefaultWeight(displayName, w);
                         this.notifications.success(`Вес для "${displayName}" обновлён`);
                     }
                 });
+
+                // ─── doubleTonnage toggle ───
+                const doubleCheck = li.querySelector('.ex-double-check');
+                if (doubleCheck) {
+                    doubleCheck.addEventListener('change', async () => {
+                        await this.storage.updateDefaultWeight(`__double_${displayName}`, doubleCheck.checked ? 1 : 0);
+                        window.dispatchEvent(new CustomEvent('exerciseListUpdated'));
+                    });
+                }
             }
 
             // ─── Delete custom ───

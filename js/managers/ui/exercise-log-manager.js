@@ -42,6 +42,11 @@ export class ExerciseLogManager extends BaseComponent {
         const exerciseInfo = JSON.parse(existingItem.dataset.exercise);
         exerciseInfo.sets.push(newSet);
         
+        // Актуализируем флаг x2 на случай, если его не было
+        if (exerciseData.doubleTonnage) {
+            exerciseInfo.doubleTonnage = true;
+        }
+        
         existingItem.dataset.exercise = JSON.stringify(exerciseInfo);
         existingItem.querySelector('.exercise-content span').textContent = 
             ExerciseFormatterService.formatExercise(exerciseInfo);
@@ -56,7 +61,7 @@ export class ExerciseLogManager extends BaseComponent {
         const content = this.createElement('div', 'exercise-content');
         
         const text = this.createElement('span');
-        const newExercise = WorkoutFactory.createExercise(exerciseData.name, exerciseData.type);
+        const newExercise = WorkoutFactory.createExercise(exerciseData.name, exerciseData.type, exerciseData.doubleTonnage);
         newExercise.sets = [newSet];
         
         text.textContent = ExerciseFormatterService.formatExercise(newExercise);

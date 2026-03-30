@@ -65,11 +65,14 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     getFormData() {
+        const sel = this.elements.exerciseName;
+        const selectedOpt = sel.options[sel.selectedIndex];
         return {
-            name: Utils.sanitizeInput(this.elements.exerciseName.value),
+            name: Utils.sanitizeInput(sel.value),
             reps: this.elements.exerciseReps.value,
             weight: this.elements.exerciseWeight.value,
-            type: this.elements.exerciseType.checked ? 'weighted' : 'bodyweight'
+            type: this.elements.exerciseType.checked ? 'weighted' : 'bodyweight',
+            doubleTonnage: selectedOpt ? selectedOpt.dataset.double === '1' : false
         };
     }
 
@@ -97,7 +100,10 @@ export class WorkoutFormManager extends BaseComponent {
         
         select.innerHTML = '<option value="" disabled>Упражнение</option>';
         exercises.forEach(exercise => {
-            select.add(new Option(exercise.name, exercise.name));
+            const opt = new Option(exercise.name, exercise.name);
+            const isDouble = !!defaultWeights[`__double_${exercise.name}`];
+            if (isDouble) opt.dataset.double = '1';
+            select.add(opt);
         });
 
         select.value = this.lastSelectedExercises[type] || '';

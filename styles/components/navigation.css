@@ -67,3 +67,20 @@
     background-color: var(--primary-color);
 }
 
+[data-theme="dark"] .nav-container {
+    background: rgba(24, 27, 33, 0.94);
+    border-bottom-color: #343a45;
+}
+
+[data-theme="dark"] .nav-tab:not(:last-child) {
+    border-right-color: #343a45;
+}
+
+[data-theme="dark"] .nav-tab:hover {
+    background: rgba(var(--primary-rgb), 0.18);
+}
+
+[data-theme="dark"] .nav-tab.active {
+    background: rgba(var(--primary-rgb), 0.24);
+}
+

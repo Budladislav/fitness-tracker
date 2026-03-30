@@ -78,7 +78,8 @@ export class WorkoutManager {
                                     name: exercise.name,
                                     type: exercise.type,
                                     reps: set.reps,
-                                    weight: set.weight
+                                    weight: set.weight,
+                                    doubleTonnage: !!exercise.doubleTonnage
                                 };
                                 this.ui.addExerciseToLog(exerciseData);
                             });

@@ -5,11 +5,13 @@ export class ExerciseCalculatorService {
     /**
      * Рассчитывает общий вес для упражнения
      * @param {Object} exercise - Объект упражнения
-     * @returns {number} Общий вес (тоннаж)
+     * @returns {number} Общий вес (тоннаж), округлённый до целого
      */
     static calculateTotalWeight(exercise) {
-        return exercise.sets.reduce((total, set) => 
+        const multiplier = exercise.doubleTonnage ? 2 : 1;
+        const raw = exercise.sets.reduce((total, set) =>
             total + (set.weight || 0) * set.reps, 0);
+        return Math.round(raw * multiplier);
     }
 
     /**

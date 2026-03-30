@@ -20,6 +20,7 @@
     letter-spacing: 0.6px;
     color: var(--text-secondary);
     margin: 0 0 14px;
+    text-align: center;
 }
 
 .stats-empty {
@@ -35,6 +36,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+}
+
+.overview-cards {
+    grid-template-columns: 1fr;
 }
 
 .stat-card {
@@ -53,11 +58,19 @@
     transform: translateY(-2px);
 }
 
+.stat-card-wide {
+    align-items: stretch;
+    gap: 8px;
+    min-height: 280px;
+    overflow: hidden;
+}
+
 .stat-value {
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--primary-color);
     line-height: 1;
+    text-align: center;
 }
 
 .stat-label {
@@ -67,64 +80,217 @@
     font-weight: 500;
 }
 
-/* ─── Heatmap ─────────────────────────────────────────────── */
-.heatmap-wrap {
-    overflow-x: auto;
-    margin-bottom: 10px;
+.mini-chart {
+    width: 100%;
+    min-height: 190px;
+    overflow: hidden;
 }
 
-.heatmap-svg {
+.mini-chart-svg {
     width: 100%;
-    min-width: 260px;
-    max-width: 420px;
+    height: 132px;
     display: block;
 }
 
-.hm-cell {
-    transition: opacity 0.15s;
-    cursor: default;
+.mini-chart-bar {
+    fill: rgba(var(--primary-rgb), 0.35);
 }
 
-.hm-cell.lc-0 { fill: var(--border-color); }
-.hm-cell.lc-1 { fill: rgba(var(--primary-rgb), 0.35); }
-.hm-cell.lc-2 { fill: rgba(var(--primary-rgb), 0.65); }
-.hm-cell.lc-3 { fill: var(--primary-color); }
-
-.hm-cell.hm-today {
-    stroke: var(--primary-color);
-    stroke-width: 1.5;
+.mini-chart-bar.current {
+    fill: var(--primary-color);
 }
 
-.hm-label {
-    font-size: 9px;
-    fill: var(--text-secondary);
-    font-family: inherit;
+.mini-chart-axis {
+    stroke: var(--border-color);
+    stroke-width: 1;
+}
+
+.mini-chart-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.mini-chart-track {
+    width: max(100%, var(--mini-track-width, 320px));
+    max-width: 100%;
+}
+
+.mini-chart-labels {
+    margin-top: 6px;
+    display: grid;
+    grid-template-columns: repeat(var(--mini-cols, 6), minmax(0, 1fr));
+    gap: 6px;
+}
+
+.mini-chart-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+}
+
+.mini-chart-label.current .mini-chart-label-val {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.mini-chart-label-key {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    line-height: 1.1;
+}
+
+.mini-chart-label-val {
+    font-size: 0.7rem;
+    color: var(--text-color);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* ─── Heatmap ─────────────────────────────────────────────── */
+.heatmap-wrap {
+    max-height: 560px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 10px;
+}
+
+.months-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.month-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--background-light);
+    padding: 10px;
+}
+
+.month-title {
+    text-transform: capitalize;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.month-weekdays,
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.month-weekdays span {
+    font-size: 0.65rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.month-day {
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.month-day.empty {
+    border: none;
+    background: transparent;
+}
+
+.month-day.active {
+    background: rgba(var(--primary-rgb), 0.2);
+    border-color: rgba(var(--primary-rgb), 0.6);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.month-day.today {
+    box-shadow: inset 0 0 0 1.5px var(--primary-color);
 }
 
 .heatmap-legend {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin-top: 6px;
 }
 
-.legend-cell {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
+@media (max-width: 900px) {
+    .mini-chart {
+        min-height: 170px;
+    }
+
+    .mini-chart-svg {
+        height: 112px;
+    }
+
+    .mini-chart-scroll {
+        width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+    }
+
+    .mini-chart-track {
+        width: max(100%, var(--mini-track-width, 320px));
+        min-width: 100%;
+    }
+
+    .mini-chart-labels {
+        width: max(100%, var(--mini-track-width, 320px));
+        min-width: 100%;
+    }
+
+    .months-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .heatmap-wrap {
+        max-height: 70vh;
+    }
 }
 
-.legend-cell.lc-0 { background: var(--border-color); }
-.legend-cell.lc-1 { background: rgba(var(--primary-rgb), 0.35); }
-.legend-cell.lc-2 { background: rgba(var(--primary-rgb), 0.65); }
-.legend-cell.lc-3 { background: var(--primary-color); }
+[data-theme="dark"] .stats-section {
+    background: #1b1d22;
+    border: 1px solid #2a2e36;
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .records-subcard,
+[data-theme="dark"] .month-card {
+    background: #20242b;
+    border-color: #343a45;
+}
+
+[data-theme="dark"] .records-table th,
+[data-theme="dark"] .records-table td {
+    border-color: #343a45;
+}
+
+[data-theme="dark"] .mini-chart-axis,
+[data-theme="dark"] .chart-grid {
+    stroke: #343a45;
+}
 
 /* ─── Progress Chart ──────────────────────────────────────── */
 .stats-select {
+    display: block;
     width: 100%;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 10px 12px;
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -132,11 +298,27 @@
     color: var(--text-color);
     font-size: 0.9rem;
     margin-bottom: 14px;
+    text-align: center;
+    text-align-last: center;
     appearance: none;
     -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
+}
+
+.stats-filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.stats-select.small {
+    max-width: 220px;
+    margin: 0 auto;
+    font-size: 0.82rem;
+    padding: 8px 10px;
 }
 
 .stats-select:focus {
@@ -146,12 +328,14 @@
 
 .chart-wrap {
     min-height: 100px;
+    position: relative;
 }
 
 .chart-svg {
     width: 100%;
-    max-width: 420px;
+    max-width: 760px;
     display: block;
+    margin: 0 auto;
 }
 
 .chart-line {
@@ -201,9 +385,50 @@
     display: none;
 }
 
+.chart-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    z-index: 2;
+    white-space: nowrap;
+}
+
+.chart-tooltip.hidden {
+    display: none;
+}
+
 /* ─── Records Table ───────────────────────────────────────── */
 .records-wrap {
     overflow-x: auto;
+}
+
+.records-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.records-subcard {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px;
+    background: var(--background-light);
+}
+
+.records-subtitle {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 8px;
+    text-align: center;
 }
 
 .records-table {
@@ -213,7 +438,7 @@
 }
 
 .records-table th {
-    text-align: left;
+    text-align: center;
     padding: 6px 8px;
     color: var(--text-secondary);
     font-size: 0.72rem;
@@ -228,6 +453,13 @@
     border-bottom: 1px solid var(--border-color);
     color: var(--text-color);
     vertical-align: middle;
+    text-align: center;
+}
+
+.rec-rank,
+.rec-date {
+    text-align: center;
+    white-space: nowrap;
 }
 
 .records-table tr:last-child td {
@@ -244,8 +476,8 @@
 
 .rec-val {
     font-variant-numeric: tabular-nums;
-    text-align: right;
-    min-width: 60px;
+    text-align: center;
+    min-width: 90px;
 }
 
 .rec-trend {

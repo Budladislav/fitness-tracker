@@ -18,7 +18,7 @@
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     text-align: center;
-    background-color: white;
+    background-color: var(--card-background);
     box-shadow: var(--shadow-sm);
 }
 
@@ -42,7 +42,7 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    background-color: white;
+    background-color: var(--card-background);
     border-radius: var(--border-radius);
     box-shadow: none;
 }
@@ -84,13 +84,13 @@
     margin-left: 0;
     margin-right: 0;
     margin-bottom: 16px;
-    background: white;
+    background: var(--card-background);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     overflow: hidden;
 }
 .summary-table {
-    background: white;
+    background: var(--card-background);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
     cursor: pointer;
@@ -223,12 +223,56 @@
     transform: translateX(-50%);
     font-size: 0.75em;
     color: var(--text-secondary);
-    background: white;
+    background: var(--card-background);
     padding: 2px 8px;
     white-space: nowrap;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .week-group {
+    background: rgba(var(--primary-rgb), 0.12);
+    border-color: rgba(var(--primary-rgb), 0.35);
+}
+
+[data-theme="dark"] .group-label {
+    border-color: #343a45;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* ─── History Archive (past years) ──────────────────── */
+.history-archive {
+    margin: 12px 0;
+}
+
+.history-archive-toggle {
+    width: 100%;
+    padding: 10px 16px;
+    background: var(--background-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s, color 0.2s;
+    margin: 0;
+}
+
+.history-archive-toggle:hover {
+    background: rgba(var(--primary-rgb), 0.07);
+    color: var(--primary-color);
+}
+
+.history-archive-body {
+    display: none;
+    padding-top: 8px;
+}
+
+.history-archive-body.open {
+    display: block;
 } 
 
 .backup-controls {

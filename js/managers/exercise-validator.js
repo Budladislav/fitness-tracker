@@ -20,7 +20,7 @@ export class ExerciseValidator {
      * @returns {Object|null} Валидированные данные или null при ошибке
      */
     validate(formData) {
-        const { type, name, reps, weight } = formData;
+        const { type, name, reps, weight, doubleTonnage } = formData;
         
         // Проверка имени
         if (!name || !name.trim()) {
@@ -44,12 +44,12 @@ export class ExerciseValidator {
             }
         }
 
-        // Возвращаем валидные данные
         return {
             type,
             name: name.trim(),
             reps: repsNum,
-            weight: type === 'bodyweight' ? null : parseFloat(weight)
+            weight: type === 'bodyweight' ? null : parseFloat(weight),
+            doubleTonnage: !!doubleTonnage
         };
     }
 } 

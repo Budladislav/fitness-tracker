@@ -25,11 +25,12 @@ export class WorkoutFactory {
         };
     }
 
-    static createExercise(name, type) {
+    static createExercise(name, type, doubleTonnage = false) {
         return {
             name,
             type,
-            sets: []
+            sets: [],
+            ...(doubleTonnage ? { doubleTonnage: true } : {})
         };
     }
 
