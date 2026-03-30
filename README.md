@@ -34,10 +34,12 @@ export const useFirebase = true;
 ## Установка и запуск
 1. Клонируйте репозиторий
 2. Настройте Firebase (опционально)
-3. Откройте index.html в браузере
+3. Установите зависимости: `npm install`
+4. Запустите сервер разработки: `npm run dev` (запустится на http://localhost:3001)
+5. Или просто откройте `index.html` в браузере (без функций Vite)
 
 ## Технологии
-- JavaScript (ES6+)
-- HTML5
-- CSS3
-- Firebase (опционально)
+- JavaScript (ES6+ Modules)
+- Vite (Dev Server)
+- HTML5 & CSS3
+- Firebase (Auth & Firestore)

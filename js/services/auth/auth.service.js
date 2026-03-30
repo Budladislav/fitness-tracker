@@ -27,7 +27,7 @@ export class AuthService {
         
         // Заменяем localStorage на sessionStorage для тестового режима
         if (authConfig.testMode?.enabled) {
-            const testUser = sessionStorage.getItem('testUser');
+            const testUser = localStorage.getItem('testUser');
             if (testUser) {
                 this.currentUser = JSON.parse(testUser);
                 this.updateUI();
@@ -40,7 +40,7 @@ export class AuthService {
             
             // В тестовом режиме игнорируем null от Firebase
             if (authConfig.testMode?.enabled) {
-                const testUser = sessionStorage.getItem('testUser');
+                const testUser = localStorage.getItem('testUser');
                 if (testUser && !user) {
                     this.currentUser = JSON.parse(testUser);
                 } else {
@@ -57,6 +57,15 @@ export class AuthService {
         // Восстанавливаем состояние UI при загрузке
         window.addEventListener('load', () => {
             this.updateUI();
+        });
+
+        // Добавляем слушатель изменений в localStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'emailForSignIn' && !e.newValue) {
+                // Если emailForSignIn был удален, значит произошла авторизация
+                // Обновляем страницу для получения нового состояния
+                window.location.reload();
+            }
         });
     }
 
@@ -83,7 +92,7 @@ export class AuthService {
     async sendLoginLink(email) {
         try {
             if (authConfig.testMode?.enabled) {
-                const existingTestUser = sessionStorage.getItem('testUser_' + email);
+                const existingTestUser = localStorage.getItem('testUser_' + email);
                 if (existingTestUser) {
                     this.currentUser = JSON.parse(existingTestUser);
                 } else {
@@ -93,8 +102,8 @@ export class AuthService {
                     };
                 }
                 
-                sessionStorage.setItem('testUser', JSON.stringify(this.currentUser));
-                sessionStorage.setItem('testUser_' + email, JSON.stringify(this.currentUser));
+                localStorage.setItem('testUser', JSON.stringify(this.currentUser));
+                localStorage.setItem('testUser_' + email, JSON.stringify(this.currentUser));
                 
                 // Сначала уведомляем о смене пользователя
                 this.notifyListeners(this.currentUser);
@@ -110,7 +119,7 @@ export class AuthService {
             }
             
             await sendSignInLinkToEmail(this.auth, email, this.actionCodeSettings);
-            sessionStorage.setItem('emailForSignIn', email);
+            localStorage.setItem('emailForSignIn', email);
             
             // Добавляем задержку перед обновлением истории
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -135,15 +144,15 @@ export class AuthService {
                 return false;
             }
 
-            let email = sessionStorage.getItem('emailForSignIn');
+            let email = localStorage.getItem('emailForSignIn');
             if (!email) {
-                email = window.prompt('Пожалуйста, введите email для подтверждения входа');
+                // Если email нет в localStorage, значит что-то пошло не так
+                this.notifications.error('Ошибка авторизации: email не найден');
+                return false;
             }
             
-            if (!email) return false;
-
             const result = await signInWithEmailLink(this.auth, email, window.location.href);
-            sessionStorage.removeItem('emailForSignIn');
+            localStorage.removeItem('emailForSignIn');
             
             this.currentUser = result.user;
             this.updateUI();
@@ -175,7 +184,7 @@ export class AuthService {
     async signOut() {
         try {
             if (authConfig.testMode?.enabled) {
-                sessionStorage.removeItem('testUser');
+                localStorage.removeItem('testUser');
                 this.currentUser = null;
                 this.updateUI();
                 this.notifyListeners(null);

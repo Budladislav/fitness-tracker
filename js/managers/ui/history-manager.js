@@ -410,28 +410,29 @@ export class HistoryManager extends BaseComponent {
     createExerciseElement(exercise) {
         const rows = [];
 
-        const setsByWeight = exercise.sets.reduce((groups, set) => {
+        const weightGroups = [];
+        let currentGroup = null;
+
+        exercise.sets.forEach(set => {
             const weight = set.weight || '—';
-            if (!groups[weight]) {
-                groups[weight] = [];
+            if (!currentGroup || currentGroup.weight !== weight) {
+                currentGroup = { weight: weight, reps: [] };
+                weightGroups.push(currentGroup);
             }
-            groups[weight].push(set.reps);
-            return groups;
-        }, {});
+            currentGroup.reps.push(set.reps);
+        });
 
         const totalWeight = ExerciseCalculatorService.calculateTotalWeight(exercise);
         const totalReps = ExerciseCalculatorService.calculateTotalReps(exercise);
 
-        const weightEntries = Object.entries(setsByWeight);
-
-        weightEntries.forEach(([weight, reps], index) => {
+        weightGroups.forEach((group, index) => {
             const row = this.createElement('tr');
             row.innerHTML = `
-                ${index === 0 ? `<td rowspan="${weightEntries.length}">${exercise.name}</td>` : ''}
-                <td>${reps.join(', ')}</td>
-                <td>${weight}</td>
-                ${index === 0 ? `<td rowspan="${weightEntries.length}">${weight === '—' ? '—' : totalWeight}</td>` : ''}
-                ${index === 0 ? `<td rowspan="${weightEntries.length}">${totalReps}</td>` : ''}
+                ${index === 0 ? `<td rowspan="${weightGroups.length}">${exercise.name}</td>` : ''}
+                <td>${group.reps.join(', ')}</td>
+                <td>${group.weight}</td>
+                ${index === 0 ? `<td rowspan="${weightGroups.length}">${group.weight === '—' ? '—' : totalWeight}</td>` : ''}
+                ${index === 0 ? `<td rowspan="${weightGroups.length}">${totalReps}</td>` : ''}
             `;
             rows.push(row);
         });

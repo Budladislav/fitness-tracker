@@ -20,19 +20,22 @@ export class ExerciseFormatterService {
             return `${name}: ${sets.map(set => set.reps).join(', ')}`;
         }
 
-        // Группируем подходы по весу
-        const setsByWeight = sets.reduce((groups, set) => {
+        // Группируем подходы последовательно по весу
+        const groups = [];
+        let currentGroup = null;
+
+        sets.forEach(set => {
             const weight = set.weight || '—';
-            if (!groups[weight]) {
-                groups[weight] = [];
+            if (!currentGroup || currentGroup.weight !== weight) {
+                currentGroup = { weight: weight, reps: [] };
+                groups.push(currentGroup);
             }
-            groups[weight].push(set.reps);
-            return groups;
-        }, {});
+            currentGroup.reps.push(set.reps);
+        });
 
         // Форматируем каждую группу
-        const setsStr = Object.entries(setsByWeight)
-            .map(([weight, reps]) => `${weight}кг - ${reps.join(', ')}`)
+        const setsStr = groups
+            .map(group => `${group.weight}кг - ${group.reps.join(', ')}`)
             .join(' | ');
 
         return `${name}: ${setsStr}`;

@@ -19,6 +19,16 @@ export const authConfig = {
     actionCodeSettings: {
         //url: window.location.origin + window.location.pathname,
         url: 'https://budladislav.github.io/fitness-tracker/index.html',
-        handleCodeInApp: true
+        handleCodeInApp: true,
+        // Добавляем эти настройки чтобы отключить повторный запрос email
+        iOS: {
+            bundleId: 'com.example.ios'
+        },
+        android: {
+            packageName: 'com.example.android',
+            installApp: true,
+            minimumVersion: '12'
+        },
+        dynamicLinkDomain: 'fitnesstracker.page.link'
     }
 };

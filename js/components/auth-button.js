@@ -1,10 +1,11 @@
 import { BaseComponent } from './base-component.js';
 
 export class AuthButton extends BaseComponent {
-    constructor(authModal, authService) {
+    constructor(authModal, authService, settingsModal) {
         super();
         this.authModal = authModal;
         this.authService = authService;
+        this.settingsModal = settingsModal;
         this.createButton();
         this.initializeEvents();
         this.initializeAuthStateListener();
@@ -41,13 +42,18 @@ export class AuthButton extends BaseComponent {
     }
 
     showUserMenu() {
-        // Простое меню с выходом
         const menu = document.createElement('div');
         menu.className = 'user-menu';
         menu.innerHTML = `
             <div class="user-email">${this.authService.getCurrentUser().email}</div>
+            <button class="settings-btn">Настройки</button>
             <button class="logout-btn">Выйти</button>
         `;
+
+        menu.querySelector('.settings-btn').onclick = () => {
+            this.settingsModal.show();
+            menu.remove();
+        };
 
         menu.querySelector('.logout-btn').onclick = async () => {
             await this.authService.signOut();
@@ -56,7 +62,6 @@ export class AuthButton extends BaseComponent {
 
         document.body.appendChild(menu);
 
-        // Закрываем меню при клике вне его
         const closeMenu = (e) => {
             if (!menu.contains(e.target) && !this.button.contains(e.target)) {
                 menu.remove();
@@ -65,4 +70,4 @@ export class AuthButton extends BaseComponent {
         };
         setTimeout(() => document.addEventListener('click', closeMenu), 0);
     }
-} 
+} 

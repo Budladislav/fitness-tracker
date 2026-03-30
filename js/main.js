@@ -8,6 +8,7 @@ import { firebaseService } from './services/firebase.service.js';
 import { useFirebase } from './config/firebase.config.js';
 import { AuthModal } from './components/auth-modal.js';
 import { AuthButton } from './components/auth-button.js';
+import { SettingsModal } from './components/settings-modal.js';
 import { AuthService } from './services/auth/auth.service.js';
 
 // Инициализация приложения
@@ -37,15 +38,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        // Создаем остальные менеджеры после инициализации Firebase
+        // Создаем storage ПОСЛЕ инициализации Firebase
         const storage = StorageFactory.createStorage();
+        
+        // Создаем остальные менеджеры после инициализации Firebase
         const ui = new UIManager(notifications, storage);
         const validator = new ExerciseValidator(notifications);
         
         // Инициализируем компоненты авторизации
         if (useFirebase && authService) {
+            const settingsModal = new SettingsModal(notifications, storage);
             const authModal = new AuthModal(notifications, authService);
-            const authButton = new AuthButton(authModal, authService);
+            const authButton = new AuthButton(authModal, authService, settingsModal);
         }
         
         // Создаем основной менеджер приложения
