@@ -10,9 +10,13 @@ import { AuthModal } from './components/auth-modal.js';
 import { AuthButton } from './components/auth-button.js';
 import { SettingsModal } from './components/settings-modal.js';
 import { AuthService } from './services/auth/auth.service.js';
+import { ThemeService } from './services/theme.service.js';
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
+    // Применяем сохранённую тему до отрисовки контента
+    ThemeService.loadSaved();
+
     // Определяем тип устройства
     DeviceDetector.addDeviceClass();
     
@@ -47,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Инициализируем компоненты авторизации
         if (useFirebase && authService) {
-            const settingsModal = new SettingsModal(notifications, storage);
+            const settingsModal = new SettingsModal(notifications, storage, ui.history.backupManager);
             const authModal = new AuthModal(notifications, authService);
             const authButton = new AuthButton(authModal, authService, settingsModal);
         }

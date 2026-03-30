@@ -20,6 +20,7 @@
 @import 'components/modal.css';
 @import 'components/loader.css';
 @import 'components/auth.css';
+@import 'components/settings.css';
 /* Pages */
 @import 'pages/workout.css';
 @import 'pages/history.css';

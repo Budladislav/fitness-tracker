@@ -232,4 +232,42 @@ export class LocalStorageManager extends StorageInterface {
             return [];
         }
     }
-} 
+
+    // ─── Кастомные упражнения ───────────────────────────────────
+
+    async getCustomExercises() {
+        return JSON.parse(localStorage.getItem('custom_exercises') || '[]');
+    }
+
+    async saveCustomExercise(exercise) {
+        const exercises = await this.getCustomExercises();
+        const existing = exercises.findIndex(e => e.id === exercise.id);
+        if (existing !== -1) {
+            exercises[existing] = exercise;
+        } else {
+            exercises.push(exercise);
+        }
+        localStorage.setItem('custom_exercises', JSON.stringify(exercises));
+        return true;
+    }
+
+    async deleteCustomExercise(exerciseId) {
+        const exercises = await this.getCustomExercises();
+        const filtered = exercises.filter(e => e.id !== exerciseId);
+        localStorage.setItem('custom_exercises', JSON.stringify(filtered));
+        return true;
+    }
+
+    // ─── Веса по умолчанию ──────────────────────────────────────
+
+    async getDefaultWeights() {
+        return JSON.parse(localStorage.getItem('default_weights') || '{}');
+    }
+
+    async updateDefaultWeight(exerciseName, weight) {
+        const weights = await this.getDefaultWeights();
+        weights[exerciseName] = weight;
+        localStorage.setItem('default_weights', JSON.stringify(weights));
+        return true;
+    }
+}

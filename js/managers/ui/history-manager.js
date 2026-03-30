@@ -26,10 +26,7 @@ export class HistoryManager extends BaseComponent {
     initializeElements() {
         return {
             historyContainer: this.querySelector(DOM_SELECTORS.HISTORY.CONTAINER),
-            toggleAllButton: this.querySelector(DOM_SELECTORS.HISTORY.TOGGLE_ALL),
-            backupControls: this.createElement('div', 'backup-controls'),
-            createBackupBtn: this.createElement('button', 'btn backup-btn'),
-            restoreBackupBtn: this.createElement('button', 'btn backup-btn')
+            toggleAllButton: this.querySelector(DOM_SELECTORS.HISTORY.TOGGLE_ALL)
         };
     }
 
@@ -37,28 +34,10 @@ export class HistoryManager extends BaseComponent {
         this.elements.toggleAllButton.addEventListener('click', () => {
             this.toggleAllWorkouts();
         });
-
-        // Добавляем обработчики для кнопок бэкапа
-        this.elements.createBackupBtn.addEventListener('click', async () => {
-            await this.backupManager.createBackup();
-        });
-
-        this.elements.restoreBackupBtn.addEventListener('click', async () => {
-            if (await this.backupManager.restoreFromBackup()) {
-                const workouts = await this.storage.getWorkoutHistory();
-                this.displayWorkoutHistory(workouts);
-            }
-        });
     }
 
     displayWorkoutHistory(workouts = []) {
         try {
-            // Сохраняем контролы бэкапа перед очисткой
-            const backupControls = this.elements.historyContainer.querySelector('.backup-controls');
-            if (backupControls) {
-                backupControls.remove();
-            }
-
             // Очищаем контейнер
             this.elements.historyContainer.innerHTML = '';
 
@@ -71,9 +50,9 @@ export class HistoryManager extends BaseComponent {
                 // Сортируем группы по году и номеру недели (в обратном порядке)
                 const sortedGroups = weekGroups.sort((a, b) => {
                     if (a.year !== b.year) {
-                        return b.year - a.year; // Сначала по году (по убыванию)
+                        return b.year - a.year;
                     }
-                    return b.weekNumber - a.weekNumber; // Затем по номеру недели (по убыванию)
+                    return b.weekNumber - a.weekNumber;
                 });
                 
                 // Создаем и добавляем группы в контейнер
@@ -88,15 +67,12 @@ export class HistoryManager extends BaseComponent {
                     const weekWorkouts = group.workouts.sort((a, b) => {
                         const dateA = new Date(a.date);
                         const dateB = new Date(b.date);
-                        
-                        // Если даты равны, сортируем по времени (если оно есть)
                         if (dateA.getTime() === dateB.getTime()) {
                             const timeA = a.startTime || '00:00';
                             const timeB = b.startTime || '00:00';
-                            return timeB.localeCompare(timeA); // Сортировка по убыванию времени
+                            return timeB.localeCompare(timeA);
                         }
-                        
-                        return dateB - dateA; // Сортировка по убыванию даты
+                        return dateB - dateA;
                     });
                     
                     weekWorkouts.forEach(workout => {
@@ -109,10 +85,6 @@ export class HistoryManager extends BaseComponent {
                     this.elements.historyContainer.appendChild(weekGroupElement);
                 });
             }
-
-            // Добавляем контролы бэкапа обратно
-            this.setupBackupControls();
-            this.elements.historyContainer.appendChild(this.elements.backupControls);
         } catch (error) {
             console.error('Error in displayWorkoutHistory:', error);
         }
@@ -438,22 +410,5 @@ export class HistoryManager extends BaseComponent {
         });
 
         return rows;
-    }
-
-    setupBackupControls() {
-        this.elements.createBackupBtn.textContent = 'Резервировать историю';
-        this.elements.restoreBackupBtn.textContent = 'Восстановить историю';
-
-        // Определяем высоту панели навигации
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.clientHeight;
-        const navBarHeight = windowHeight - documentHeight;
-        
-        // Устанавливаем CSS-переменную
-        document.documentElement.style.setProperty('--nav-bar-height', `${navBarHeight}px`);
-
-        this.elements.backupControls.innerHTML = '';
-        this.elements.backupControls.appendChild(this.elements.createBackupBtn);
-        this.elements.backupControls.appendChild(this.elements.restoreBackupBtn);
     }
 } 

@@ -426,4 +426,87 @@ export class FirebaseStorageManager extends StorageInterface {
             console.error('Error setting active workout:', error);
         }
     }
-} 
+
+    // ─── Кастомные упражнения ───────────────────────────────────
+
+    async getCustomExercises() {
+        try {
+            this.updateUserId();
+            const exercisesRef = collection(this.db, 'custom_exercises');
+            const q = query(exercisesRef, where('userId', '==', this.userId));
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error('Error getting custom exercises:', error);
+            return [];
+        }
+    }
+
+    async saveCustomExercise(exercise) {
+        try {
+            this.updateUserId();
+            const exercisesRef = collection(this.db, 'custom_exercises');
+            if (exercise.firestoreId) {
+                // Обновляем существующее
+                const docRef = doc(this.db, 'custom_exercises', exercise.firestoreId);
+                await setDoc(docRef, { ...exercise, userId: this.userId });
+            } else {
+                // Добавляем новое
+                await addDoc(exercisesRef, { ...exercise, userId: this.userId });
+            }
+            return true;
+        } catch (error) {
+            console.error('Error saving custom exercise:', error);
+            return false;
+        }
+    }
+
+    async deleteCustomExercise(exerciseId) {
+        try {
+            const docRef = doc(this.db, 'custom_exercises', exerciseId);
+            await deleteDoc(docRef);
+            return true;
+        } catch (error) {
+            console.error('Error deleting custom exercise:', error);
+            return false;
+        }
+    }
+
+    // ─── Веса по умолчанию ──────────────────────────────────────
+
+    async getDefaultWeights() {
+        try {
+            this.updateUserId();
+            const docRef = doc(this.db, 'user_settings', this.userId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                return docSnap.data().defaultWeights || {};
+            }
+            return {};
+        } catch (error) {
+            console.error('Error getting default weights:', error);
+            return {};
+        }
+    }
+
+    async updateDefaultWeight(exerciseName, weight) {
+        try {
+            this.updateUserId();
+            const docRef = doc(this.db, 'user_settings', this.userId);
+            const docSnap = await getDoc(docRef);
+            const existing = docSnap.exists() ? docSnap.data() : {};
+            await setDoc(docRef, {
+                ...existing,
+                userId: this.userId,
+                defaultWeights: {
+                    ...(existing.defaultWeights || {}),
+                    [exerciseName]: weight
+                }
+            });
+            return true;
+        } catch (error) {
+            console.error('Error updating default weight:', error);
+            return false;
+        }
+    }
+}

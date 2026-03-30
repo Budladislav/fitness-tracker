@@ -75,12 +75,21 @@ export class WorkoutFormManager extends BaseComponent {
 
     initializeExercisesList() {
         this.updateExercisesList();
+        // Обновляем список при добавлении/удалении упражнения в настройках
+        window.addEventListener('exerciseListUpdated', () => this.updateExercisesList());
     }
 
-    updateExercisesList() {
+    async updateExercisesList() {
         const select = this.elements.exerciseName;
         const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
-        const exercises = ExercisePool.getExercisesByType(type);
+        
+        // Подгружаем кастомные упражнения если сторедж поддерживает это
+        let customExercises = [];
+        if (this.storage?.getCustomExercises) {
+            customExercises = await this.storage.getCustomExercises();
+        }
+        
+        const exercises = ExercisePool.getExercisesByType(type, customExercises);
         
         select.innerHTML = '<option value="" disabled>Упражнение</option>';
         exercises.forEach(exercise => {
@@ -107,13 +116,24 @@ export class WorkoutFormManager extends BaseComponent {
     }
 
     setupExerciseNameEvents() {
-        this.elements.exerciseName.addEventListener('change', () => {
+        this.elements.exerciseName.addEventListener('change', async () => {
             const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
             this.lastSelectedExercises[type] = this.elements.exerciseName.value;
             
             // Устанавливаем вес по умолчанию при выборе упражнения
             if (type === 'weighted' && this.elements.exerciseName.value) {
-                const defaultWeight = ExercisePool.getDefaultWeight(this.elements.exerciseName.value);
+                // Читаем сохранённые веса если есть storage
+                const savedWeights = this.storage?.getDefaultWeights 
+                    ? await this.storage.getDefaultWeights() 
+                    : {};
+                const customExercises = this.storage?.getCustomExercises 
+                    ? await this.storage.getCustomExercises() 
+                    : [];
+                const defaultWeight = ExercisePool.getDefaultWeight(
+                    this.elements.exerciseName.value, 
+                    savedWeights,
+                    customExercises
+                );
                 if (defaultWeight) {
                     this.elements.exerciseWeight.value = defaultWeight;
                     // Обновляем значение слайдера, если он есть

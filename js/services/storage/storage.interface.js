@@ -98,4 +98,48 @@ export class StorageInterface {
     async saveToStorage(key, value) {
         throw new Error('Method not implemented');
     }
-} 
+
+    /**
+     * Получить список кастомных упражнений пользователя
+     * @returns {Promise<Array>}
+     */
+    async getCustomExercises() {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Сохранить кастомное упражнение
+     * @param {Object} exercise - { id, name, type, defaultWeight? }
+     * @returns {Promise<boolean>}
+     */
+    async saveCustomExercise(exercise) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Удалить кастомное упражнение по ID
+     * @param {string} exerciseId
+     * @returns {Promise<boolean>}
+     */
+    async deleteCustomExercise(exerciseId) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Обновить вес по умолчанию для упражнения (дефолтного или кастомного)
+     * @param {string} exerciseName
+     * @param {number} weight
+     * @returns {Promise<boolean>}
+     */
+    async updateDefaultWeight(exerciseName, weight) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Получить все сохранённые веса по умолчанию
+     * @returns {Promise<Object>} { exerciseName: weight }
+     */
+    async getDefaultWeights() {
+        throw new Error('Method not implemented');
+    }
+}
