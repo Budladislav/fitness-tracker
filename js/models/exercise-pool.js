@@ -23,21 +23,34 @@ export class ExercisePool {
     /**
      * @param {string} type - 'weighted' | 'bodyweight'
      * @param {Array} [customExercises=[]] - кастомные упражнения пользователя из Firebase
+     * @param {Object} [defaultWeights={}] - сохраненные веса и переопределения имён
      */
-    static getExercisesByType(type, customExercises = []) {
-        const defaults = DEFAULT_EXERCISES[type] || [];
-        const custom = customExercises.filter(e => e.type === type);
+    static getExercisesByType(type, customExercises = [], defaultWeights = {}) {
+        const defaults = (DEFAULT_EXERCISES[type] || []).map(ex => {
+            const overrideName = defaultWeights[`__name_${ex.id}`];
+            const name = overrideName || ex.name;
+            return {
+                ...ex,
+                originalName: ex.name,
+                name: name,
+                defaultWeight: defaultWeights[name] ?? defaultWeights[ex.name] ?? ex.defaultWeight
+            };
+        });
+        const custom = customExercises.filter(e => e.type === type).map(ex => ({
+            ...ex,
+            defaultWeight: defaultWeights[ex.name] ?? ex.defaultWeight
+        }));
         return [...defaults, ...custom];
     }
 
     /**
      * @param {Array} [customExercises=[]] - кастомные упражнения пользователя
+     * @param {Object} [defaultWeights={}] - сохраненные веса и переопределения имён
      */
-    static getAllExercises(customExercises = []) {
+    static getAllExercises(customExercises = [], defaultWeights = {}) {
         return [
-            ...DEFAULT_EXERCISES.bodyweight,
-            ...DEFAULT_EXERCISES.weighted,
-            ...customExercises
+            ...this.getExercisesByType('bodyweight', customExercises, defaultWeights),
+            ...this.getExercisesByType('weighted', customExercises, defaultWeights)
         ];
     }
 
@@ -52,13 +65,9 @@ export class ExercisePool {
      * @param {Array}  [customExercises=[]]
      */
     static getDefaultWeight(exerciseName, savedWeights = {}, customExercises = []) {
-        // Пользовательский вес имеет приоритет
-        if (savedWeights[exerciseName] !== undefined) {
-            return savedWeights[exerciseName];
-        }
-        // Затем ищем в пуле
-        const all = this.getAllExercises(customExercises);
-        const exercise = all.find(ex => ex.name === exerciseName);
+        // Затем ищем в пуле с учетом переопределений
+        const all = this.getAllExercises(customExercises, savedWeights);
+        const exercise = all.find(ex => ex.name === exerciseName || ex.originalName === exerciseName);
         return exercise?.defaultWeight ?? '';
     }
 }

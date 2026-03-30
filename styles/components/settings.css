@@ -115,7 +115,9 @@
 }
 
 .settings-pane {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .settings-pane.hidden {
@@ -173,13 +175,54 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* ─── Exercise List ──────────────────────────────────────── */
-.exercises-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
+/* ─── Exercise Accordion ─────────────────────────────────── */
+.ex-accordion {
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
+
+.ex-accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--background-light);
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    transition: background 0.2s;
+}
+
+.ex-accordion-header:hover {
+    background: rgba(var(--primary-rgb), 0.06);
+}
+
+.ex-accordion-arrow {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+}
+
+.ex-accordion-body {
+    display: none;
+    padding: 10px 10px 10px;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ex-accordion-body.open {
+    display: flex;
+}
+
+/* ─── Exercise List ──────────────────────────────────────── */
 
 .exercise-list {
     list-style: none;
@@ -273,11 +316,16 @@
     cursor: pointer;
     font-size: 18px;
     line-height: 1;
-    padding: 0 2px;
+    padding: 0;
     border-radius: 4px;
     transition: background 0.2s;
     margin: 0;
     flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .ex-delete-btn:hover {
@@ -285,7 +333,7 @@
 }
 
 .ex-spacer {
-    width: 22px;
+    width: 24px;
     flex-shrink: 0;
 }
 

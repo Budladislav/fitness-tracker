@@ -1,5 +1,7 @@
 import { ThemeService } from '../services/theme.service.js';
 
+const VERSION = 'v2.2.2';
+
 export class SettingsModal {
     constructor(notifications, storage, backupManager) {
         this.notifications = notifications;
@@ -51,23 +53,35 @@ export class SettingsModal {
                         </div>
                     </div>
 
-                    <!-- TAB: EXERCISES -->
+                    <!-- TAB: EXERCISES — accordion -->
                     <div class="settings-pane hidden" data-pane="exercises">
-                        <div class="exercises-columns">
-                            <div class="exercises-col">
-                                <h3 class="settings-section-title">С весом</h3>
+
+                        <!-- Группа С весом -->
+                        <div class="ex-accordion">
+                            <button class="ex-accordion-header" data-group="weighted">
+                                <span>🏋️ С весом</span>
+                                <span class="ex-accordion-arrow">▼</span>
+                            </button>
+                            <div class="ex-accordion-body open" id="weighted-group">
                                 <ul class="exercise-list" id="weighted-list"></ul>
                                 <button class="add-exercise-btn" data-type="weighted">+ Добавить</button>
                             </div>
-                            <div class="exercises-col">
-                                <h3 class="settings-section-title">Без веса</h3>
+                        </div>
+
+                        <!-- Группа Без веса -->
+                        <div class="ex-accordion">
+                            <button class="ex-accordion-header" data-group="bodyweight">
+                                <span>🤸 Без веса</span>
+                                <span class="ex-accordion-arrow">▼</span>
+                            </button>
+                            <div class="ex-accordion-body open" id="bodyweight-group">
                                 <ul class="exercise-list" id="bodyweight-list"></ul>
                                 <button class="add-exercise-btn" data-type="bodyweight">+ Добавить</button>
                             </div>
                         </div>
 
                         <div class="add-exercise-form hidden" id="add-exercise-form">
-                            <h4 class="settings-section-title">Новое упражнение</h4>
+                            <h4 class="settings-section-title" style="margin-top:4px">Новое упражнение</h4>
                             <input type="text" id="new-exercise-name" placeholder="Название" class="settings-input" maxlength="50">
                             <input type="hidden" id="new-exercise-type" value="weighted">
                             <div class="add-exercise-weight" id="add-weight-field">
@@ -102,7 +116,7 @@ export class SettingsModal {
                 </div>
 
                 <div class="settings-footer">
-                    <span class="version-label">v2.1.1</span>
+                    <span class="version-label">${VERSION}</span>
                 </div>
             </div>
         `;
@@ -110,7 +124,6 @@ export class SettingsModal {
     }
 
     initializeEvents() {
-        // Закрытие
         this.modal.querySelector('.settings-close-btn').onclick = () => this.hide();
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) this.hide();
@@ -129,7 +142,18 @@ export class SettingsModal {
             });
         });
 
-        // Упражнения — кнопки добавления
+        // Accordion toggle
+        this.modal.querySelectorAll('.ex-accordion-header').forEach(hdr => {
+            hdr.addEventListener('click', () => {
+                const body = this.modal.querySelector(`#${hdr.dataset.group}-group`);
+                const arrow = hdr.querySelector('.ex-accordion-arrow');
+                const isOpen = body.classList.contains('open');
+                body.classList.toggle('open', !isOpen);
+                arrow.textContent = isOpen ? '▶' : '▼';
+            });
+        });
+
+        // Кнопки добавления упражнений
         this.modal.querySelectorAll('.add-exercise-btn').forEach(btn => {
             btn.addEventListener('click', () => this.showAddForm(btn.dataset.type));
         });
@@ -163,7 +187,6 @@ export class SettingsModal {
         this.activeTab = tabId;
         this.modal.querySelectorAll('.settings-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
         this.modal.querySelectorAll('.settings-pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== tabId));
-
         if (tabId === 'exercises') this.loadExercises();
     }
 
@@ -182,12 +205,28 @@ export class SettingsModal {
             this.storage.getDefaultWeights()
         ]);
 
+        // Сохраняем данные в состояние для использования в renderItem
+        this.customExercises = customExercises;
+        this.defaultWeights = defaultWeights;
+
         const { ExercisePool } = await import('../models/exercise-pool.js');
         const defaultWeighted = ExercisePool.getExercisesByType('weighted');
         const defaultBodyweight = ExercisePool.getExercisesByType('bodyweight');
 
-        this.renderList('weighted-list', defaultWeighted, customExercises.filter(e => e.type === 'weighted'), defaultWeights, true);
-        this.renderList('bodyweight-list', defaultBodyweight, customExercises.filter(e => e.type === 'bodyweight'), defaultWeights, false);
+        this.renderList(
+            'weighted-list',
+            defaultWeighted,
+            customExercises.filter(e => e.type === 'weighted'),
+            defaultWeights,
+            true
+        );
+        this.renderList(
+            'bodyweight-list',
+            defaultBodyweight,
+            customExercises.filter(e => e.type === 'bodyweight'),
+            defaultWeights,
+            false
+        );
     }
 
     renderList(listId, defaults, customs, defaultWeights, isWeighted) {
@@ -197,17 +236,25 @@ export class SettingsModal {
         const renderItem = (ex, isCustom) => {
             const li = document.createElement('li');
             li.className = 'exercise-list-item';
-            const savedWeight = defaultWeights[ex.name];
+
+            // Имя с учётом переопределений (nameOverrides)
+            const overrideName = defaultWeights[`__name_${ex.id}`];
+            const displayName = overrideName || ex.name || '';
+
+            const savedWeight = defaultWeights[displayName] ?? defaultWeights[ex.name];
             const currentWeight = savedWeight ?? ex.defaultWeight ?? '';
 
             li.innerHTML = `
-                <span class="ex-name" title="Нажмите для редактирования">${ex.name || '(без имени)'}</span>
-                <input type="text" class="ex-name-edit hidden" value="${ex.name || ''}" maxlength="50">
+                <span class="ex-name" title="Нажмите для редактирования">${displayName || '?'}</span>
+                <input type="text" class="ex-name-edit hidden" value="${displayName}" maxlength="50">
                 ${isWeighted ? `
-                    <input type="number" class="ex-weight-input" value="${currentWeight}" min="0" max="999" data-name="${ex.name}" title="Вес по умолчанию">
+                    <input type="number" class="ex-weight-input" value="${currentWeight}" min="0" max="999" title="Вес по умолчанию">
                     <span class="ex-weight-unit">кг</span>
                 ` : ''}
-                ${isCustom ? `<button class="ex-delete-btn" data-id="${ex.firestoreId || ex.id}" title="Удалить">×</button>` : '<span class="ex-spacer"></span>'}
+                ${isCustom
+                    ? `<button class="ex-delete-btn" title="Удалить">×</button>`
+                    : '<span class="ex-spacer"></span>'
+                }
             `;
 
             // ─── Inline name editing ───
@@ -226,35 +273,37 @@ export class SettingsModal {
                 nameInput.classList.add('hidden');
                 nameSpan.classList.remove('hidden');
 
-                if (!newName || newName === ex.name) return;
+                if (!newName || newName === displayName) return;
 
                 if (isCustom) {
-                    // Сохраняем кастомное упражнение с новым именем
+                    // Обновляем кастомное упражнение с новым именем
                     const updated = { ...ex, name: newName };
                     await this.storage.saveCustomExercise(updated);
                 } else {
-                    // Для дефолтных — сохраняем переопределение имени в user_settings
-                    await this.storage.updateDefaultWeight(newName, savedWeight ?? ex.defaultWeight ?? 0);
+                    // Для дефолтных — сохраняем переопределение имени по ID упражнения
+                    await this.storage.updateDefaultWeight(`__name_${ex.id}`, newName);
                 }
 
-                this.notifications.success(`Упражнение переименовано в "${newName}"`);
-                this.loadExercises();
+                nameSpan.textContent = newName;
+                this.notifications.success(`Переименовано в "${newName}"`);
                 window.dispatchEvent(new CustomEvent('exerciseListUpdated'));
             };
 
             nameInput.addEventListener('blur', saveName);
             nameInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); }
-                if (e.key === 'Escape') { nameInput.value = ex.name; nameInput.blur(); }
+                if (e.key === 'Escape') { nameInput.value = displayName; nameInput.blur(); }
             });
 
             // ─── Weight editing ───
             if (isWeighted) {
-                li.querySelector('.ex-weight-input').addEventListener('change', async (e) => {
-                    const w = parseFloat(e.target.value);
+                const weightInput = li.querySelector('.ex-weight-input');
+                weightInput.addEventListener('change', async () => {
+                    const w = parseFloat(weightInput.value);
                     if (!isNaN(w) && w >= 0) {
-                        await this.storage.updateDefaultWeight(ex.name, w);
-                        this.notifications.success(`Вес для "${ex.name}" обновлён`);
+                        // Сохраняем по текущему отображаемому имени
+                        await this.storage.updateDefaultWeight(displayName, w);
+                        this.notifications.success(`Вес для "${displayName}" обновлён`);
                     }
                 });
             }
@@ -262,7 +311,7 @@ export class SettingsModal {
             // ─── Delete custom ───
             if (isCustom) {
                 li.querySelector('.ex-delete-btn').addEventListener('click', async () => {
-                    const ok = confirm(`Удалить упражнение "${ex.name}"?`);
+                    const ok = confirm(`Удалить "${displayName}"?`);
                     if (ok) {
                         await this.storage.deleteCustomExercise(ex.firestoreId || ex.id);
                         this.notifications.success('Упражнение удалено');
@@ -311,13 +360,12 @@ export class SettingsModal {
 
         const ok = await this.storage.saveCustomExercise(exercise);
         if (ok) {
-            this.notifications.success(`Упражнение "${name}" добавлено`);
+            this.notifications.success(`"${name}" добавлено`);
             this.hideAddForm();
             this.loadExercises();
-            // Обновляем селектор упражнений в форме тренировки
             window.dispatchEvent(new CustomEvent('exerciseListUpdated'));
         } else {
-            this.notifications.error('Не удалось сохранить упражнение');
+            this.notifications.error('Не удалось сохранить');
         }
     }
 
@@ -343,7 +391,6 @@ export class SettingsModal {
             try {
                 const data = JSON.parse(event.target.result);
                 if (!Array.isArray(data)) throw new Error('Неверный формат файла');
-                // Сохраняем каждую тренировку
                 for (const workout of data) {
                     await this.storage.saveWorkoutToHistory(workout);
                 }
@@ -358,7 +405,7 @@ export class SettingsModal {
     }
 
     async clearData() {
-        const confirmed = confirm('Вы уверены, что хотите УДАЛИТЬ ВСЮ историю тренировок? Это действие необратимо.');
+        const confirmed = confirm('Удалить ВСЮ историю тренировок? Это необратимо.');
         if (!confirmed) return;
         const workouts = await this.storage.getWorkoutHistory();
         for (const w of workouts) {

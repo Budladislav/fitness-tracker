@@ -15,17 +15,13 @@ export class AuthButton extends BaseComponent {
         this.button = document.createElement('button');
         this.button.className = 'auth-button';
         this.button.innerHTML = '<img src="icons/user.svg" alt="Профиль">';
+        this.button.title = 'Профиль';
         document.body.appendChild(this.button);
     }
 
     initializeEvents() {
         this.button.addEventListener('click', () => {
-            const user = this.authService.getCurrentUser();
-            if (user) {
-                this.showUserMenu();
-            } else {
-                this.authModal.show();
-            }
+            this.toggleUserMenu();
         });
     }
 
@@ -36,27 +32,48 @@ export class AuthButton extends BaseComponent {
                 this.button.title = user.email;
             } else {
                 this.button.querySelector('img').src = 'icons/user.svg';
-                this.button.title = 'Войти';
+                this.button.title = 'Профиль';
             }
         });
     }
 
-    showUserMenu() {
+    toggleUserMenu() {
+        const existingMenu = document.querySelector('.user-menu');
+        if (existingMenu) {
+            existingMenu.remove();
+            return;
+        }
+
+        const user = this.authService.getCurrentUser();
         const menu = document.createElement('div');
         menu.className = 'user-menu';
-        menu.innerHTML = `
-            <div class="user-email">${this.authService.getCurrentUser().email}</div>
-            <button class="settings-btn">Настройки</button>
-            <button class="logout-btn">Выйти</button>
-        `;
+        
+        if (user) {
+            menu.innerHTML = `
+                <div class="user-email">${user.email}</div>
+                <button class="settings-btn">⚙️ Настройки</button>
+                <button class="logout-btn">🚪 Выйти</button>
+            `;
+
+            menu.querySelector('.logout-btn').onclick = async () => {
+                await this.authService.signOut();
+                menu.remove();
+            };
+        } else {
+            menu.innerHTML = `
+                <div class="user-email">Гость</div>
+                <button class="settings-btn">⚙️ Настройки</button>
+                <button class="login-btn">🔑 Войти / Регистрация</button>
+            `;
+
+            menu.querySelector('.login-btn').onclick = () => {
+                this.authModal.show();
+                menu.remove();
+            };
+        }
 
         menu.querySelector('.settings-btn').onclick = () => {
             this.settingsModal.show();
-            menu.remove();
-        };
-
-        menu.querySelector('.logout-btn').onclick = async () => {
-            await this.authService.signOut();
             menu.remove();
         };
 
@@ -70,4 +87,4 @@ export class AuthButton extends BaseComponent {
         };
         setTimeout(() => document.addEventListener('click', closeMenu), 0);
     }
-} 
+}

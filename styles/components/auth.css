@@ -22,7 +22,7 @@
     color: var(--text-secondary);
 }
 
-.settings-btn, .logout-btn {
+.settings-btn, .logout-btn, .login-btn {
     width: 100%;
     padding: 10px;
     border: 1px solid var(--border-color);
@@ -32,6 +32,10 @@
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .settings-btn:hover {
@@ -40,14 +44,23 @@
     color: var(--primary-color);
 }
 
-.logout-btn {
+.logout-btn, .login-btn {
     color: var(--danger-color);
-    border-color: #fee2e2;
+    border-color: var(--border-color);
+}
+
+.login-btn {
+    color: var(--primary-color);
 }
 
 .logout-btn:hover {
     background: var(--danger-light);
     border-color: var(--danger-color);
+}
+
+.login-btn:hover {
+    background: var(--background-light);
+    border-color: var(--primary-color);
 }
 
 /* Settings Modal Specific */

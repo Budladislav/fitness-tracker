@@ -83,13 +83,17 @@ export class WorkoutFormManager extends BaseComponent {
         const select = this.elements.exerciseName;
         const type = this.elements.exerciseType.checked ? 'weighted' : 'bodyweight';
         
-        // Подгружаем кастомные упражнения если сторедж поддерживает это
+        // Подгружаем кастомные упражнения и веса если сторедж поддерживает это
         let customExercises = [];
+        let defaultWeights = {};
         if (this.storage?.getCustomExercises) {
-            customExercises = await this.storage.getCustomExercises();
+            [customExercises, defaultWeights] = await Promise.all([
+                this.storage.getCustomExercises(),
+                this.storage.getDefaultWeights()
+            ]);
         }
         
-        const exercises = ExercisePool.getExercisesByType(type, customExercises);
+        const exercises = ExercisePool.getExercisesByType(type, customExercises, defaultWeights);
         
         select.innerHTML = '<option value="" disabled>Упражнение</option>';
         exercises.forEach(exercise => {
