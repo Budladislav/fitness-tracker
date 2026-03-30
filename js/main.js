@@ -11,10 +11,15 @@ import { AuthButton } from './components/auth-button.js';
 import { SettingsModal } from './components/settings-modal.js';
 import { AuthService } from './services/auth/auth.service.js';
 import { ThemeService } from './services/theme.service.js';
-import { registerSW } from 'virtual:pwa-register';
 
-// Регистрация Service Worker для PWA
-registerSW({ immediate: true });
+// Регистрация Service Worker для PWA (Vanilla JS)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+            console.log('SW registration failed: ', err);
+        });
+    });
+}
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
