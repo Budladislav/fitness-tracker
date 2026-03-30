@@ -61,8 +61,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // После создания workoutManager
         window.addEventListener('workoutHistoryUpdate', async () => {
-            const workouts = await workoutManager.displayWorkoutHistory();
+            await workoutManager.displayWorkoutHistory();
         });
+
+        // Загружаем статистику при переходе на вкладку
+        ui.navigation.onTabChange = (page) => {
+            if (page === 'statistics') ui.stats.loadAndRender();
+        };
     } catch (error) {
         console.error('Error initializing app:', error);
         notifications.error('Ошибка инициализации приложения');

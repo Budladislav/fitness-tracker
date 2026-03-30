@@ -33,6 +33,9 @@ export class NavigationManager extends BaseComponent {
         const targetPage = tab.dataset.page;
         this.elements.pages.forEach(page => page.classList.remove('active'));
         document.getElementById(`${targetPage}Page`).classList.add('active');
+
+        // Уведомляем подписчиков о смене вкладки
+        if (this.onTabChange) this.onTabChange(targetPage);
     }
 
     switchToTab(tabName) {

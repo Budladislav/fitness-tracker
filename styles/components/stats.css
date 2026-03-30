@@ -1,0 +1,259 @@
+/* ─── Stats Page Container ────────────────────────────────── */
+.stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 16px;
+}
+
+.stats-section {
+    background: var(--card-background);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+
+.stats-section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    margin: 0 0 14px;
+}
+
+.stats-empty {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 20px 0;
+    margin: 0;
+}
+
+/* ─── Summary Cards ───────────────────────────────────────── */
+.stats-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.stat-card {
+    background: var(--background-light);
+    border-radius: 12px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.15s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* ─── Heatmap ─────────────────────────────────────────────── */
+.heatmap-wrap {
+    overflow-x: auto;
+    margin-bottom: 10px;
+}
+
+.heatmap-svg {
+    width: 100%;
+    min-width: 260px;
+    max-width: 420px;
+    display: block;
+}
+
+.hm-cell {
+    transition: opacity 0.15s;
+    cursor: default;
+}
+
+.hm-cell.lc-0 { fill: var(--border-color); }
+.hm-cell.lc-1 { fill: rgba(var(--primary-rgb), 0.35); }
+.hm-cell.lc-2 { fill: rgba(var(--primary-rgb), 0.65); }
+.hm-cell.lc-3 { fill: var(--primary-color); }
+
+.hm-cell.hm-today {
+    stroke: var(--primary-color);
+    stroke-width: 1.5;
+}
+
+.hm-label {
+    font-size: 9px;
+    fill: var(--text-secondary);
+    font-family: inherit;
+}
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+}
+
+.legend-cell {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.legend-cell.lc-0 { background: var(--border-color); }
+.legend-cell.lc-1 { background: rgba(var(--primary-rgb), 0.35); }
+.legend-cell.lc-2 { background: rgba(var(--primary-rgb), 0.65); }
+.legend-cell.lc-3 { background: var(--primary-color); }
+
+/* ─── Progress Chart ──────────────────────────────────────── */
+.stats-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--background-light);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.stats-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.chart-wrap {
+    min-height: 100px;
+}
+
+.chart-svg {
+    width: 100%;
+    max-width: 420px;
+    display: block;
+}
+
+.chart-line {
+    stroke: var(--primary-color);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.chart-area {
+    opacity: 0.8;
+}
+
+.chart-dot {
+    fill: var(--primary-color);
+    stroke: var(--card-background);
+    stroke-width: 2;
+    transition: r 0.15s;
+    cursor: default;
+}
+
+.chart-dot:hover { r: 5; }
+
+.chart-grid {
+    stroke: var(--border-color);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+}
+
+.chart-axis-label {
+    fill: var(--text-secondary);
+    font-size: 9px;
+    font-family: inherit;
+}
+
+.chart-record {
+    margin-top: 10px;
+    background: rgba(var(--primary-rgb), 0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    border: 1px solid rgba(var(--primary-rgb), 0.2);
+}
+
+.chart-record.hidden {
+    display: none;
+}
+
+/* ─── Records Table ───────────────────────────────────────── */
+.records-wrap {
+    overflow-x: auto;
+}
+
+.records-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.records-table th {
+    text-align: left;
+    padding: 6px 8px;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.records-table td {
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+    vertical-align: middle;
+}
+
+.records-table tr:last-child td {
+    border-bottom: none;
+}
+
+.records-table tr:hover td {
+    background: var(--background-light);
+}
+
+.rec-name {
+    font-weight: 500;
+}
+
+.rec-val {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    min-width: 60px;
+}
+
+.rec-trend {
+    text-align: center;
+    width: 40px;
+    font-size: 1rem;
+}
+
+.trend-up   { color: #4caf50; }
+.trend-down { color: var(--danger-color); }
+.trend-none { color: var(--text-secondary); }

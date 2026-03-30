@@ -109,10 +109,55 @@
 
     <!-- Страница статистики -->
     <div id="statisticsPage" class="page">
-        <div class="content-container">
-            <div class="coming-soon">
-                В разработке...
-            </div>
+        <div class="content-container stats-container">
+
+            <!-- 1. Сводка -->
+            <section class="stats-section">
+                <h2 class="stats-section-title">Обзор</h2>
+                <div class="stats-cards" id="statsCards">
+                    <div class="stat-card"><span class="stat-value" id="statTotalWorkouts">—</span><span class="stat-label">Тренировок</span></div>
+                    <div class="stat-card"><span class="stat-value" id="statTotalTonnage">—</span><span class="stat-label">Тоннаж (т)</span></div>
+                    <div class="stat-card"><span class="stat-value" id="statWeeklyAvg">—</span><span class="stat-label">В неделю</span></div>
+                    <div class="stat-card"><span class="stat-value" id="statLastWorkout">—</span><span class="stat-label">Дней назад</span></div>
+                </div>
+            </section>
+
+            <!-- 2. Частота тренировок -->
+            <section class="stats-section">
+                <h2 class="stats-section-title">Частота за 12 недель</h2>
+                <div class="heatmap-wrap" id="statsHeatmap"></div>
+                <div class="heatmap-legend">
+                    <span>Меньше</span>
+                    <span class="legend-cell lc-0"></span>
+                    <span class="legend-cell lc-1"></span>
+                    <span class="legend-cell lc-2"></span>
+                    <span class="legend-cell lc-3"></span>
+                    <span>Больше</span>
+                </div>
+            </section>
+
+            <!-- 3. Прогресс упражнения -->
+            <section class="stats-section">
+                <h2 class="stats-section-title">Прогресс</h2>
+                <select id="statsExerciseSelect" class="stats-select">
+                    <option value="">— Выберите упражнение —</option>
+                </select>
+                <div class="chart-wrap" id="statsChart">
+                    <p class="stats-empty">Выберите упражнение с весом</p>
+                </div>
+                <div class="chart-record hidden" id="statsChartRecord">
+                    🏆 Рекорд: <strong id="statsChartRecordVal">—</strong> кг &nbsp;·&nbsp; <span id="statsChartRecordDate">—</span>
+                </div>
+            </section>
+
+            <!-- 4. Таблица рекордов -->
+            <section class="stats-section">
+                <h2 class="stats-section-title">Рекорды</h2>
+                <div class="records-wrap" id="statsRecords">
+                    <p class="stats-empty">Нет данных</p>
+                </div>
+            </section>
+
         </div>
     </div>
 
