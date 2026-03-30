@@ -208,6 +208,34 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.2s;
+}
+
+.ex-name:hover {
+    border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.ex-name-edit {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 4px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    background: var(--card-background);
+    color: var(--text-color);
+    outline: none;
+}
+
+.ex-name-edit.hidden {
+    display: none;
+}
+
+.ex-name.hidden {
+    display: none;
 }
 
 .ex-weight-input {
@@ -220,6 +248,7 @@
     background: var(--card-background);
     color: var(--text-color);
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .ex-weight-input::-webkit-outer-spin-button,

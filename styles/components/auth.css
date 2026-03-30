@@ -2,9 +2,9 @@
     position: fixed;
     top: 50px;
     right: 12px;
-    background: white;
+    background: var(--card-background);
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
     padding: 12px;
     z-index: 1000;
     min-width: 200px;
@@ -27,7 +27,8 @@
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    background: white;
+    background: var(--card-background);
+    color: var(--text-color);
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s ease;
@@ -36,6 +37,7 @@
 .settings-btn:hover {
     background: var(--background-light);
     border-color: var(--primary-color);
+    color: var(--primary-color);
 }
 
 .logout-btn {
@@ -44,7 +46,7 @@
 }
 
 .logout-btn:hover {
-    background: #fef2f2;
+    background: var(--danger-light);
     border-color: var(--danger-color);
 }
 

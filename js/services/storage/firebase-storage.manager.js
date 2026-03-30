@@ -435,7 +435,14 @@ export class FirebaseStorageManager extends StorageInterface {
             const exercisesRef = collection(this.db, 'custom_exercises');
             const q = query(exercisesRef, where('userId', '==', this.userId));
             const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            return snapshot.docs.map(d => {
+                const data = d.data();
+                return {
+                    ...data,
+                    id: data.id || d.id,           // сохраняем пользовательский id
+                    firestoreId: d.id               // Firestore document ID отдельно
+                };
+            });
         } catch (error) {
             console.error('Error getting custom exercises:', error);
             return [];
@@ -445,14 +452,18 @@ export class FirebaseStorageManager extends StorageInterface {
     async saveCustomExercise(exercise) {
         try {
             this.updateUserId();
-            const exercisesRef = collection(this.db, 'custom_exercises');
-            if (exercise.firestoreId) {
+            // Отделяем firestoreId от данных для сохранения
+            const { firestoreId, ...exerciseData } = exercise;
+            const dataToSave = { ...exerciseData, userId: this.userId };
+
+            if (firestoreId) {
                 // Обновляем существующее
-                const docRef = doc(this.db, 'custom_exercises', exercise.firestoreId);
-                await setDoc(docRef, { ...exercise, userId: this.userId });
+                const docRef = doc(this.db, 'custom_exercises', firestoreId);
+                await setDoc(docRef, dataToSave);
             } else {
                 // Добавляем новое
-                await addDoc(exercisesRef, { ...exercise, userId: this.userId });
+                const exercisesRef = collection(this.db, 'custom_exercises');
+                await addDoc(exercisesRef, dataToSave);
             }
             return true;
         } catch (error) {

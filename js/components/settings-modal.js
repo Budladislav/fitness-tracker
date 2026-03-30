@@ -201,14 +201,54 @@ export class SettingsModal {
             const currentWeight = savedWeight ?? ex.defaultWeight ?? '';
 
             li.innerHTML = `
-                <span class="ex-name">${ex.name}</span>
+                <span class="ex-name" title="Нажмите для редактирования">${ex.name || '(без имени)'}</span>
+                <input type="text" class="ex-name-edit hidden" value="${ex.name || ''}" maxlength="50">
                 ${isWeighted ? `
                     <input type="number" class="ex-weight-input" value="${currentWeight}" min="0" max="999" data-name="${ex.name}" title="Вес по умолчанию">
                     <span class="ex-weight-unit">кг</span>
                 ` : ''}
-                ${isCustom ? `<button class="ex-delete-btn" data-id="${ex.id}" title="Удалить">×</button>` : '<span class="ex-spacer"></span>'}
+                ${isCustom ? `<button class="ex-delete-btn" data-id="${ex.firestoreId || ex.id}" title="Удалить">×</button>` : '<span class="ex-spacer"></span>'}
             `;
 
+            // ─── Inline name editing ───
+            const nameSpan = li.querySelector('.ex-name');
+            const nameInput = li.querySelector('.ex-name-edit');
+
+            nameSpan.addEventListener('click', () => {
+                nameSpan.classList.add('hidden');
+                nameInput.classList.remove('hidden');
+                nameInput.focus();
+                nameInput.select();
+            });
+
+            const saveName = async () => {
+                const newName = nameInput.value.trim();
+                nameInput.classList.add('hidden');
+                nameSpan.classList.remove('hidden');
+
+                if (!newName || newName === ex.name) return;
+
+                if (isCustom) {
+                    // Сохраняем кастомное упражнение с новым именем
+                    const updated = { ...ex, name: newName };
+                    await this.storage.saveCustomExercise(updated);
+                } else {
+                    // Для дефолтных — сохраняем переопределение имени в user_settings
+                    await this.storage.updateDefaultWeight(newName, savedWeight ?? ex.defaultWeight ?? 0);
+                }
+
+                this.notifications.success(`Упражнение переименовано в "${newName}"`);
+                this.loadExercises();
+                window.dispatchEvent(new CustomEvent('exerciseListUpdated'));
+            };
+
+            nameInput.addEventListener('blur', saveName);
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); }
+                if (e.key === 'Escape') { nameInput.value = ex.name; nameInput.blur(); }
+            });
+
+            // ─── Weight editing ───
             if (isWeighted) {
                 li.querySelector('.ex-weight-input').addEventListener('change', async (e) => {
                     const w = parseFloat(e.target.value);
@@ -219,13 +259,15 @@ export class SettingsModal {
                 });
             }
 
+            // ─── Delete custom ───
             if (isCustom) {
                 li.querySelector('.ex-delete-btn').addEventListener('click', async () => {
                     const ok = confirm(`Удалить упражнение "${ex.name}"?`);
                     if (ok) {
-                        await this.storage.deleteCustomExercise(ex.id);
+                        await this.storage.deleteCustomExercise(ex.firestoreId || ex.id);
                         this.notifications.success('Упражнение удалено');
                         this.loadExercises();
+                        window.dispatchEvent(new CustomEvent('exerciseListUpdated'));
                     }
                 });
             }

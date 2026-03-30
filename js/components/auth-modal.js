@@ -34,13 +34,12 @@ export class AuthModal extends BaseComponent {
             e.preventDefault();
             const email = form.emailInput.value;
             
-            try {
-                await this.authService.sendLoginLink(email);
+            const success = await this.authService.sendLoginLink(email);
+            if (success) {
                 this.notifications.success('Ссылка для входа отправлена на ваш email');
                 this.hide();
-            } catch (error) {
-                this.notifications.error('Ошибка при отправке ссылки');
             }
+            // Ошибка уже показана в authService.sendLoginLink()
         });
 
         closeBtn.addEventListener('click', () => this.hide());
