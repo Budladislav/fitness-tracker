@@ -1,8 +1,9 @@
 import { StorageInterface } from './storage.interface.js';
 import { firebaseService } from '../firebase.service.js';
-import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy, where, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, doc, getDocs, addDoc, deleteDoc, updateDoc, getDoc, setDoc, writeBatch, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { WorkoutFormatterService } from '../workout-formatter.service.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { ExercisePool, getOriginalBuiltinName } from '../../models/exercise-pool.js';
 
 // Функция для генерации ID
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -28,6 +29,11 @@ export class FirebaseStorageManager extends StorageInterface {
             backup: 'backups',
             settings: 'settings'
         };
+
+        /** @type {Array|null} */
+        this._workoutHistoryCache = null;
+        /** @type {string|null} */
+        this._workoutHistoryCacheUserId = null;
 
         // Инициализируем userId из текущего пользователя
         const currentUser = this.auth.currentUser;
@@ -60,8 +66,14 @@ export class FirebaseStorageManager extends StorageInterface {
             if (this.userId !== newUserId) {
                 this.userId = newUserId;
                 sessionStorage.removeItem(this.CURRENT_WORKOUT_KEY);
+                this._invalidateWorkoutHistoryCache();
             }
         });
+    }
+
+    _invalidateWorkoutHistoryCache() {
+        this._workoutHistoryCache = null;
+        this._workoutHistoryCacheUserId = null;
     }
 
     // Добавляем метод для принудительного обновления userId
@@ -93,39 +105,39 @@ export class FirebaseStorageManager extends StorageInterface {
 
     // Реализация методов интерфейса
     async getWorkoutHistory() {
-        // Принудительно обновляем userId перед запросом
         this.updateUserId();
+        if (this._workoutHistoryCache && this._workoutHistoryCacheUserId === this.userId) {
+            return this._workoutHistoryCache;
+        }
         try {
             const workoutsRef = this.getCollection('workouts');
-            
+
             const q = query(
-                workoutsRef, 
+                workoutsRef,
                 where('userId', '==', this.userId),
                 orderBy('timestamp', 'desc')
             );
-            
-            // Попытка получить первый документ для проверки структуры
-            const testSnapshot = await getDocs(query(workoutsRef, 
-                where('userId', '==', this.userId),
-                orderBy('timestamp', 'desc'),
-                limit(1)
-            ));
 
             const snapshot = await getDocs(q);
             const workouts = [];
-            
-            snapshot.forEach(doc => {
-                const data = doc.data();
+
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
                 workouts.push({
-                    id: doc.id,
+                    id: docSnap.id,
                     date: data.date || '',
                     startTime: data.time || '',
                     exercises: data.exercises || [],
                     notes: data.notes || {},
-                    timestamp: data.timestamp || Date.now()
+                    timestamp: data.timestamp || Date.now(),
+                    workoutType: data.workoutType || 'universal',
+                    presetId: data.presetId ?? null,
+                    presetName: data.presetName ?? null
                 });
             });
-            
+
+            this._workoutHistoryCache = workouts;
+            this._workoutHistoryCacheUserId = this.userId;
             return workouts;
         } catch (error) {
             console.error('Error getting workout history:', error);
@@ -150,7 +162,8 @@ export class FirebaseStorageManager extends StorageInterface {
             
             const docRef = await addDoc(workoutsRef, workoutToSave);
             formatted.id = docRef.id;
-            
+
+            this._invalidateWorkoutHistoryCache();
             this.createAutoBackup();
             return true;
         } catch (error) {
@@ -163,6 +176,7 @@ export class FirebaseStorageManager extends StorageInterface {
         try {
             const docRef = this.getDocument('workouts', workoutId);
             await deleteDoc(docRef);
+            this._invalidateWorkoutHistoryCache();
             return true;
         } catch (error) {
             console.error('Error deleting workout:', error);
@@ -182,7 +196,8 @@ export class FirebaseStorageManager extends StorageInterface {
                 ...workout,
                 userId: this.userId
             });
-            
+
+            this._invalidateWorkoutHistoryCache();
             this.createAutoBackup();
             return true;
         } catch (error) {
@@ -355,35 +370,42 @@ export class FirebaseStorageManager extends StorageInterface {
     async saveToStorage(key, value) {
         try {
             if (key === this.EXERCISES_KEY) {
+                this.updateUserId();
                 const workouts = Array.isArray(value) ? value : [];
-                
-                // Очищаем существующие документы
-                const snapshot = await getDocs(this.getCollection('workouts'));
-                const batch = writeBatch(this.db);
-                snapshot.forEach(doc => {
-                    batch.delete(doc.ref);
-                });
-                await batch.commit();
-                
-                // Сохраняем все тренировки в одной транзакции
-                const batch2 = writeBatch(this.db);
-                for (const workout of workouts) {
-                    const docRef = doc(this.getCollection('workouts'));
-                    batch2.set(docRef, {
-                        ...workout,
-                        userId: this.userId,  // Добавляем userId
-                        date: workout.date,
-                        time: workout.startTime || '',
-                        exercises: workout.exercises || [],
-                        notes: workout.notes || {},
-                        timestamp: workout.timestamp || Date.now()
-                    });
+                const workoutsRef = this.getCollection('workouts');
+
+                // Только документы текущего пользователя (раньше удалялась вся коллекция — риск потери данных)
+                const userQuery = query(workoutsRef, where('userId', '==', this.userId));
+                let toDelete = await getDocs(userQuery);
+                while (!toDelete.empty) {
+                    const delBatch = writeBatch(this.db);
+                    toDelete.docs.slice(0, 500).forEach((d) => delBatch.delete(d.ref));
+                    await delBatch.commit();
+                    toDelete = await getDocs(userQuery);
                 }
-                await batch2.commit();
-                
+
+                for (let i = 0; i < workouts.length; i += 500) {
+                    const writeBatchOps = writeBatch(this.db);
+                    const chunk = workouts.slice(i, i + 500);
+                    for (const workout of chunk) {
+                        const docRef = doc(workoutsRef);
+                        writeBatchOps.set(docRef, {
+                            ...workout,
+                            userId: this.userId,
+                            date: workout.date,
+                            time: workout.startTime || '',
+                            exercises: workout.exercises || [],
+                            notes: workout.notes || {},
+                            timestamp: workout.timestamp || Date.now()
+                        });
+                    }
+                    await writeBatchOps.commit();
+                }
+
+                this._invalidateWorkoutHistoryCache();
                 return true;
             }
-    
+
             // Для других ключей используем коллекцию settings
             const docRef = this.getDocument('settings', key);
             await setDoc(docRef, { 
@@ -429,9 +451,36 @@ export class FirebaseStorageManager extends StorageInterface {
 
     // ─── Кастомные упражнения ───────────────────────────────────
 
+    async checkAndSeedExercises() {
+        try {
+            const seedRef = this.getDocument('settings', 'exercises_seeded');
+            const docSnap = await getDoc(seedRef);
+            
+            if (!docSnap.exists() || !docSnap.data().value) {
+                // Надо засидить
+                const seedExercises = ExercisePool.getSeedExercises();
+                const exercisesRef = collection(this.db, 'custom_exercises');
+                
+                const batch = writeBatch(this.db);
+                for (const ex of seedExercises) {
+                    const docRef = doc(exercisesRef); // Генерируем новый ID
+                    batch.set(docRef, { ...ex, userId: this.userId });
+                }
+                
+                // Ставим отметку
+                batch.set(seedRef, { value: true, userId: this.userId });
+                await batch.commit();
+            }
+        } catch (error) {
+            console.error('Error seeding exercises:', error);
+        }
+    }
+
     async getCustomExercises() {
         try {
             this.updateUserId();
+            await this.checkAndSeedExercises(); // Проверяем при чтении
+            
             const exercisesRef = collection(this.db, 'custom_exercises');
             const q = query(exercisesRef, where('userId', '==', this.userId));
             const snapshot = await getDocs(q);
@@ -520,4 +569,237 @@ export class FirebaseStorageManager extends StorageInterface {
             return false;
         }
     }
-}
+
+    async _saveDefaultWeightsObject(weights) {
+        try {
+            this.updateUserId();
+            const docRef = doc(this.db, 'user_settings', this.userId);
+            const docSnap = await getDoc(docRef);
+            const existing = docSnap.exists() ? docSnap.data() : {};
+            await setDoc(docRef, {
+                ...existing,
+                userId: this.userId,
+                defaultWeights: weights
+            });
+            return true;
+        } catch (error) {
+            console.error('Error saving default weights:', error);
+            return false;
+        }
+    }
+
+    /**
+     * @param {{ exerciseId: string, oldDisplayName: string, newName: string, oldCatalogName?: string }} params
+     */
+    async propagateExerciseRename(params) {
+        const { exerciseId, oldDisplayName, newName, oldCatalogName } = params;
+        if (!exerciseId || !newName || oldDisplayName === newName) return true;
+
+        try {
+            const oldCat = oldCatalogName ?? oldDisplayName;
+            const weights = await this.getDefaultWeights();
+            const next = { ...weights };
+
+            const mergeMove = (from, to) => {
+                if (!from || from === to) return;
+                if (next[from] !== undefined) {
+                    if (next[to] === undefined) next[to] = next[from];
+                    delete next[from];
+                }
+            };
+
+            mergeMove(oldDisplayName, newName);
+            if (oldCat !== oldDisplayName) mergeMove(oldCat, newName);
+            mergeMove(`__double_${oldDisplayName}`, `__double_${newName}`);
+            if (oldCat !== oldDisplayName) mergeMove(`__double_${oldCat}`, `__double_${newName}`);
+            delete next[`__name_${exerciseId}`];
+
+            await this._saveDefaultWeightsObject(next);
+
+            const originalBuiltin = getOriginalBuiltinName(exerciseId);
+            const mapEx = (ex) => {
+                const idMatch = ex.exerciseId != null && String(ex.exerciseId) === String(exerciseId);
+                const legacyName =
+                    !ex.exerciseId &&
+                    (ex.name === oldDisplayName ||
+                        (oldCatalogName && ex.name === oldCatalogName) ||
+                        (originalBuiltin && ex.name === originalBuiltin));
+                if (idMatch || legacyName) {
+                    return { ...ex, name: newName, exerciseId: ex.exerciseId || exerciseId };
+                }
+                return ex;
+            };
+
+            const workouts = await this.getWorkoutHistory();
+            const updates = [];
+            for (const w of workouts) {
+                const newExercises = (w.exercises || []).map(mapEx);
+                if (JSON.stringify(newExercises) !== JSON.stringify(w.exercises || [])) {
+                    updates.push({ id: w.id, exercises: newExercises });
+                }
+            }
+
+            const chunkSize = 500;
+            for (let i = 0; i < updates.length; i += chunkSize) {
+                const chunk = updates.slice(i, i + chunkSize);
+                const batch = writeBatch(this.db);
+                chunk.forEach((u) => {
+                    const docRef = doc(this.db, this.collections.workouts, u.id);
+                    batch.update(docRef, { exercises: u.exercises });
+                });
+                await batch.commit();
+            }
+
+            const current = await this.getCurrentWorkout();
+            if (current?.exercises?.length) {
+                const newExercises = current.exercises.map(mapEx);
+                if (JSON.stringify(newExercises) !== JSON.stringify(current.exercises)) {
+                    await this.saveCurrentWorkout({ ...current, exercises: newExercises });
+                }
+            }
+
+            const presets = await this.getPresets();
+            let presetsChanged = false;
+            const newPresets = presets.map((p) => ({
+                ...p,
+                exercises: (p.exercises || []).map((e) => {
+                    const idMatch = e.exerciseId != null && String(e.exerciseId) === String(exerciseId);
+                    const legacy =
+                        !e.exerciseId &&
+                        (e.name === oldDisplayName ||
+                            (oldCatalogName && e.name === oldCatalogName) ||
+                            (originalBuiltin && e.name === originalBuiltin));
+                    if (idMatch || legacy) {
+                        presetsChanged = true;
+                        return { ...e, name: newName, exerciseId: e.exerciseId || exerciseId };
+                    }
+                    return e;
+                })
+            }));
+
+            if (presetsChanged) {
+                const docRef = doc(this.db, 'user_settings', this.userId);
+                const docSnap = await getDoc(docRef);
+                const existing = docSnap.exists() ? docSnap.data() : {};
+                await setDoc(docRef, {
+                    ...existing,
+                    userId: this.userId,
+                    presets: newPresets
+                });
+            }
+
+            this._invalidateWorkoutHistoryCache();
+            return true;
+        } catch (error) {
+            console.error('Error propagating exercise rename:', error);
+            return false;
+        }
+    }
+
+    // ─── Пресеты (План Фаза 4) ──────────────────────────────────
+
+    async getPresets() {
+        try {
+            this.updateUserId();
+            const docRef = doc(this.db, 'user_settings', this.userId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().presets) {
+                return docSnap.data().presets;
+            }
+            return [];
+        } catch (error) {
+            console.error('Error getting presets:', error);
+            return [];
+        }
+    }
+
+    async savePreset(preset) {
+        try {
+            this.updateUserId();
+            const presets = await this.getPresets();
+            const existingIndex = presets.findIndex(p => p.id === preset.id);
+            if (existingIndex !== -1) {
+                presets[existingIndex] = preset;
+            } else {
+                presets.push(preset);
+            }
+            
+            const docRef = doc(this.db, 'user_settings', this.userId);
+            const docSnap = await getDoc(docRef);
+            const existing = docSnap.exists() ? docSnap.data() : {};
+            await setDoc(docRef, {
+                ...existing,
+                userId: this.userId,
+                presets: presets
+            });
+            return true;
+        } catch (error) {
+            console.error('Error saving preset:', error);
+            return false;
+        }
+    }
+
+    async deletePreset(presetId) {
+        try {
+            this.updateUserId();
+            const presets = await this.getPresets();
+            const filtered = presets.filter(p => p.id !== presetId);
+            
+            const docRef = doc(this.db, 'user_settings', this.userId);
+            const docSnap = await getDoc(docRef);
+            const existing = docSnap.exists() ? docSnap.data() : {};
+            await setDoc(docRef, {
+                ...existing,
+                userId: this.userId,
+                presets: filtered
+            });
+            return true;
+        } catch (error) {
+            console.error('Error deleting preset:', error);
+            return false;
+        }
+    }
+
+    /**
+     * @param {{ customExercises?: Array, defaultWeights?: Object, presets?: Array }} data
+     */
+    async restoreUserCatalog(data) {
+        try {
+            this.updateUserId();
+
+            const settingsRef = doc(this.db, 'user_settings', this.userId);
+            const settingsSnap = await getDoc(settingsRef);
+            const existingSettings = settingsSnap.exists() ? settingsSnap.data() : {};
+
+            await setDoc(settingsRef, {
+                ...existingSettings,
+                userId: this.userId,
+                ...(data.defaultWeights != null ? { defaultWeights: data.defaultWeights } : {}),
+                ...(data.presets != null ? { presets: data.presets } : {})
+            });
+
+            if (data.customExercises != null) {
+                const exercisesRef = collection(this.db, 'custom_exercises');
+                const q = query(exercisesRef, where('userId', '==', this.userId));
+                const snapshot = await getDocs(q);
+                const docs = snapshot.docs;
+                const chunk = 500;
+                for (let i = 0; i < docs.length; i += chunk) {
+                    const batch = writeBatch(this.db);
+                    docs.slice(i, i + chunk).forEach((d) => batch.delete(d.ref));
+                    await batch.commit();
+                }
+
+                for (const ex of data.customExercises) {
+                    const { firestoreId, ...exerciseData } = ex;
+                    await addDoc(exercisesRef, { ...exerciseData, userId: this.userId });
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error restoreUserCatalog:', error);
+            return false;
+        }
+    }
+}

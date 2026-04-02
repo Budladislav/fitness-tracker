@@ -347,13 +347,41 @@ select option[disabled] {
 /* Стили для заголовка с упражнением и переключателем */
 .exercise-header {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     margin-bottom: var(--spacing-sm);
 }
 
 .exercise-header select {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.preset-exercises-toggle {
+    flex: 0 0 auto;
+    align-self: center;
+    max-width: 5.5rem;
+    margin: 0;
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    line-height: 1.25;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--primary-color);
+    cursor: pointer;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.preset-exercises-toggle:hover {
+    border-color: var(--primary-color);
+    background: rgba(33, 150, 243, 0.06);
+}
+
+[data-theme="dark"] .preset-exercises-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .input-group input::placeholder {

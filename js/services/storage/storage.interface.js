@@ -136,10 +136,54 @@ export class StorageInterface {
     }
 
     /**
+     * После переименования кастомного упражнения: те же exerciseId в истории, пресетах и весах по умолчанию.
+     * @param {{ exerciseId: string, oldDisplayName: string, newName: string, oldCatalogName?: string }} params
+     * @returns {Promise<boolean>}
+     */
+    async propagateExerciseRename(params) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
      * Получить все сохранённые веса по умолчанию
      * @returns {Promise<Object>} { exerciseName: weight }
      */
     async getDefaultWeights() {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Получить список пресетов тренировок
+     * @returns {Promise<Array>}
+     */
+    async getPresets() {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Полная подмена каталога упражнений, весов по умолчанию и пресетов (импорт из бекапа).
+     * @param {{ customExercises?: Array, defaultWeights?: Object, presets?: Array }} data
+     * @returns {Promise<boolean>}
+     */
+    async restoreUserCatalog(data) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Сохранить новый или обновить существующий пресет
+     * @param {Object} preset - Данные пресета { id, name, exercises }
+     * @returns {Promise<boolean>}
+     */
+    async savePreset(preset) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Удалить пресет
+     * @param {string} presetId - ID пресета
+     * @returns {Promise<boolean>}
+     */
+    async deletePreset(presetId) {
         throw new Error('Method not implemented');
     }
 }

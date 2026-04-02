@@ -61,7 +61,13 @@ export class ExerciseLogManager extends BaseComponent {
         const content = this.createElement('div', 'exercise-content');
         
         const text = this.createElement('span');
-        const newExercise = WorkoutFactory.createExercise(exerciseData.name, exerciseData.type, exerciseData.doubleTonnage);
+        const newExercise = WorkoutFactory.createExercise(
+            exerciseData.name, 
+            exerciseData.type, 
+            exerciseData.doubleTonnage, 
+            exerciseData.exerciseId, 
+            exerciseData.equipment
+        );
         newExercise.sets = [newSet];
         
         text.textContent = ExerciseFormatterService.formatExercise(newExercise);

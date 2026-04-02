@@ -21,14 +21,19 @@ export class WorkoutFactory {
                 intensity: null,
                 text: null,
                 timestamp: null
-            }
+            },
+            workoutType: options.workoutType || 'universal',
+            presetId: options.presetId ?? null,
+            presetName: options.presetName ?? null
         };
     }
 
-    static createExercise(name, type, doubleTonnage = false) {
+    static createExercise(name, type, doubleTonnage = false, exerciseId = null, equipment = null) {
         return {
             name,
             type,
+            exerciseId,
+            equipment,
             sets: [],
             ...(doubleTonnage ? { doubleTonnage: true } : {})
         };

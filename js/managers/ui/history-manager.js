@@ -2,10 +2,18 @@ import { BaseComponent } from '../../components/base-component.js';
 import { DOM_SELECTORS } from '../../constants/selectors.js';
 import { DateFormatter } from '../../utils/date-formatter.js';
 import { ExerciseCalculatorService } from '../../services/exercise-calculator.service.js';
+import { ExerciseFormatterService } from '../../services/exercise-formatter.service.js';
 import { BackupManager } from '../../services/backup-manager.js';
 import { NotesModal } from '../../components/notes-modal.js';
 import { DateGrouping } from '../../utils/date-grouping.js';
 import { StorageFactory } from '../../services/storage/storage.factory.js';
+
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 export class HistoryManager extends BaseComponent {
     /**
@@ -96,6 +104,7 @@ export class HistoryManager extends BaseComponent {
             return b.weekNumber - a.weekNumber;
         });
 
+        const fragment = document.createDocumentFragment();
         sortedGroups.forEach(group => {
             const weekGroupElement = this.createElement('div', 'week-group');
 
@@ -116,8 +125,9 @@ export class HistoryManager extends BaseComponent {
                 if (workoutEntry) weekGroupElement.appendChild(workoutEntry);
             });
 
-            container.appendChild(weekGroupElement);
+            fragment.appendChild(weekGroupElement);
         });
+        container.appendChild(fragment);
     }
 
     createWorkoutEntry(workout) {
@@ -143,9 +153,12 @@ export class HistoryManager extends BaseComponent {
         
         const formattedDate = DateFormatter.formatWorkoutDate(workout.date);
         const startTime = workout.startTime ? `${workout.startTime}` : '';
+        const isPreset = workout.workoutType === 'preset' && workout.presetName;
+        const badgeLabel = isPreset ? workout.presetName : 'Универсальная';
+        const badgeClass = isPreset ? 'workout-preset-badge' : 'workout-preset-badge workout-preset-universal';
 
         summaryRow.innerHTML = `
-            <td>${formattedDate} <small>${startTime}</small></td>
+            <td>${formattedDate} <small>${startTime}</small> <span class="${badgeClass}" data-preset-edit="1" title="Сменить тип тренировки">${escapeHtml(badgeLabel)}</span></td>
             <td>Σ повторов: ${totalReps} раз</td>
             <td>Тоннаж: ${Math.round(totalWeight)} кг</td>
             <td><button class="delete-btn" title="Удалить тренировку">×</button></td>
@@ -171,9 +184,75 @@ export class HistoryManager extends BaseComponent {
 
         // Обработчик для удаления
         const deleteButton = summaryRow.querySelector('.delete-btn');
-        deleteButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.handleWorkoutDeletion(workout.id);
+        if (deleteButton) {
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.handleWorkoutDeletion(workout.id);
+            });
+        }
+
+        const presetBadge = summaryRow.querySelector('[data-preset-edit]');
+        if (presetBadge) {
+            presetBadge.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.openWorkoutTypeEditor(workout);
+            });
+        }
+    }
+
+    async openWorkoutTypeEditor(workout) {
+        const presets = this.storage.getPresets ? await this.storage.getPresets() : [];
+        const overlay = document.createElement('div');
+        overlay.className = 'workout-type-picker-overlay';
+        const optionsHtml = presets.map(p =>
+            `<option value="${escapeHtml(p.id)}" ${workout.presetId === p.id ? 'selected' : ''}>${escapeHtml(p.name)}</option>`
+        ).join('');
+        overlay.innerHTML = `
+            <div class="workout-type-picker-dialog">
+                <h4 class="workout-type-picker-title">Тип тренировки</h4>
+                <select id="workout-type-select" class="settings-input">${optionsHtml}</select>
+                <div class="workout-type-picker-actions">
+                    <button type="button" class="btn secondary-btn" id="wtp-cancel">Отмена</button>
+                    <button type="button" class="btn primary-btn" id="wtp-save">Сохранить</button>
+                </div>
+            </div>
+        `;
+        const sel = overlay.querySelector('#workout-type-select');
+        const universalOpt = document.createElement('option');
+        universalOpt.value = 'universal';
+        universalOpt.textContent = 'Универсальная';
+        universalOpt.selected = workout.workoutType !== 'preset';
+        sel.insertBefore(universalOpt, sel.firstChild);
+
+        document.body.appendChild(overlay);
+        const cleanup = () => overlay.remove();
+
+        overlay.querySelector('#wtp-cancel').addEventListener('click', cleanup);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cleanup();
+        });
+        overlay.querySelector('#wtp-save').addEventListener('click', async () => {
+            const v = sel.value;
+            const updated = { ...workout };
+            if (v === 'universal') {
+                updated.workoutType = 'universal';
+                updated.presetId = null;
+                updated.presetName = null;
+            } else {
+                const p = presets.find(x => x.id === v);
+                updated.workoutType = 'preset';
+                updated.presetId = p?.id || v;
+                updated.presetName = p?.name || '';
+            }
+            const ok = await this.storage.updateWorkout(updated);
+            cleanup();
+            if (ok) {
+                const list = await this.storage.getWorkoutHistory();
+                this.displayWorkoutHistory(list);
+                this.notifications.success('Тип тренировки обновлён');
+            } else {
+                this.notifications.error('Не удалось сохранить');
+            }
         });
     }
 
@@ -427,8 +506,14 @@ export class HistoryManager extends BaseComponent {
 
         weightGroups.forEach((group, index) => {
             const row = this.createElement('tr');
+            const eqIcon = ExerciseFormatterService.getEquipmentIconPrefix(
+                exercise.equipment,
+                exercise.type
+            );
+            const x2 = exercise.doubleTonnage ? ' <span class="ex-x2-badge" title="Тоннаж ×2">×2</span>' : '';
+
             row.innerHTML = `
-                ${index === 0 ? `<td rowspan="${weightGroups.length}">${exercise.name}</td>` : ''}
+                ${index === 0 ? `<td rowspan="${weightGroups.length}">${eqIcon}${exercise.name}${x2}</td>` : ''}
                 <td>${group.reps.join(', ')}</td>
                 <td>${group.weight}</td>
                 ${index === 0 ? `<td rowspan="${weightGroups.length}">${group.weight === '—' ? '—' : totalWeight}</td>` : ''}

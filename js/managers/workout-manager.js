@@ -1,5 +1,4 @@
 import { WorkoutFactory } from '../factories/workout.factory.js';
-import { NotesModal } from '../components/notes-modal.js';
 import { StateManager } from '../services/state-manager.js';
 import { StorageFactory } from '../services/storage/storage.factory.js';
 import { AuthService } from '../services/auth/auth.service.js';
@@ -20,10 +19,7 @@ export class WorkoutManager {
             this.ui = ui;
             this.validator = validator;
             this.authService = authService;
-            
-            // Передаем зависимости в NotesModal
-            this.notesModal = new NotesModal(notifications, storage);
-            
+
             this.stateManager = new StateManager(storage);
             
             // Обновляем создание exerciseLog
@@ -55,6 +51,8 @@ export class WorkoutManager {
             await this.displayWorkoutHistory();
             this.ui.navigation.switchToTab('history');
         }
+        
+        await this.renderPresets();
     }
 
     async restoreWorkoutState() {
@@ -69,6 +67,7 @@ export class WorkoutManager {
                 if (!this.stateManager.isFormShown()) {
                     this.stateManager.setFormShown(true);
                     this.ui.navigation.switchToTab('workout');
+                    await this.applyWorkoutPresetUi(currentWorkout);
                     this.ui.showWorkoutForm(currentWorkout.date);
                     
                     if (currentWorkout.exercises && Array.isArray(currentWorkout.exercises)) {
@@ -79,7 +78,9 @@ export class WorkoutManager {
                                     type: exercise.type,
                                     reps: set.reps,
                                     weight: set.weight,
-                                    doubleTonnage: !!exercise.doubleTonnage
+                                    doubleTonnage: !!exercise.doubleTonnage,
+                                    exerciseId: exercise.exerciseId,
+                                    equipment: exercise.equipment
                                 };
                                 this.ui.addExerciseToLog(exerciseData);
                             });
@@ -99,6 +100,9 @@ export class WorkoutManager {
     initializeEventListeners() {
         this.initializeFormEvents();
         this.initializeWorkoutEvents();
+        
+        // Listen for new presets saved from History
+        window.addEventListener('presetsUpdated', () => this.renderPresets());
     }
 
     initializeFormEvents() {
@@ -117,7 +121,10 @@ export class WorkoutManager {
                         id: existing.id,
                         created: existing.created,
                         startTime: existing.startTime,
-                        notes: existing.notes
+                        notes: existing.notes,
+                        workoutType: existing.workoutType || 'universal',
+                        presetId: existing.presetId,
+                        presetName: existing.presetName
                     }
                 );
                 await this.stateManager.setCurrentWorkout(currentWorkout);
@@ -132,18 +139,18 @@ export class WorkoutManager {
                 return;
             }
 
-            this.notesModal.show(currentWorkout.notes);
+            this.ui.notesModal.show(currentWorkout.notes);
             
             const saveHandler = async () => {
-                const notes = this.notesModal.getValues();
+                const notes = this.ui.notesModal.getValues();
                 currentWorkout.notes = notes;
                 await this.stateManager.setCurrentWorkout(currentWorkout);
                 this.notifications.success('Заметки сохранены');
             };
 
-            this.notesModal.modal.querySelector('.save-notes').onclick = () => {
+            this.ui.notesModal.modal.querySelector('.save-notes').onclick = () => {
                 saveHandler();
-                this.notesModal.hide();
+                this.ui.notesModal.hide();
             };
         });
     }
@@ -161,10 +168,15 @@ export class WorkoutManager {
             }
             
             // Передаем объект Date напрямую
-            const newWorkout = WorkoutFactory.createNewWorkout(now);
+            const newWorkout = WorkoutFactory.createNewWorkout(now, [], {
+                workoutType: 'universal',
+                presetId: null,
+                presetName: null
+            });
             await this.stateManager.setCurrentWorkout(newWorkout);
             
             document.body.classList.add('workout-active');
+            this.ui.setWorkoutPresetContext(null);
             this.ui.showWorkoutForm(now);
             this.notifications.info('Начата новая тренировка');
         };
@@ -201,7 +213,10 @@ export class WorkoutManager {
                     id: currentWorkout.id,
                     created: currentWorkout.created,
                     startTime: currentWorkout.startTime,
-                    notes: currentWorkout.notes
+                    notes: currentWorkout.notes,
+                    workoutType: currentWorkout.workoutType || 'universal',
+                    presetId: currentWorkout.presetId,
+                    presetName: currentWorkout.presetName
                 }
             );
 
@@ -237,6 +252,33 @@ export class WorkoutManager {
                 }
             });
         }
+
+        // Добавляем обработчик для кнопки сохранения как пресета
+        const saveAsPresetBtn = document.getElementById('saveAsPreset');
+        if (saveAsPresetBtn) {
+            saveAsPresetBtn.addEventListener('click', async () => {
+                const exercises = this.ui.getExercisesFromLog();
+                if (exercises.length === 0) {
+                    this.notifications.error('Добавьте хотя бы одно упражнение для пресета!');
+                    return;
+                }
+                const presetName = prompt('Введите название для нового пресета:', 'Новый пресет');
+                if (!presetName) return;
+                
+                const preset = {
+                    id: 'preset_' + Date.now(),
+                    name: presetName,
+                    exercises: exercises
+                };
+                
+                if (await this.storage.savePreset(preset)) {
+                    this.notifications.success('Пресет сохранен');
+                    await this.renderPresets();
+                } else {
+                    this.notifications.error('Ошибка сохранения пресета');
+                }
+            });
+        }
     }
 
     async displayWorkoutHistory() {
@@ -248,5 +290,80 @@ export class WorkoutManager {
         } finally {
             this.ui.hideLoader();
         }
+    }
+
+    // ─── Фаза 4: Пресеты ────────────────────────────────
+
+    async applyWorkoutPresetUi(workout) {
+        if (!workout || workout.workoutType !== 'preset' || !workout.presetId) {
+            this.ui.setWorkoutPresetContext(null);
+            return;
+        }
+        const presets = await this.storage.getPresets();
+        const p = presets.find(x => x.id === workout.presetId);
+        if (!p) {
+            this.ui.setWorkoutPresetContext(null);
+            return;
+        }
+        const exerciseIds = new Set(p.exercises.map(e => e.exerciseId || e.name));
+        this.ui.setWorkoutPresetContext({ id: p.id, name: p.name, exerciseIds });
+    }
+
+    async renderPresets() {
+        if (!this.storage.getPresets) return;
+        const presets = await this.storage.getPresets();
+        const container = document.getElementById('presetsContainer');
+        const list = document.getElementById('presetsList');
+        
+        if (!container || !list) return;
+
+        if (presets.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+        list.innerHTML = '';
+
+        presets.forEach(preset => {
+            const el = document.createElement('div');
+            el.className = 'preset-item';
+            el.innerHTML = `
+                <div class="preset-name">${preset.name}</div>
+                <div class="preset-exercises">${preset.exercises.length} упр. <br><small>${preset.exercises.map(e => e.name).join(', ')}</small></div>
+            `;
+            el.addEventListener('click', () => this.startWorkoutFromPreset(preset));
+            list.appendChild(el);
+        });
+    }
+
+    async startWorkoutFromPreset(preset) {
+        await this.stateManager.clearCurrentWorkout();
+
+        const now = new Date();
+        if (now.getHours() < 4) {
+            now.setDate(now.getDate() - 1);
+        }
+
+        const exerciseIds = new Set(
+            (preset.exercises || []).map(e => e.exerciseId || e.name)
+        );
+        this.ui.setWorkoutPresetContext({
+            id: preset.id,
+            name: preset.name,
+            exerciseIds
+        });
+
+        document.body.classList.add('workout-active');
+        this.ui.showWorkoutForm(now);
+
+        const newWorkout = WorkoutFactory.createNewWorkout(now, [], {
+            workoutType: 'preset',
+            presetId: preset.id,
+            presetName: preset.name
+        });
+        await this.stateManager.setCurrentWorkout(newWorkout);
+
+        this.notifications.info(`Запущен пресет: ${preset.name}`);
     }
 } 

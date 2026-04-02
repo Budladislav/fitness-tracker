@@ -19,10 +19,12 @@ export class StatsManager {
         if (sel) {
             sel.addEventListener('change', () => {
                 this.selectedExercise = sel.value || '';
+                this.selectedExerciseId = this.selectedExercise;
                 // Связываем селекторы: выбор в "Прогрессе" синхронизирует "Рекорды"
                 if (recordsSel) {
                     recordsSel.value = this.selectedExercise;
                     this.selectedRecordsExercise = this.selectedExercise;
+                    this.selectedRecordsExerciseId = this.selectedRecordsExercise;
                 }
                 this.updateProgressAndRecords();
             });
@@ -41,9 +43,16 @@ export class StatsManager {
         if (recordsSel) {
             recordsSel.addEventListener('change', () => {
                 this.selectedRecordsExercise = recordsSel.value || '';
+                this.selectedRecordsExerciseId = this.selectedRecordsExercise;
                 this.renderRecordsTable(this.selectedRecordsExercise);
             });
         }
+
+        const workoutPresetFilter = document.getElementById('statsWorkoutPresetFilter');
+        const workoutTonnagePeriod = document.getElementById('statsWorkoutTonnagePeriod');
+        [workoutPresetFilter, workoutTonnagePeriod].forEach(el => {
+            el?.addEventListener('change', () => this.renderWorkoutTonnageChart());
+        });
     }
 
     // ─── Public entry point ────────────────────────────────────
@@ -53,6 +62,8 @@ export class StatsManager {
         this.renderSummary();
         this.renderHeatmap();
         this.renderExerciseSelect();
+        await this.populateWorkoutPresetFilter();
+        this.renderWorkoutTonnageChart();
         if (!this.initialized) {
             this.initialized = true;
         }
@@ -218,6 +229,137 @@ export class StatsManager {
         container.innerHTML = `<div class="months-grid">${monthsHtml}</div>`;
     }
 
+    // ─── 2b. Тоннаж по тренировкам (столбцы + фильтр пресета) ──
+
+    async populateWorkoutPresetFilter() {
+        const sel = document.getElementById('statsWorkoutPresetFilter');
+        if (!sel || !this.storage.getPresets) return;
+        const prev = sel.value;
+        sel.innerHTML = `
+            <option value="">Все тренировки</option>
+            <option value="universal">Универсальная</option>
+        `;
+        try {
+            const presets = await this.storage.getPresets();
+            (presets || []).forEach(p => {
+                sel.add(new Option(p.name, `preset:${p.id}`));
+            });
+        } catch (_) {
+            /* ignore */
+        }
+        if ([...sel.options].some(o => o.value === prev)) {
+            sel.value = prev;
+        }
+    }
+
+    _filterWorkoutsByPreset(workouts, presetValue) {
+        if (!presetValue) return workouts;
+        if (presetValue === 'universal') {
+            return workouts.filter(w => (w.workoutType || 'universal') !== 'preset' || !w.presetId);
+        }
+        if (presetValue.startsWith('preset:')) {
+            const id = presetValue.slice(7);
+            return workouts.filter(w => w.presetId === id);
+        }
+        return workouts;
+    }
+
+    renderWorkoutTonnageChart() {
+        const container = document.getElementById('statsWorkoutTonnageChart');
+        const periodSel = document.getElementById('statsWorkoutTonnagePeriod');
+        const presetSel = document.getElementById('statsWorkoutPresetFilter');
+        if (!container) return;
+
+        const period = periodSel?.value || 'all';
+        const presetVal = presetSel?.value ?? '';
+
+        const list = this._filterWorkoutsByPreset([...this.workouts], presetVal);
+
+        const points = [];
+        for (const w of list) {
+            const d = w.date ? new Date(w.date) : null;
+            if (!d || Number.isNaN(d.getTime())) continue;
+            const tonnage = ExerciseCalculatorService.calculateWorkoutTotalWeight(w);
+            points.push({ date: d, value: tonnage });
+        }
+
+        const filtered = this._filterPointsByPeriod(points, period)
+            .sort((a, b) => a.date - b.date);
+
+        this._setText('statsWTAvg', '—');
+        this._setText('statsWTMax', '—');
+        this._setText('statsWTMin', '—');
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p class="stats-empty">Нет данных за выбранный период</p>';
+            return;
+        }
+
+        const vals = filtered.map(p => p.value);
+        const sum = vals.reduce((a, b) => a + b, 0);
+        const avg = sum / vals.length;
+        const max = Math.max(...vals);
+        const min = Math.min(...vals);
+
+        this._setText('statsWTAvg', String(Math.round(avg)));
+        this._setText('statsWTMax', String(Math.round(max)));
+        this._setText('statsWTMin', String(Math.round(min)));
+
+        const chartPoints = filtered.map(p => ({
+            label: p.date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }),
+            value: p.value
+        }));
+
+        this._renderWorkoutTonnageBarChart(container, chartPoints);
+    }
+
+    _renderWorkoutTonnageBarChart(container, points) {
+        if (!points.length) {
+            container.innerHTML = '<p class="stats-empty">Нет данных</p>';
+            return;
+        }
+
+        const minColWidth = 40;
+        const W = Math.max(320, points.length * minColWidth);
+        const H = 160;
+        const PAD = 4;
+        const barGap = 3;
+        const values = points.map(p => p.value);
+        const barWidth = (W - (values.length - 1) * barGap) / values.length;
+        const maxVal = Math.max(...values, 1);
+
+        const bars = values.map((value, i) => {
+            const h = Math.max(2, (value / maxVal) * (H - PAD * 2 - 28));
+            const x = i * (barWidth + barGap);
+            const y = H - PAD - h - 26;
+            const title = `${Math.round(value)} кг · ${points[i].label}`;
+            return `<rect class="mini-chart-bar" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${h.toFixed(2)}" rx="2" ry="2"><title>${title}</title></rect>`;
+        }).join('');
+
+        const labelStep = Math.max(1, Math.ceil(points.length / 14));
+        const labels = points.map((point, i) => {
+            const isVisible = i % labelStep === 0 || i === points.length - 1;
+            return `
+            <div class="mini-chart-label">
+                <span class="mini-chart-label-key">${isVisible ? point.label : ''}</span>
+                <span class="mini-chart-label-val">${isVisible ? `${Math.round(point.value)}` : ''}</span>
+            </div>
+        `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="mini-chart-scroll">
+                <div class="mini-chart-track" style="--mini-track-width:${W}px;">
+                    <svg viewBox="0 0 ${W} ${H}" class="mini-chart-svg" preserveAspectRatio="none">
+                        <line class="mini-chart-axis" x1="0" y1="${H - 1}" x2="${W}" y2="${H - 1}"></line>
+                        ${bars}
+                    </svg>
+                    <div class="mini-chart-labels" style="--mini-cols:${points.length}">${labels}</div>
+                </div>
+            </div>
+        `;
+    }
+
     // ─── 3. Exercise Progress Chart ───────────────────────────
 
     renderExerciseSelect() {
@@ -225,12 +367,13 @@ export class StatsManager {
         const recordsSel = document.getElementById('statsRecordsExerciseSelect');
         if (!sel) return;
 
-        // Собираем все упражнения с весом из истории
-        const exerciseNames = new Set();
+        // Собираем все упражнения с весом из истории, маппим их по ID
+        const exercisesMap = new Map(); // ID -> name
         for (const w of this.workouts) {
             for (const ex of (w.exercises || [])) {
                 if (ex.type === 'weighted' || ex.sets?.some(s => s.weight > 0)) {
-                    exerciseNames.add(ex.name);
+                    const id = ex.exerciseId || ex.name; // фоллбэк на имя, если нет ID
+                    exercisesMap.set(id, ex.name); // Последнее увиденное имя (самое новое, так как история от новой к старой? Нет, история может быть любая. Но сойдет)
                 }
             }
         }
@@ -239,34 +382,38 @@ export class StatsManager {
         if (recordsSel) {
             recordsSel.innerHTML = '<option value="">— Выберите упражнение —</option>';
         }
-        const sortedNames = [...exerciseNames].sort((a, b) => a.localeCompare(b, 'ru'));
-        sortedNames.forEach(name => {
-            sel.add(new Option(name, name));
-            if (recordsSel) recordsSel.add(new Option(name, name));
+        const sortedEntries = [...exercisesMap.entries()].sort((a, b) => a[1].localeCompare(b[1], 'ru'));
+        sortedEntries.forEach(([id, name]) => {
+            sel.add(new Option(name, id));
+            if (recordsSel) recordsSel.add(new Option(name, id));
         });
 
         // По умолчанию выбираем первое упражнение и сразу рисуем график
-        if (sortedNames.length > 0) {
-            sel.value = sortedNames[0];
-            this.selectedExercise = sortedNames[0];
+        if (sortedEntries.length > 0) {
+            sel.value = sortedEntries[0][0];
+            this.selectedExercise = sortedEntries[0][0];
+            this.selectedExerciseId = sortedEntries[0][0];
             if (recordsSel) {
-                recordsSel.value = sortedNames[0];
-                this.selectedRecordsExercise = sortedNames[0];
+                recordsSel.value = sortedEntries[0][0];
+                this.selectedRecordsExercise = sortedEntries[0][0];
+                this.selectedRecordsExerciseId = sortedEntries[0][0];
             }
             this.updateProgressAndRecords();
         } else {
             this.selectedExercise = '';
+            this.selectedExerciseId = '';
             this.selectedRecordsExercise = '';
+            this.selectedRecordsExerciseId = '';
             this.updateProgressAndRecords();
         }
     }
 
     updateProgressAndRecords() {
-        this.renderProgressChart(this.selectedExercise);
-        this.renderRecordsTable(this.selectedRecordsExercise || this.selectedExercise);
+        this.renderProgressChart(this.selectedExerciseId);
+        this.renderRecordsTable(this.selectedRecordsExerciseId || this.selectedExerciseId);
     }
 
-    renderProgressChart(exerciseName) {
+    renderProgressChart(exerciseId) {
         const container = document.getElementById('statsChart');
         const recordEl = document.getElementById('statsChartRecord');
         const recordVal = document.getElementById('statsChartRecordVal');
@@ -274,7 +421,7 @@ export class StatsManager {
         const metricSel = document.getElementById('statsMetricSelect');
         const periodSel = document.getElementById('statsPeriodSelect');
         if (!container) return;
-        if (!exerciseName) {
+        if (!exerciseId) {
             container.innerHTML = '<p class="stats-empty">Выберите упражнение с весом</p>';
             recordEl?.classList.add('hidden');
             return;
@@ -287,7 +434,7 @@ export class StatsManager {
         // Собираем точки: { date, value } по каждой тренировке
         const points = [];
         for (const w of this.workouts) {
-            const ex = (w.exercises || []).find(e => e.name === exerciseName);
+            const ex = (w.exercises || []).find(e => (e.exerciseId || e.name) === exerciseId);
             if (!ex) continue;
             const value = this._getExerciseMetricValue(ex, metric);
             if (value > 0) {
@@ -387,13 +534,18 @@ export class StatsManager {
 
     // ─── 4. Records table ─────────────────────────────────────
 
-    renderRecordsTable(exerciseName = this.selectedExercise) {
+    renderRecordsTable(exerciseId = this.selectedExerciseId) {
         const container = document.getElementById('statsRecords');
         if (!container) return;
-        if (!exerciseName) {
+        if (!exerciseId) {
             container.innerHTML = '<p class="stats-empty">Выберите упражнение в блоке "Прогресс"</p>';
             return;
         }
+
+        const exerciseSelect = document.getElementById('statsExerciseSelect');
+        const exerciseName = exerciseSelect
+            ? ([...exerciseSelect.options].find(o => o.value === exerciseId)?.textContent || '—')
+            : '—';
 
         const tonnageRecords = [];
         const setWeightRecords = [];
@@ -405,7 +557,7 @@ export class StatsManager {
                 : '—';
 
             for (const ex of (workout.exercises || [])) {
-                if (ex.name !== exerciseName) continue;
+                if ((ex.exerciseId || ex.name) !== exerciseId) continue;
                 const tonnage = ExerciseCalculatorService.calculateTotalWeight(ex);
                 if (tonnage > 0) {
                     tonnageRecords.push({

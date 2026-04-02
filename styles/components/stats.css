@@ -31,6 +31,21 @@
     margin: 0;
 }
 
+.workout-tonnage-summary {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 20px;
+    margin-bottom: 14px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.workout-tonnage-summary .wts-item strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
 /* ─── Summary Cards ───────────────────────────────────────── */
 .stats-cards {
     display: grid;

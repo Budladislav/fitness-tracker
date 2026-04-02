@@ -53,3 +53,100 @@
         right: 35px;
     }
 }
+
+/* Workout Start Screen */
+.workout-start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-xl);
+    box-sizing: border-box;
+}
+
+/* Кнопка «+» глобально .round-btn с position:fixed — только на экране старта в потоке */
+.workout-start-screen .round-btn {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 120px;
+    height: 120px;
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    flex-shrink: 0;
+}
+
+.workout-start-hint {
+    margin: 0 0 var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+body.workout-active .workout-start-screen {
+    display: none;
+}
+
+.presets-container {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: var(--spacing-xl);
+}
+
+.presets-container.hidden {
+    display: none;
+}
+
+.presets-title {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-color);
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+}
+
+.presets-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.preset-item {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+[data-theme="dark"] .preset-item {
+    background: #2a2d35;
+    border-color: #343a45;
+}
+
+.preset-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.preset-item:active {
+    transform: scale(0.98);
+}
+
+.preset-name {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-md);
+}
+
+.preset-exercises {
+    font-size: var(--font-size-sm);
+    color: var(--text-color-secondary);
+}

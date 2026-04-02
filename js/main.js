@@ -63,10 +63,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (await authService.completeSignIn()) {
                 return; // Прерываем выполнение, так как будет редирект
             }
+
+            // Дождаться первого состояния Auth, иначе userId в хранилище может быть гостевым до restore сессии
+            const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+            await getAuth(firebaseService.app).authStateReady();
         }
         
-        // Создаем storage ПОСЛЕ инициализации Firebase
+        // Создаем storage ПОСЛЕ инициализации Firebase (и после authStateReady при Firebase)
         const storage = StorageFactory.createStorage();
+        if (storage.updateUserId) {
+            storage.updateUserId();
+        }
         
         // Создаем остальные менеджеры после инициализации Firebase
         const ui = new UIManager(notifications, storage);
@@ -74,11 +81,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Инициализируем компоненты авторизации
         if (useFirebase && authService) {
-            const settingsModal = new SettingsModal(notifications, storage, ui.history.backupManager);
             const authModal = new AuthModal(notifications, authService);
+            const settingsModal = new SettingsModal(notifications, storage, ui.history.backupManager, authService, authModal);
             const authButton = new AuthButton(authModal, authService, settingsModal);
         }
         
+        const { ExerciseIdService } = await import('./services/exercise-id.service.js');
+        const idService = new ExerciseIdService(storage);
+        const workouts = await storage.getWorkoutHistory();
+        const { migrated, changed } = await idService.migrateWorkouts(workouts);
+        if (changed) {
+            await storage.saveToStorage('exercises', migrated);
+        }
+
         // Создаем основной менеджер приложения
         const workoutManager = new WorkoutManager(notifications, storage, ui, validator, authService);
 
@@ -89,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Загружаем статистику при переходе на вкладку
         ui.navigation.onTabChange = (page) => {
-            if (page === 'statistics') ui.stats.loadAndRender();
+            if (page === 'statistics') void ui.loadStatsAndRender();
         };
     } catch (error) {
         console.error('Error initializing app:', error);

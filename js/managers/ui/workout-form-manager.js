@@ -20,6 +20,10 @@ export class WorkoutFormManager extends BaseComponent {
             weighted: '',
             bodyweight: ''
         };
+        /** @type {{ id: string, name: string, exerciseIds: Set<string> } | null} */
+        this.activePresetFilter = null;
+        /** При активном пресете: false — только упражнения пресета, true — полный список */
+        this.presetShowAllExercises = false;
         
         if (this.storage.getFromStorage('activeWorkout')) {
             document.body.classList.add('workout-active');
@@ -60,7 +64,8 @@ export class WorkoutFormManager extends BaseComponent {
             workoutContent: this.querySelector(DOM_SELECTORS.WORKOUT.CONTENT),
             repsSlider: this.querySelector(DOM_SELECTORS.WORKOUT.REPS_SLIDER),
             weightSlider: this.querySelector(DOM_SELECTORS.WORKOUT.WEIGHT_SLIDER),
-            workoutControls: this.querySelector(DOM_SELECTORS.WORKOUT.CONTROLS)
+            workoutControls: this.querySelector(DOM_SELECTORS.WORKOUT.CONTROLS),
+            presetShowAllBtn: document.getElementById('presetShowAllExercisesBtn')
         };
     }
 
@@ -69,6 +74,8 @@ export class WorkoutFormManager extends BaseComponent {
         const selectedOpt = sel.options[sel.selectedIndex];
         return {
             name: Utils.sanitizeInput(sel.value),
+            exerciseId: selectedOpt ? selectedOpt.dataset.id : null,
+            equipment: selectedOpt ? selectedOpt.dataset.equipment : null,
             reps: this.elements.exerciseReps.value,
             weight: this.elements.exerciseWeight.value,
             type: this.elements.exerciseType.checked ? 'weighted' : 'bodyweight',
@@ -80,6 +87,22 @@ export class WorkoutFormManager extends BaseComponent {
         this.updateExercisesList();
         // Обновляем список при добавлении/удалении упражнения в настройках
         window.addEventListener('exerciseListUpdated', () => this.updateExercisesList());
+    }
+
+    /**
+     * @param {{ id: string, name: string, exerciseIds: Set<string> } | null} preset
+     */
+    setActivePresetFilter(preset) {
+        this.activePresetFilter = preset && preset.exerciseIds?.size
+            ? { id: preset.id, name: preset.name, exerciseIds: preset.exerciseIds }
+            : null;
+        this.presetShowAllExercises = false;
+    }
+
+    _exerciseInPreset(ex) {
+        if (!this.activePresetFilter?.exerciseIds?.size) return true;
+        const ids = this.activePresetFilter.exerciseIds;
+        return ids.has(ex.id || '') || ids.has(ex.name);
     }
 
     async updateExercisesList() {
@@ -97,16 +120,59 @@ export class WorkoutFormManager extends BaseComponent {
         }
         
         const exercises = ExercisePool.getExercisesByType(type, customExercises, defaultWeights);
-        
+        const presetOn = !!(this.activePresetFilter && this.activePresetFilter.exerciseIds.size > 0);
+        const inPreset = exercises.filter(ex => this._exerciseInPreset(ex));
+        const others = exercises.filter(ex => !this._exerciseInPreset(ex));
+
         select.innerHTML = '<option value="" disabled>Упражнение</option>';
-        exercises.forEach(exercise => {
-            const opt = new Option(exercise.name, exercise.name);
-            const isDouble = !!defaultWeights[`__double_${exercise.name}`];
-            if (isDouble) opt.dataset.double = '1';
-            select.add(opt);
-        });
+
+        const appendOptions = (list) => {
+            list.forEach(exercise => {
+                const opt = new Option(exercise.name, exercise.name);
+                const isDouble = !!defaultWeights[`__double_${exercise.name}`];
+                if (isDouble) opt.dataset.double = '1';
+                if (exercise.id) opt.dataset.id = exercise.id;
+                if (exercise.equipment) opt.dataset.equipment = exercise.equipment;
+                select.add(opt);
+            });
+        };
+
+        if (presetOn && !this.presetShowAllExercises) {
+            if (inPreset.length > 0) {
+                appendOptions(inPreset);
+            } else {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Нет упражнений пресета в этой категории';
+                opt.disabled = true;
+                select.add(opt);
+            }
+        } else {
+            appendOptions(exercises);
+        }
+
+        const btn = this.elements.presetShowAllBtn;
+        if (btn) {
+            if (!presetOn) {
+                btn.classList.add('hidden');
+            } else if (this.presetShowAllExercises) {
+                btn.classList.remove('hidden');
+                btn.textContent = 'Только упражнения пресета';
+                btn.setAttribute('aria-expanded', 'true');
+            } else {
+                const canExpand = others.length > 0;
+                btn.classList.toggle('hidden', !canExpand);
+                if (canExpand) {
+                    btn.textContent = 'Показать все упражнения';
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            }
+        }
 
         select.value = this.lastSelectedExercises[type] || '';
+        if (select.value && !Array.from(select.options).some(o => o.value === select.value && !o.disabled)) {
+            select.value = '';
+        }
         select.selectedIndex = select.value ? select.selectedIndex : 0;
     }
 
@@ -114,6 +180,12 @@ export class WorkoutFormManager extends BaseComponent {
         this.setupExerciseTypeEvents();
         this.setupExerciseNameEvents();
         this.setupFormEvents();
+        if (this.elements.presetShowAllBtn) {
+            this.elements.presetShowAllBtn.addEventListener('click', () => {
+                this.presetShowAllExercises = !this.presetShowAllExercises;
+                void this.updateExercisesList();
+            });
+        }
     }
 
     setupExerciseTypeEvents() {
@@ -224,10 +296,13 @@ export class WorkoutFormManager extends BaseComponent {
                 this.restoreFormState(formState);
             }
         }
+
+        void this.updateExercisesList();
     }
 
     resetWorkoutForm() {
         try {
+            this.setActivePresetFilter(null);
             // Очищаем форму
             this.clearInputs();
             

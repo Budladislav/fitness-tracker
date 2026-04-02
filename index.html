@@ -37,8 +37,17 @@
             <div id="exerciseLog"></div>
         </div>
 
-        <!-- Круглая кнопка начала тренировки -->
-        <button id="startWorkoutRound" class="round-btn" aria-label="Начать тренировку">+</button>
+        <!-- Экран старта тренировки -->
+        <div id="workoutStartScreen" class="workout-start-screen">
+            <!-- Пресеты -->
+            <div class="presets-container hidden" id="presetsContainer">
+                <h3 class="presets-title">Пресеты</h3>
+                <div id="presetsList" class="presets-list"></div>
+            </div>
+            <!-- Универсальная тренировка -->
+            <p class="workout-start-hint">Универсальная тренировка</p>
+            <button id="startWorkoutRound" class="round-btn" aria-label="Начать универсальную тренировку">+</button>
+        </div>
 
         <!-- Панель управления -->
         <div id="workoutControls" class="controls-panel">
@@ -59,6 +68,7 @@
                     <!-- Левая часть с инпутами -->
                     <div class="workout-inputs">
                         <div class="exercise-header">
+                            <button type="button" id="presetShowAllExercisesBtn" class="preset-exercises-toggle hidden" aria-expanded="false" aria-controls="exerciseName">Показать все упражнения</button>
                             <select id="exerciseName">
                                 <option value="" disabled selected>Выберите упражнение</option>
                             </select>
@@ -175,7 +185,33 @@
                 </div>
             </section>
 
-            <!-- 4. Календарь -->
+            <!-- 4. Тоннаж по тренировкам -->
+            <section class="stats-section">
+                <h2 class="stats-section-title">Тоннаж по тренировкам</h2>
+                <div class="stats-filters">
+                    <select id="statsWorkoutPresetFilter" class="stats-select small">
+                        <option value="">Все тренировки</option>
+                        <option value="universal">Универсальная</option>
+                    </select>
+                    <select id="statsWorkoutTonnagePeriod" class="stats-select small">
+                        <option value="all">Всё время</option>
+                        <option value="12m">12 месяцев</option>
+                        <option value="6m">6 месяцев</option>
+                        <option value="3m">3 месяца</option>
+                        <option value="30d">30 дней</option>
+                    </select>
+                </div>
+                <div class="workout-tonnage-summary" id="statsWorkoutTonnageSummary">
+                    <span class="wts-item">Средний: <strong id="statsWTAvg">—</strong> кг</span>
+                    <span class="wts-item">Макс: <strong id="statsWTMax">—</strong> кг</span>
+                    <span class="wts-item">Мин: <strong id="statsWTMin">—</strong> кг</span>
+                </div>
+                <div class="chart-wrap" id="statsWorkoutTonnageChart">
+                    <p class="stats-empty">Нет данных</p>
+                </div>
+            </section>
+
+            <!-- 5. Календарь -->
             <section class="stats-section">
                 <h2 class="stats-section-title">Календарь</h2>
                 <div class="heatmap-wrap" id="statsHeatmap"></div>

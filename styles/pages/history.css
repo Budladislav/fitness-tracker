@@ -36,6 +36,18 @@
     text-align: left;
 }
 
+.ex-x2-badge {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 5px;
+    font-size: 0.7em;
+    font-weight: 600;
+    vertical-align: middle;
+    color: var(--text-secondary);
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
 /* Tables */
 .exercise-table,
 .summary-table {
@@ -293,5 +305,56 @@
 
 .workout-entry:last-child {
     margin-bottom: 0;
+}
+
+.workout-preset-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    background: rgba(33, 150, 243, 0.15);
+    color: var(--text-color);
+    vertical-align: middle;
+}
+
+.workout-preset-badge:hover {
+    filter: brightness(1.05);
+}
+
+.workout-preset-universal {
+    opacity: 0.85;
+}
+
+.workout-type-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.workout-type-picker-dialog {
+    background: var(--card-background);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    min-width: 280px;
+    max-width: 90vw;
+    box-shadow: var(--shadow-md, 0 4px 24px rgba(0, 0, 0, 0.2));
+}
+
+.workout-type-picker-title {
+    margin: 0 0 var(--spacing-md);
+    font-size: 1rem;
+}
+
+.workout-type-picker-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    margin-top: var(--spacing-md);
 }
 

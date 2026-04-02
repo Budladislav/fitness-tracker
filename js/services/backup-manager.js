@@ -2,6 +2,9 @@ import { StorageFactory } from './storage/storage.factory.js';
 import { NotificationManager } from '../managers/notification-manager.js';
 import { WorkoutFormatterService } from './workout-formatter.service.js';
 
+const CATALOG_BEGIN = '#BEGIN_CATALOG\n';
+const CATALOG_END = '\n#END_CATALOG';
+
 export class BackupManager {
     constructor(storage, ui) {
         this.storage = storage || StorageFactory.createStorage();
@@ -9,17 +12,64 @@ export class BackupManager {
     }
 
     /**
+     * Отделяет JSON-каталог (упражнения, веса, пресеты) от текста тренировок.
+     * Старые файлы без блока — catalog: null, rest: исходный текст.
+     */
+    extractCatalogFromBackup(content) {
+        const trimmed = String(content).replace(/^\uFEFF/, '');
+        const start = trimmed.indexOf(CATALOG_BEGIN);
+        if (start === -1) {
+            return { catalog: null, rest: content };
+        }
+        const jsonStart = start + CATALOG_BEGIN.length;
+        const endRel = trimmed.indexOf(CATALOG_END, jsonStart);
+        if (endRel === -1) {
+            return { catalog: null, rest: content };
+        }
+        const jsonStr = trimmed.slice(jsonStart, endRel).trim();
+        try {
+            const catalog = JSON.parse(jsonStr);
+            const rest = trimmed.slice(endRel + CATALOG_END.length).replace(/^\s*\n?/, '');
+            return { catalog, rest };
+        } catch (e) {
+            console.warn('BackupManager: не удалось разобрать каталог', e);
+            return { catalog: null, rest: content };
+        }
+    }
+
+    /**
      * Конвертирует тренировки в текстовый формат
      */
     workoutsToText(workouts) {
-        return workouts.map(workout => {
+        // Сортируем по дате убывания (новые первыми) перед записью
+        const sorted = [...workouts].sort((a, b) => {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            if (dateA !== dateB) return dateB - dateA;
+            return (b.startTime || '00:00').localeCompare(a.startTime || '00:00');
+        });
+
+        return sorted.map(workout => {
             const date = new Date(workout.date);
             const dateStr = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear().toString().slice(2)}`;
-            
+
             // Добавляем время, если оно есть
             const timeStr = workout.startTime ? ` ${workout.startTime}` : '';
-            
+
+            const typeLine =
+                workout.workoutType === 'preset' && workout.presetName
+                    ? `Тип: ${workout.presetName}${workout.presetId ? ` [preset:${workout.presetId}]` : ''}`
+                    : workout.workoutType === 'universal'
+                        ? 'Тип: Универсальная'
+                        : '';
+
             const exercisesStr = workout.exercises.map(exercise => {
+                const metaParts = [];
+                if (exercise.exerciseId) metaParts.push(`[id:${exercise.exerciseId}]`);
+                if (exercise.equipment) metaParts.push(`[eq:${exercise.equipment}]`);
+                if (exercise.doubleTonnage) metaParts.push('[x2:1]');
+                const nameWithMeta = [exercise.name, ...metaParts].join(' ').trim();
+
                 if (exercise.type === 'weighted') {
                     // Группируем подходы по весу
                     const setsByWeight = exercise.sets.reduce((acc, set) => {
@@ -27,22 +77,23 @@ export class BackupManager {
                         acc[set.weight].push(set.reps);
                         return acc;
                     }, {});
-                    
+
                     // Форматируем каждую группу
                     const setsStr = Object.entries(setsByWeight)
                         .map(([weight, reps]) => `(${weight}) – ${reps.join(', ')}`)
                         .join('; ');
-                    
-                    return `${exercise.name} ${setsStr}`;
+
+                    return `${nameWithMeta} ${setsStr}`;
                 } else {
                     // Для упражнений без веса
                     const reps = exercise.sets.map(set => set.reps).join(', ');
-                    return `${exercise.name} – ${reps}`;
+                    return `${nameWithMeta} – ${reps}`;
                 }
             }).join('\n');
 
-            let result = `${dateStr}${timeStr}\n${exercisesStr}\n`;
-            
+            const headerBlock = [ `${dateStr}${timeStr}`, typeLine ].filter(Boolean).join('\n');
+            let result = `${headerBlock}\n${exercisesStr}\n`;
+
             // Добавляем заметки, если они есть
             if (workout.notes) {
                 if (workout.notes.energy) {
@@ -55,28 +106,41 @@ export class BackupManager {
                     result += `Заметка: ${workout.notes.text.content}\n`;
                 }
             }
-            
+
             return result;
         }).join('\n');
     }
 
     async createBackup() {
         try {
-            const workouts = await this.storage.getWorkoutHistory();
-            const backupText = this.workoutsToText(workouts);
-            
+            const [workouts, customExercises, defaultWeights, presets] = await Promise.all([
+                this.storage.getWorkoutHistory(),
+                this.storage.getCustomExercises(),
+                this.storage.getDefaultWeights(),
+                this.storage.getPresets()
+            ]);
+
+            const catalog = {
+                version: 3,
+                customExercises: Array.isArray(customExercises) ? customExercises : [],
+                defaultWeights: defaultWeights && typeof defaultWeights === 'object' ? defaultWeights : {},
+                presets: Array.isArray(presets) ? presets : []
+            };
+            const catalogBlock = `# TrainingLog v3\n${CATALOG_BEGIN}${JSON.stringify(catalog)}${CATALOG_END}\n\n`;
+            const backupText = catalogBlock + this.workoutsToText(workouts);
+
             // Форматируем текущую дату и время для имени файла
             const now = new Date();
             const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}`;
             const timeStr = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
-            
+
             // Проверяем поддержку File System Access API
             if ('showSaveFilePicker' in window) {
                 const handle = await window.showSaveFilePicker({
                     suggestedName: `workout_backup_${dateStr}_${timeStr}.txt`,
                     types: [{
                         description: 'Text Files',
-                        accept: {'text/plain': ['.txt']},
+                        accept: { 'text/plain': ['.txt'] },
                     }],
                 });
 
@@ -94,7 +158,7 @@ export class BackupManager {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }
-            
+
             return true;
         } catch (error) {
             console.error('Backup failed:', error);
@@ -106,30 +170,43 @@ export class BackupManager {
         try {
             const content = await this.readBackupFile();
             if (!content) return false;
-            
-            const workouts = this.parseWorkoutData(content);
-            
+
+            const { catalog, rest } = this.extractCatalogFromBackup(content);
+            const workouts = this.parseWorkoutData(rest);
+
+            let catalogOk = true;
+            if (catalog && typeof this.storage.restoreUserCatalog === 'function') {
+                catalogOk = await this.storage.restoreUserCatalog({
+                    customExercises: catalog.customExercises,
+                    defaultWeights: catalog.defaultWeights,
+                    presets: catalog.presets
+                });
+            }
+
+            let workoutsOk = true;
             if (workouts.length > 0) {
-                const formattedWorkouts = workouts.map(workout => 
+                const formattedWorkouts = workouts.map(workout =>
                     WorkoutFormatterService.formatWorkoutData(workout)
                 );
-                
-                const success = await this.storage.saveToStorage(
-                    this.storage.EXERCISES_KEY, 
+
+                workoutsOk = await this.storage.saveToStorage(
+                    this.storage.EXERCISES_KEY,
                     formattedWorkouts
                 );
-                
-                if (success) {
-                    // Создаем автобэкап после успешного восстановления
-                    await this.storage.createAutoBackup();
-                    // Получаем обновленную историю и отображаем её
-                    const updatedWorkouts = await this.storage.getWorkoutHistory();
-                    this.ui.displayWorkoutHistory(updatedWorkouts);
-                    return true;
-                }
             }
-            
-            return false;
+
+            if (!catalogOk || !workoutsOk) {
+                return false;
+            }
+
+            if (!catalog && workouts.length === 0) {
+                return false;
+            }
+
+            await this.storage.createAutoBackup();
+            const updatedWorkouts = await this.storage.getWorkoutHistory();
+            this.ui.displayWorkoutHistory(updatedWorkouts);
+            return true;
         } catch (error) {
             console.error('Restore failed:', error);
             return false;
@@ -174,17 +251,45 @@ export class BackupManager {
                 const [_, day, month, year] = dateTimeMatch;
                 const fullYear = year.length === 2 ? `20${year}` : year;
                 const date = `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-                
+
+                // Вычисляем timestamp из даты и времени для сохранения порядка при восстановлении
+                const startTime = dateTimeMatch[4] || '';
+                const [hours, minutes] = startTime ? startTime.split(':').map(Number) : [12, 0];
+                const parsedDate = new Date(`${date}T${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:00`);
+
                 currentWorkout = {
                     id: Date.now() + Math.random(),
                     date,
-                    startTime: dateTimeMatch[4] || '',
+                    startTime,
+                    timestamp: parsedDate.getTime(),
                     exercises: []
                 };
                 continue;
             }
 
             if (!currentWorkout) continue;
+
+            const typeLineMatch = line.match(/^Тип:\s*(.+)$/);
+            if (typeLineMatch) {
+                const typeStr = typeLineMatch[1].trim();
+                if (typeStr === 'Универсальная') {
+                    currentWorkout.workoutType = 'universal';
+                    currentWorkout.presetId = null;
+                    currentWorkout.presetName = null;
+                } else {
+                    const presetBracket = typeStr.match(/^(.+?)\s*\[preset:([^\]]+)\]\s*$/);
+                    if (presetBracket) {
+                        currentWorkout.workoutType = 'preset';
+                        currentWorkout.presetName = presetBracket[1].trim();
+                        currentWorkout.presetId = presetBracket[2].trim();
+                    } else {
+                        currentWorkout.workoutType = 'preset';
+                        currentWorkout.presetName = typeStr;
+                        currentWorkout.presetId = null;
+                    }
+                }
+                continue;
+            }
 
             // Если мы собираем многострочную заметку
             if (collectingNote) {
@@ -247,7 +352,13 @@ export class BackupManager {
             workouts.push(currentWorkout);
         }
 
-        return workouts;
+        // Сортируем по дате убывания (новые первыми) для корректного восстановления
+        return workouts.sort((a, b) => {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            if (dateA !== dateB) return dateB - dateA;
+            return (b.startTime || '00:00').localeCompare(a.startTime || '00:00');
+        });
     }
 
     parseExerciseLine(line) {
@@ -256,42 +367,78 @@ export class BackupManager {
         const exerciseMatch = line.match(/^(.+?) – (.+)$/);
         if (!exerciseMatch) return null;
 
-        let [_, exerciseName, setsData] = exerciseMatch;
-        
-        // Извлекаем вес из названия упражнения
-        let initialWeight = null;
-        const nameWeightMatch = exerciseName.match(/\((\d+)\)/);
-        if (nameWeightMatch) {
-            initialWeight = parseInt(nameWeightMatch[1]);
-            exerciseName = exerciseName.replace(/\s*\(\d+\)\s*/, '').trim();
+        let rawName = exerciseMatch[1];
+        const setsData = exerciseMatch[2];
+
+        const idMatch = rawName.match(/\[id:(.*?)\]/);
+        const eqMatch = rawName.match(/\[eq:(.*?)\]/);
+        const x2Match = rawName.match(/\[x2:([01])\]/);
+        let exerciseId = idMatch ? idMatch[1].trim() : null;
+        let equipment = eqMatch ? eqMatch[1].trim() : null;
+        const doubleTonnage = x2Match ? x2Match[1] === '1' : false;
+
+        rawName = rawName
+            .replace(/\[id:.*?\]/g, '')
+            .replace(/\[eq:.*?\]/g, '')
+            .replace(/\[x2:[01]\]/g, '')
+            .trim();
+
+        // Текстовые метки v2.5+ (не числовые скобки) → тип оборудования
+        if (!equipment) {
+            if (/\(тренажер\)/i.test(rawName)) equipment = 'machine';
+            else if (/\(кресло\)/i.test(rawName)) equipment = 'machine';
+            else if (/\(свободн/i.test(rawName)) equipment = 'free_weight';
         }
-        
-        // Определяем тип упражнения
-        const type = ['Тяга', 'Жим', 'Присяд'].includes(exerciseName) ? 'weighted' : 'bodyweight';
-        
-        // Парсим подходы и веса
+
+        // Убираем человекочитаемые пометки, оставляя числовые веса в скобках
+        let workName = rawName
+            .replace(/\s*\(тренажер\)\s*/gi, ' ')
+            .replace(/\s*\(кресло\)\s*/gi, ' ')
+            .replace(/\s*\(Молотки\)\s*/g, ' ')
+            .replace(/\s*\(свободн[^)]*\)\s*/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const hasWeightInSets = /\([\d.]+\)/.test(setsData);
+        const hasWeightInName = /\([\d.]+\)/.test(workName);
+        const nameSansWeights = workName.replace(/\s*\([\d.]+\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+        const legacyWeighted = /^(Тяга|Жим|Присяд)$/.test(nameSansWeights);
+
+        const isWeighted = hasWeightInSets || hasWeightInName || legacyWeighted;
+
+        let initialWeight = null;
+        const nameWeightMatches = [...workName.matchAll(/\(([\d.]+)\)/g)];
+        if (nameWeightMatches.length > 0) {
+            initialWeight = parseFloat(nameWeightMatches[nameWeightMatches.length - 1][1]);
+        }
+
+        const exerciseName = workName.replace(/\s*\([\d.]+\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+
+        const type = isWeighted ? 'weighted' : 'bodyweight';
+        if (type === 'weighted' && !equipment) {
+            equipment = 'free_weight';
+        }
+        if (type === 'bodyweight') {
+            equipment = 'bodyweight';
+        }
+
         const sets = [];
-        let currentWeight = initialWeight;
-        
-        // Разбиваем на группы по точке с запятой
+        let currentWeight = type === 'weighted' ? initialWeight : null;
+
         const groups = setsData.split(';').map(g => g.trim());
-        
+
         for (const group of groups) {
-            // Проверяем наличие нового веса в группе
-            const weightMatch = group.match(/\((\d+)\)/);
+            const weightMatch = group.match(/\(([\d.]+)\)/);
             if (weightMatch && type === 'weighted') {
-                currentWeight = parseInt(weightMatch[1]);
+                currentWeight = parseFloat(weightMatch[1]);
             }
-            
-            // Получаем повторения после тире или после веса
-            let repsString = group.includes('–') ? 
-                group.split('–')[1].trim() : 
-                group.replace(/\(\d+\)\s*–?\s*/, '').trim();
-            
-            // Разбиваем повторения на отдельные подходы
-            const reps = repsString.split(',').map(r => parseInt(r.trim()));
-            
-            // Добавляем каждый подход
+
+            let repsString = group.includes('–')
+                ? group.split('–')[1].trim()
+                : group.replace(/\([\d.]+\)\s*–?\s*/, '').trim();
+
+            const reps = repsString.split(',').map(r => parseInt(r.trim(), 10));
+
             reps.forEach(rep => {
                 if (!isNaN(rep)) {
                     sets.push({
@@ -304,8 +451,11 @@ export class BackupManager {
 
         return {
             name: exerciseName,
-            type: type,
-            sets: sets
+            type,
+            exerciseId,
+            equipment,
+            sets,
+            ...(doubleTonnage ? { doubleTonnage: true } : {})
         };
     }
 
@@ -316,7 +466,7 @@ export class BackupManager {
                 const [handle] = await window.showOpenFilePicker({
                     types: [{
                         description: 'Text Files',
-                        accept: {'text/plain': ['.txt']},
+                        accept: { 'text/plain': ['.txt'] },
                     }],
                 });
                 const file = await handle.getFile();
@@ -327,7 +477,7 @@ export class BackupManager {
                     const input = document.createElement('input');
                     input.type = 'file';
                     input.accept = '.txt';
-                    
+
                     input.onchange = async (e) => {
                         const file = e.target.files[0];
                         if (file) {
@@ -339,7 +489,7 @@ export class BackupManager {
                             }
                         }
                     };
-                    
+
                     input.click();
                 });
             }
@@ -353,13 +503,13 @@ export class BackupManager {
         try {
             const backup = localStorage.getItem('workouts_backup');
             if (!backup) return false;
-            
+
             const { text } = JSON.parse(backup);
             if (!text) return false;
-            
+
             const workouts = this.parseWorkoutData(text);
             await this.storage.restoreWorkouts(workouts);
-            
+
             return true;
         } catch (error) {
             console.error('Error restoring from auto backup:', error);

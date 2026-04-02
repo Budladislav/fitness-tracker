@@ -1,6 +1,6 @@
 {
   "name": "fitness-tracker",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Workout tracker application",
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }

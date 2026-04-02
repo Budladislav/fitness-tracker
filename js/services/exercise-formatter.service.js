@@ -6,6 +6,15 @@ import { ExerciseCalculatorService } from './exercise-calculator.service.js';
  */
 export class ExerciseFormatterService {
     /**
+     * Иконка типа упражнения (с пробелом): с весом / тренажёр / без веса
+     */
+    static getEquipmentIconPrefix(equipment, type) {
+        if (type === 'bodyweight' || equipment === 'bodyweight') return '🤸 ';
+        if (equipment === 'machine') return '⚙️ ';
+        return '🏋️ ';
+    }
+
+    /**
      * Форматирует упражнение для отображения
      * @param {Object} exercise - Объект упражнения
      * @param {string} exercise.name - Название упражнения
@@ -14,10 +23,13 @@ export class ExerciseFormatterService {
      * @returns {string} Отформатированная строка упражнения
      */
     static formatExercise(exercise) {
-        const { type, name, sets } = exercise;
-        
-        if (type === 'bodyweight') {
-            return `${name}: ${sets.map(set => set.reps).join(', ')}`;
+        const { type, name, sets, equipment, doubleTonnage } = exercise;
+
+        const eqIcon = this.getEquipmentIconPrefix(equipment, type);
+        const x2 = doubleTonnage ? ' ×2' : '';
+
+        if (type === 'bodyweight' || equipment === 'bodyweight') {
+            return `${eqIcon}${name}${x2}: ${sets.map(set => set.reps).join(', ')}`;
         }
 
         // Группируем подходы последовательно по весу
@@ -38,7 +50,7 @@ export class ExerciseFormatterService {
             .map(group => `${group.weight}кг - ${group.reps.join(', ')}`)
             .join(' | ');
 
-        return `${name}: ${setsStr}`;
+        return `${eqIcon}${name}${x2}: ${setsStr}`;
     }
 
     /**
