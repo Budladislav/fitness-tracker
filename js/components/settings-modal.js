@@ -1,7 +1,7 @@
 import { ThemeService } from '../services/theme.service.js';
 import { ExercisePool, getBuiltinExerciseIdsSet, getOriginalBuiltinName } from '../models/exercise-pool.js';
 
-const VERSION = 'v3.0.0';
+const VERSION = 'v3.0.5';
 
 export class SettingsModal {
     constructor(notifications, storage, backupManager, authService, authModal) {
@@ -293,7 +293,7 @@ export class SettingsModal {
                 <input type="text" class="ex-name-edit hidden" value="${displayName}" maxlength="50">
                 ${isWeighted ? `
                     <select class="ex-equipment-select" title="Оборудование" style="flex: 0 0 auto; width: 45px; padding: 0 4px; text-align: center;">
-                        <option value="free_weight" ${currentEq === 'free_weight' ? 'selected' : ''}>🏋️</option>
+                        <option value="free_weight" ${currentEq === 'free_weight' ? 'selected' : ''} title="Гантели / свободные веса">🔩</option>
                         <option value="machine" ${currentEq === 'machine' ? 'selected' : ''}>⚙️</option>
                     </select>
                     <label class="ex-double-label" title="Удвоить тоннаж (гантели — вес на каждую руку)">
@@ -511,7 +511,7 @@ export class SettingsModal {
     _presetExerciseIcon(ex) {
         if (ex.type === 'bodyweight') return '🤸';
         if (ex.equipment === 'machine') return '⚙️';
-        return '🏋️';
+        return '🔩';
     }
 
     /**

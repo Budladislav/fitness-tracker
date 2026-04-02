@@ -49,6 +49,8 @@ export class BackupManager {
             return (b.startTime || '00:00').localeCompare(a.startTime || '00:00');
         });
 
+        const builtinMachineIds = new Set(['bench-press', 'squat', 'deadlift']);
+
         return sorted.map(workout => {
             const date = new Date(workout.date);
             const dateStr = `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear().toString().slice(2)}`;
@@ -66,7 +68,11 @@ export class BackupManager {
             const exercisesStr = workout.exercises.map(exercise => {
                 const metaParts = [];
                 if (exercise.exerciseId) metaParts.push(`[id:${exercise.exerciseId}]`);
-                if (exercise.equipment) metaParts.push(`[eq:${exercise.equipment}]`);
+                let eq = exercise.equipment;
+                if (exercise.exerciseId && builtinMachineIds.has(exercise.exerciseId)) {
+                    eq = 'machine';
+                }
+                if (eq) metaParts.push(`[eq:${eq}]`);
                 if (exercise.doubleTonnage) metaParts.push('[x2:1]');
                 const nameWithMeta = [exercise.name, ...metaParts].join(' ').trim();
 

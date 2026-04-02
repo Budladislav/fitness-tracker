@@ -1,6 +1,6 @@
 /**
  * @fileoverview Пул типовых упражнений
- * @version 3.0.0
+ * @version 3.0.5
  */
 
 export const DEFAULT_EXERCISES = {
@@ -13,9 +13,9 @@ export const DEFAULT_EXERCISES = {
         { id: 'chin-ups',     name: 'Подтягивания обратным хватом', type: 'bodyweight', equipment: 'bodyweight' }
     ],
     weighted: [
-        { id: 'deadlift',    name: 'Тяга',    type: 'weighted', equipment: 'free_weight', defaultWeight: 100 },
-        { id: 'bench-press', name: 'Жим',     type: 'weighted', equipment: 'free_weight', defaultWeight: 80  },
-        { id: 'squat',       name: 'Присяд',  type: 'weighted', equipment: 'free_weight', defaultWeight: 120 }
+        { id: 'deadlift',    name: 'Тяга',    type: 'weighted', equipment: 'machine', defaultWeight: 100 },
+        { id: 'bench-press', name: 'Жим',     type: 'weighted', equipment: 'machine', defaultWeight: 80  },
+        { id: 'squat',       name: 'Присяд',  type: 'weighted', equipment: 'machine', defaultWeight: 120 }
     ]
 };
 

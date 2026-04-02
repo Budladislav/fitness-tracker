@@ -48,7 +48,7 @@ export class ExerciseLogManager extends BaseComponent {
         }
         
         existingItem.dataset.exercise = JSON.stringify(exerciseInfo);
-        existingItem.querySelector('.exercise-content span').textContent = 
+        existingItem.querySelector('.exercise-content span').innerHTML =
             ExerciseFormatterService.formatExercise(exerciseInfo);
 
         if (exerciseData.type === 'weighted') {
@@ -70,7 +70,7 @@ export class ExerciseLogManager extends BaseComponent {
         );
         newExercise.sets = [newSet];
         
-        text.textContent = ExerciseFormatterService.formatExercise(newExercise);
+        text.innerHTML = ExerciseFormatterService.formatExercise(newExercise);
         
         const totalWeightElement = this.createElement('div', 'total-weight');
 
@@ -103,7 +103,7 @@ export class ExerciseLogManager extends BaseComponent {
             if (data.sets.length > 1) {
                 data.sets.pop();
                 item.dataset.exercise = JSON.stringify(data);
-                item.querySelector('.exercise-content span').textContent = 
+                item.querySelector('.exercise-content span').innerHTML =
                     ExerciseFormatterService.formatExercise(data);
                 
                 if (data.type === 'weighted') {

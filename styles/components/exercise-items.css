@@ -29,6 +29,17 @@
     padding: var(--spacing-xs) 0;
 }
 
+.exercise-content .ex-eq-dumbbell {
+    display: inline-block;
+    vertical-align: -0.15em;
+    margin-right: 2px;
+    color: var(--text-color);
+}
+
+.exercise-content .ex-eq-dumbbell svg {
+    display: block;
+}
+
 .total-weight {
     font-size: var(--font-size-sm);
 }

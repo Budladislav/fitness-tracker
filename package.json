@@ -1,6 +1,6 @@
 {
   "name": "fitness-tracker",
-  "version": "3.0.0",
+  "version": "3.0.5",
   "description": "Workout tracker application",
   "type": "module",
   "scripts": {

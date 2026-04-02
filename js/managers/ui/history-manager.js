@@ -508,7 +508,8 @@ export class HistoryManager extends BaseComponent {
             const row = this.createElement('tr');
             const eqIcon = ExerciseFormatterService.getEquipmentIconPrefix(
                 exercise.equipment,
-                exercise.type
+                exercise.type,
+                exercise.exerciseId
             );
             const x2 = exercise.doubleTonnage ? ' <span class="ex-x2-badge" title="Тоннаж ×2">×2</span>' : '';
 

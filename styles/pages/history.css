@@ -48,6 +48,17 @@
     border-radius: 4px;
 }
 
+/* Иконка гантели (свободный вес) в таблице истории */
+.ex-eq-dumbbell {
+    display: inline-block;
+    vertical-align: -0.15em;
+    margin-right: 2px;
+    color: var(--text-color);
+}
+.ex-eq-dumbbell svg {
+    display: block;
+}
+
 /* Tables */
 .exercise-table,
 .summary-table {

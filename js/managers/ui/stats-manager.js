@@ -1,4 +1,5 @@
 import { ExerciseCalculatorService } from '../../services/exercise-calculator.service.js';
+import { ExercisePool } from '../../models/exercise-pool.js';
 
 /**
  * Менеджер страницы статистики
@@ -7,6 +8,8 @@ export class StatsManager {
     constructor(storage) {
         this.storage = storage;
         this.workouts = [];
+        /** id упражнения → актуальное имя из каталога (как в настройках) */
+        this._exerciseNameById = new Map();
         this.initialized = false;
         this.selectedExercise = '';
         this.selectedRecordsExercise = '';
@@ -59,6 +62,7 @@ export class StatsManager {
 
     async loadAndRender() {
         this.workouts = (await this.storage.getWorkoutHistory()) || [];
+        await this._refreshExerciseNameById();
         this.renderSummary();
         this.renderHeatmap();
         this.renderExerciseSelect();
@@ -362,18 +366,49 @@ export class StatsManager {
 
     // ─── 3. Exercise Progress Chart ───────────────────────────
 
+    async _refreshExerciseNameById() {
+        this._exerciseNameById = new Map();
+        if (!this.storage?.getCustomExercises) return;
+        try {
+            const custom = await this.storage.getCustomExercises();
+            const weights = this.storage.getDefaultWeights
+                ? await this.storage.getDefaultWeights()
+                : {};
+            const all = ExercisePool.getAllExercises(custom || [], weights || {});
+            for (const e of all) {
+                if (e.id) this._exerciseNameById.set(e.id, e.name);
+            }
+        } catch {
+            /* остаётся пустая карта — подписи из имён в тренировках */
+        }
+    }
+
+    /** Один ключ на логическое упражнение: id или (без id) имя из записи */
+    _statsExerciseKey(ex) {
+        return ex.exerciseId || ex.name || '';
+    }
+
+    /** Подпись в селекте: актуальное имя из каталога, иначе как в записи тренировки */
+    _statsExerciseLabel(ex) {
+        const id = ex.exerciseId;
+        if (id && this._exerciseNameById.has(id)) {
+            return this._exerciseNameById.get(id);
+        }
+        return ex.name || '';
+    }
+
     renderExerciseSelect() {
         const sel = document.getElementById('statsExerciseSelect');
         const recordsSel = document.getElementById('statsRecordsExerciseSelect');
         if (!sel) return;
 
-        // Собираем все упражнения с весом из истории, маппим их по ID
-        const exercisesMap = new Map(); // ID -> name
+        const exercisesMap = new Map(); // key (id | имя) → подпись для списка
         for (const w of this.workouts) {
             for (const ex of (w.exercises || [])) {
                 if (ex.type === 'weighted' || ex.sets?.some(s => s.weight > 0)) {
-                    const id = ex.exerciseId || ex.name; // фоллбэк на имя, если нет ID
-                    exercisesMap.set(id, ex.name); // Последнее увиденное имя (самое новое, так как история от новой к старой? Нет, история может быть любая. Но сойдет)
+                    const key = this._statsExerciseKey(ex);
+                    const label = this._statsExerciseLabel(ex);
+                    exercisesMap.set(key, label);
                 }
             }
         }
@@ -434,7 +469,7 @@ export class StatsManager {
         // Собираем точки: { date, value } по каждой тренировке
         const points = [];
         for (const w of this.workouts) {
-            const ex = (w.exercises || []).find(e => (e.exerciseId || e.name) === exerciseId);
+            const ex = (w.exercises || []).find(e => this._statsExerciseKey(e) === exerciseId);
             if (!ex) continue;
             const value = this._getExerciseMetricValue(ex, metric);
             if (value > 0) {
@@ -557,7 +592,7 @@ export class StatsManager {
                 : '—';
 
             for (const ex of (workout.exercises || [])) {
-                if ((ex.exerciseId || ex.name) !== exerciseId) continue;
+                if (this._statsExerciseKey(ex) !== exerciseId) continue;
                 const tonnage = ExerciseCalculatorService.calculateTotalWeight(ex);
                 if (tonnage > 0) {
                     tonnageRecords.push({
