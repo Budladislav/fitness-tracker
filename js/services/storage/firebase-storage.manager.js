@@ -76,6 +76,32 @@ export class FirebaseStorageManager extends StorageInterface {
         this._workoutHistoryCacheUserId = null;
     }
 
+    /** Копия истории в localStorage (ключ workouts_backup) — видна в DevTools и общая с локальным режимом */
+    _mirrorLocalAutoBackup(workouts) {
+        try {
+            const payload = JSON.stringify({
+                v: 2,
+                savedAt: new Date().toISOString(),
+                source: 'firebase',
+                workouts: Array.isArray(workouts) ? workouts : []
+            });
+            localStorage.setItem('workouts_backup', payload);
+        } catch (e) {
+            console.warn('[Firebase] local auto-backup mirror failed', e);
+        }
+    }
+
+    _computeSortTimestamp(formatted) {
+        const [Y, M, D] = (formatted.date || '').split('-').map(Number);
+        if (!Y || !M || !D) return Date.now();
+        const st = formatted.startTime || '12:00';
+        const tm = /^(\d{1,2}):(\d{2})/.exec(st);
+        const h = tm ? parseInt(tm[1], 10) : 12;
+        const m = tm ? parseInt(tm[2], 10) : 0;
+        const d = new Date(Y, M - 1, D, h, m, 0, 0);
+        return isNaN(d.getTime()) ? Date.now() : d.getTime();
+    }
+
     // Добавляем метод для принудительного обновления userId
     updateUserId() {
         const testUser = sessionStorage.getItem('testUser');
@@ -138,6 +164,7 @@ export class FirebaseStorageManager extends StorageInterface {
 
             this._workoutHistoryCache = workouts;
             this._workoutHistoryCacheUserId = this.userId;
+            this._mirrorLocalAutoBackup(workouts);
             return workouts;
         } catch (error) {
             console.error('Error getting workout history:', error);
@@ -164,7 +191,7 @@ export class FirebaseStorageManager extends StorageInterface {
             formatted.id = docRef.id;
 
             this._invalidateWorkoutHistoryCache();
-            this.createAutoBackup();
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error saving workout:', error);
@@ -177,6 +204,7 @@ export class FirebaseStorageManager extends StorageInterface {
             const docRef = this.getDocument('workouts', workoutId);
             await deleteDoc(docRef);
             this._invalidateWorkoutHistoryCache();
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error deleting workout:', error);
@@ -190,20 +218,40 @@ export class FirebaseStorageManager extends StorageInterface {
                 console.error('Cannot update workout without id');
                 return false;
             }
-            
+
+            const formatted = WorkoutFormatterService.formatWorkoutData(workout);
             const docRef = this.getDocument('workouts', workout.id);
+            const ts = this._computeSortTimestamp(formatted);
+
             await updateDoc(docRef, {
-                ...workout,
+                date: formatted.date,
+                time: formatted.startTime || '',
+                exercises: formatted.exercises || [],
+                notes: formatted.notes || {},
+                timestamp: ts,
+                workoutType: formatted.workoutType || workout.workoutType || 'universal',
+                presetId: workout.presetId ?? null,
+                presetName: workout.presetName ?? null,
                 userId: this.userId
             });
 
             this._invalidateWorkoutHistoryCache();
-            this.createAutoBackup();
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error updating workout:', error);
             return false;
         }
+    }
+
+    async restoreWorkouts(workouts) {
+        if (!Array.isArray(workouts)) return false;
+        const formatted = workouts.map(w => WorkoutFormatterService.formatWorkoutData(w));
+        const ok = await this.saveToStorage(this.EXERCISES_KEY, formatted, { allowEmptyReplace: true });
+        if (ok) {
+            await this.createAutoBackup();
+        }
+        return ok;
     }
 
     async getCurrentWorkout() {
@@ -336,13 +384,15 @@ export class FirebaseStorageManager extends StorageInterface {
                 console.error('Invalid workouts data for backup');
                 return false;
             }
-            
+
+            this._mirrorLocalAutoBackup(workouts);
+
             const backupData = {
                 workouts: workouts,
                 userId: this.userId,
                 timestamp: new Date().toISOString()
             };
-            
+
             const backupRef = this.getDocument('backup', 'latest');
             await setDoc(backupRef, backupData);
             return true;
@@ -367,39 +417,84 @@ export class FirebaseStorageManager extends StorageInterface {
         }
     }
 
-    async saveToStorage(key, value) {
+    /**
+     * @param {{ allowEmptyReplace?: boolean }} [options] — allowEmptyReplace: true = явно очистить историю (редко)
+     */
+    async saveToStorage(key, value, options = {}) {
         try {
             if (key === this.EXERCISES_KEY) {
                 this.updateUserId();
                 const workouts = Array.isArray(value) ? value : [];
                 const workoutsRef = this.getCollection('workouts');
-
-                // Только документы текущего пользователя (раньше удалялась вся коллекция — риск потери данных)
                 const userQuery = query(workoutsRef, where('userId', '==', this.userId));
-                let toDelete = await getDocs(userQuery);
-                while (!toDelete.empty) {
-                    const delBatch = writeBatch(this.db);
-                    toDelete.docs.slice(0, 500).forEach((d) => delBatch.delete(d.ref));
-                    await delBatch.commit();
-                    toDelete = await getDocs(userQuery);
+                const oldSnap = await getDocs(userQuery);
+                const oldRefs = oldSnap.docs.map(d => d.ref);
+
+                // Не затираем всю историю пустым массивом (гонка auth, сбой чтения, ошибка миграции)
+                if (workouts.length === 0) {
+                    if (oldRefs.length > 0 && !options.allowEmptyReplace) {
+                        console.error(
+                            '[FirebaseStorage] saveToStorage(exercises): отмена — попытка записать пустой массив при наличии тренировок'
+                        );
+                        return false;
+                    }
+                    if (oldRefs.length > 0) {
+                        for (let i = 0; i < oldRefs.length; i += 500) {
+                            const delBatch = writeBatch(this.db);
+                            oldRefs.slice(i, i + 500).forEach((ref) => delBatch.delete(ref));
+                            await delBatch.commit();
+                        }
+                    }
+                    this._invalidateWorkoutHistoryCache();
+                    return true;
                 }
 
+                const incomingIds = new Set();
+
+                const buildPayload = (workout) => {
+                    const formatted = WorkoutFormatterService.formatWorkoutData(workout);
+                    const payload = {
+                        ...formatted,
+                        userId: this.userId,
+                        date: formatted.date,
+                        time: formatted.startTime || '',
+                        exercises: formatted.exercises || [],
+                        notes: formatted.notes || {},
+                        timestamp: workout.timestamp || formatted.timestamp || Date.now(),
+                        workoutType: workout.workoutType || formatted.workoutType || 'universal',
+                        presetId: workout.presetId ?? formatted.presetId ?? null,
+                        presetName: workout.presetName ?? formatted.presetName ?? null
+                    };
+                    delete payload.id;
+                    return payload;
+                };
+
+                // Сначала записываем все документы (миграция обновляет по существующим id строки бекапа — создаёт новые)
                 for (let i = 0; i < workouts.length; i += 500) {
                     const writeBatchOps = writeBatch(this.db);
                     const chunk = workouts.slice(i, i + 500);
                     for (const workout of chunk) {
-                        const docRef = doc(workoutsRef);
-                        writeBatchOps.set(docRef, {
-                            ...workout,
-                            userId: this.userId,
-                            date: workout.date,
-                            time: workout.startTime || '',
-                            exercises: workout.exercises || [],
-                            notes: workout.notes || {},
-                            timestamp: workout.timestamp || Date.now()
-                        });
+                        const payload = buildPayload(workout);
+                        const wid = workout.id;
+                        let docRef;
+                        if (typeof wid === 'string' && wid.length > 0) {
+                            docRef = doc(workoutsRef, wid);
+                            incomingIds.add(wid);
+                        } else {
+                            docRef = doc(workoutsRef);
+                            incomingIds.add(docRef.id);
+                        }
+                        writeBatchOps.set(docRef, payload);
                     }
                     await writeBatchOps.commit();
+                }
+
+                // Удаляем только документы, которых нет в переданном списке (после успешной записи)
+                const toRemove = oldSnap.docs.filter((d) => !incomingIds.has(d.id));
+                for (let i = 0; i < toRemove.length; i += 500) {
+                    const delBatch = writeBatch(this.db);
+                    toRemove.slice(i, i + 500).forEach((d) => delBatch.delete(d.ref));
+                    await delBatch.commit();
                 }
 
                 this._invalidateWorkoutHistoryCache();

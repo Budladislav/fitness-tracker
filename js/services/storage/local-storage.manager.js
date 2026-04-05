@@ -28,13 +28,40 @@ export class LocalStorageManager extends StorageInterface {
         }
     }
 
-    saveToStorage(key, data, storage = localStorage) {
+    /**
+     * @param {{ allowEmptyReplace?: boolean }} [options] — для ключа истории: явная подмена пустым массивом (восстановление)
+     */
+    saveToStorage(key, data, storage = localStorage, options = {}) {
         if (!this.storageAvailable) {
             console.error('Storage is not available');
             return false;
         }
 
         try {
+            if (
+                key === this.EXERCISES_KEY &&
+                Array.isArray(data) &&
+                data.length === 0 &&
+                !options.allowEmptyReplace
+            ) {
+                try {
+                    const raw = storage.getItem(key);
+                    const existing = raw ? JSON.parse(raw) : [];
+                    if (Array.isArray(existing) && existing.length > 0) {
+                        console.error(
+                            '[LocalStorage] saveToStorage(exercises): отмена — пустой массив при наличии тренировок'
+                        );
+                        return false;
+                    }
+                } catch {
+                    /* если JSON битый — не затираем ключ пустым массивом */
+                    if (storage.getItem(key)) {
+                        console.error('[LocalStorage] saveToStorage(exercises): отмена — не удалось прочитать существующие данные');
+                        return false;
+                    }
+                }
+            }
+
             const sanitizedData = Array.isArray(data) 
                 ? data.map(item => ({
                     ...item,
@@ -106,7 +133,7 @@ export class LocalStorageManager extends StorageInterface {
             const workouts = await this.getWorkoutHistory();
             const index = workouts.findIndex(w => w.id === workout.id);
             if (index !== -1) {
-                workouts[index] = workout;
+                workouts[index] = WorkoutFormatterService.formatWorkoutData(workout);
                 const success = this.saveToStorage(this.EXERCISES_KEY, workouts);
                 
                 if (success) {
@@ -192,20 +219,46 @@ export class LocalStorageManager extends StorageInterface {
 
     createAutoBackup() {
         const workouts = this.getFromStorage(this.EXERCISES_KEY) || [];
-        // Просто копируем массив тренировок как есть
-        return this.saveToStorage(this.BACKUP_KEY, workouts);
+        const payload = {
+            v: 2,
+            savedAt: new Date().toISOString(),
+            workouts
+        };
+        return this.saveToStorage(this.BACKUP_KEY, payload);
     }
 
     restoreFromAutoBackup() {
-        const backupWorkouts = this.getFromStorage(this.BACKUP_KEY);
-        if (!backupWorkouts || !Array.isArray(backupWorkouts)) return false;
-        
-        // Форматируем данные перед восстановлением
-        const formattedWorkouts = backupWorkouts.map(workout => 
+        const raw = this.getFromStorage(this.BACKUP_KEY);
+        if (!raw) return false;
+
+        let backupWorkouts;
+        if (Array.isArray(raw)) {
+            backupWorkouts = raw;
+        } else if (raw && Array.isArray(raw.workouts)) {
+            backupWorkouts = raw.workouts;
+        } else {
+            return false;
+        }
+
+        const formattedWorkouts = backupWorkouts.map(workout =>
             WorkoutFormatterService.formatWorkoutData(workout)
         );
-        
-        return this.saveToStorage(this.EXERCISES_KEY, formattedWorkouts);
+
+        return this.saveToStorage(this.EXERCISES_KEY, formattedWorkouts, localStorage, {
+            allowEmptyReplace: true
+        });
+    }
+
+    async restoreWorkouts(workouts) {
+        if (!Array.isArray(workouts)) return false;
+        const formattedWorkouts = workouts.map(w => WorkoutFormatterService.formatWorkoutData(w));
+        const ok = this.saveToStorage(this.EXERCISES_KEY, formattedWorkouts, localStorage, {
+            allowEmptyReplace: true
+        });
+        if (ok) {
+            this.createAutoBackup();
+        }
+        return ok;
     }
 
     async getExerciseHistory(exerciseName, limit = 3) {

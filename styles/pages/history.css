@@ -338,6 +338,16 @@
     opacity: 0.85;
 }
 
+.workout-date-edit {
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+}
+
+.workout-date-edit:hover {
+    color: var(--accent-color, #4a9eff);
+}
+
 .workout-type-picker-overlay {
     position: fixed;
     inset: 0;

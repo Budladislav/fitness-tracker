@@ -1,7 +1,7 @@
 import { ThemeService } from '../services/theme.service.js';
 import { ExercisePool, getBuiltinExerciseIdsSet, getOriginalBuiltinName } from '../models/exercise-pool.js';
 
-const VERSION = 'v3.0.5';
+const VERSION = 'v3.0.7';
 
 export class SettingsModal {
     constructor(notifications, storage, backupManager, authService, authModal) {
@@ -124,9 +124,11 @@ export class SettingsModal {
                     <!-- TAB: DATA -->
                     <div class="settings-pane hidden" data-pane="data">
                         <h3 class="settings-section-title">Резервная копия</h3>
+                        <p class="settings-hint settings-auto-backup-hint">Автобекап истории сохраняется в браузере (ключ <code>workouts_backup</code>) при каждом изменении списка тренировок.</p>
                         <div class="data-actions">
                             <button class="btn secondary-btn settings-full-btn" id="settings-backup-btn">📥 Резервировать историю</button>
                             <button class="btn secondary-btn settings-full-btn" id="settings-restore-btn">📤 Восстановить историю</button>
+                            <button class="btn secondary-btn settings-full-btn" id="settings-restore-auto-btn">♻️ Восстановить из автобекапа</button>
                         </div>
 
                         <h3 class="settings-section-title" style="margin-top:20px">Опасная зона</h3>
@@ -218,6 +220,19 @@ export class SettingsModal {
                 }
             }
         };
+        const restoreAutoBtn = this.modal.querySelector('#settings-restore-auto-btn');
+        if (restoreAutoBtn) {
+            restoreAutoBtn.onclick = async () => {
+                if (!this.backupManager) return;
+                const ok = await this.backupManager.restoreFromAutoBackup();
+                if (ok) {
+                    this.notifications.success('История восстановлена из автобекапа');
+                    window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
+                } else {
+                    this.notifications.error('Не удалось восстановить: нет автобекапа или данные повреждены');
+                }
+            };
+        }
 
         const clearBtn = this.modal.querySelector('#clearData');
         clearBtn.onclick = () => this.clearData();

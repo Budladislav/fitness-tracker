@@ -510,13 +510,30 @@ export class BackupManager {
             const backup = localStorage.getItem('workouts_backup');
             if (!backup) return false;
 
-            const { text } = JSON.parse(backup);
-            if (!text) return false;
+            let parsed;
+            try {
+                parsed = JSON.parse(backup);
+            } catch {
+                return false;
+            }
 
-            const workouts = this.parseWorkoutData(text);
-            await this.storage.restoreWorkouts(workouts);
+            let workouts;
+            if (Array.isArray(parsed)) {
+                workouts = parsed;
+            } else if (parsed && Array.isArray(parsed.workouts)) {
+                workouts = parsed.workouts;
+            } else if (parsed && typeof parsed.text === 'string') {
+                workouts = this.parseWorkoutData(parsed.text);
+            } else {
+                return false;
+            }
 
-            return true;
+            const ok = await this.storage.restoreWorkouts(workouts);
+            if (ok && this.ui && typeof this.ui.displayWorkoutHistory === 'function') {
+                const list = await this.storage.getWorkoutHistory();
+                this.ui.displayWorkoutHistory(list);
+            }
+            return ok;
         } catch (error) {
             console.error('Error restoring from auto backup:', error);
             return false;

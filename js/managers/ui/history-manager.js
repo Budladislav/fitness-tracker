@@ -158,7 +158,7 @@ export class HistoryManager extends BaseComponent {
         const badgeClass = isPreset ? 'workout-preset-badge' : 'workout-preset-badge workout-preset-universal';
 
         summaryRow.innerHTML = `
-            <td>${formattedDate} <small>${startTime}</small> <span class="${badgeClass}" data-preset-edit="1" title="Сменить тип тренировки">${escapeHtml(badgeLabel)}</span></td>
+            <td><span class="workout-date-edit" data-date-edit="1" title="Изменить дату">${escapeHtml(formattedDate)}</span> <small>${startTime}</small> <span class="${badgeClass}" data-preset-edit="1" title="Сменить тип тренировки">${escapeHtml(badgeLabel)}</span></td>
             <td>Σ повторов: ${totalReps} раз</td>
             <td>Тоннаж: ${Math.round(totalWeight)} кг</td>
             <td><button class="delete-btn" title="Удалить тренировку">×</button></td>
@@ -198,6 +198,56 @@ export class HistoryManager extends BaseComponent {
                 await this.openWorkoutTypeEditor(workout);
             });
         }
+
+        const dateEdit = summaryRow.querySelector('[data-date-edit]');
+        if (dateEdit) {
+            dateEdit.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.openWorkoutDateEditor(workout);
+            });
+        }
+    }
+
+    async openWorkoutDateEditor(workout) {
+        const storageDate = DateFormatter.toStorageFormat(workout.date) || '';
+        const overlay = document.createElement('div');
+        overlay.className = 'workout-type-picker-overlay';
+        overlay.innerHTML = `
+            <div class="workout-type-picker-dialog">
+                <h4 class="workout-type-picker-title">Дата тренировки</h4>
+                <input type="date" id="workout-date-input" class="settings-input" value="${escapeHtml(storageDate)}" />
+                <div class="workout-type-picker-actions">
+                    <button type="button" class="btn secondary-btn" id="wde-cancel">Отмена</button>
+                    <button type="button" class="btn primary-btn" id="wde-save">Сохранить</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        const cleanup = () => overlay.remove();
+
+        overlay.querySelector('#wde-cancel').addEventListener('click', cleanup);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cleanup();
+        });
+        overlay.querySelector('#wde-save').addEventListener('click', async () => {
+            const input = overlay.querySelector('#workout-date-input');
+            const val = input.value;
+            if (!val) {
+                this.notifications.error('Укажите дату');
+                return;
+            }
+            const updated = { ...workout, date: val, startTime: '' };
+            const ok = await this.storage.updateWorkout(updated);
+            cleanup();
+            if (ok) {
+                const list = await this.storage.getWorkoutHistory();
+                this.displayWorkoutHistory(list);
+                this.notifications.success('Дата обновлена');
+            } else {
+                this.notifications.error('Не удалось сохранить');
+            }
+        });
     }
 
     async openWorkoutTypeEditor(workout) {

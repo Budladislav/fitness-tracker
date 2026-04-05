@@ -39,6 +39,15 @@ export class StorageInterface {
     }
 
     /**
+     * Полная подмена истории тренировок (восстановление из бекапа)
+     * @param {Array} workouts
+     * @returns {Promise<boolean>}
+     */
+    async restoreWorkouts(workouts) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
      * Получить текущую тренировку
      * @returns {Promise<Object|null>}
      */
@@ -93,9 +102,10 @@ export class StorageInterface {
      * Сохранить данные в хранилище
      * @param {string} key - Ключ
      * @param {any} value - Значение
+     * @param {{ allowEmptyReplace?: boolean }} [options] — для ключа истории: явная очистка пустым массивом
      * @returns {Promise<boolean>}
      */
-    async saveToStorage(key, value) {
+    async saveToStorage(key, value, options) {
         throw new Error('Method not implemented');
     }
 

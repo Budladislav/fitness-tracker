@@ -1,6 +1,6 @@
 /**
  * @fileoverview Пул типовых упражнений
- * @version 3.0.5
+ * @version 3.0.7
  */
 
 export const DEFAULT_EXERCISES = {
