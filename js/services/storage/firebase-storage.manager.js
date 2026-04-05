@@ -34,6 +34,8 @@ export class FirebaseStorageManager extends StorageInterface {
         this._workoutHistoryCache = null;
         /** @type {string|null} */
         this._workoutHistoryCacheUserId = null;
+        /** Пустой кэш после онлайн-запроса с 0 тренировок — можно не дергать Firestore повторно */
+        this._emptyHistoryCacheConfirmed = false;
 
         // Инициализируем userId из текущего пользователя
         const currentUser = this.auth.currentUser;
@@ -74,6 +76,12 @@ export class FirebaseStorageManager extends StorageInterface {
     _invalidateWorkoutHistoryCache() {
         this._workoutHistoryCache = null;
         this._workoutHistoryCacheUserId = null;
+        this._emptyHistoryCacheConfirmed = false;
+    }
+
+    /** Сбросить кэш истории (после смены аккаунта, сети, чтобы не показывать устаревший пустой список) */
+    invalidateWorkoutHistoryCache() {
+        this._invalidateWorkoutHistoryCache();
     }
 
     async _fetchCatalogSnapshot() {
@@ -146,10 +154,26 @@ export class FirebaseStorageManager extends StorageInterface {
     }
 
     // Реализация методов интерфейса
-    async getWorkoutHistory() {
+    /**
+     * @param {{ skipCache?: boolean }} [options] — skipCache: принудительно с сервера (после миграции и т.п.)
+     */
+    async getWorkoutHistory(options = {}) {
         this.updateUserId();
-        if (this._workoutHistoryCache && this._workoutHistoryCacheUserId === this.userId) {
-            return this._workoutHistoryCache;
+        const skipCache = options.skipCache === true;
+        if (
+            !skipCache &&
+            this._workoutHistoryCache &&
+            this._workoutHistoryCacheUserId === this.userId
+        ) {
+            if (this._workoutHistoryCache.length > 0) {
+                return this._workoutHistoryCache;
+            }
+            if (typeof navigator !== 'undefined' && !navigator.onLine) {
+                return this._workoutHistoryCache;
+            }
+            if (this._emptyHistoryCacheConfirmed) {
+                return this._workoutHistoryCache;
+            }
         }
         try {
             const workoutsRef = this.getCollection('workouts');
@@ -180,6 +204,7 @@ export class FirebaseStorageManager extends StorageInterface {
 
             this._workoutHistoryCache = workouts;
             this._workoutHistoryCacheUserId = this.userId;
+            this._emptyHistoryCacheConfirmed = workouts.length === 0;
             await this._writeLocalMirror(workouts);
             return workouts;
         } catch (error) {
@@ -731,6 +756,8 @@ export class FirebaseStorageManager extends StorageInterface {
             delete next[`__name_${exerciseId}`];
 
             await this._saveDefaultWeightsObject(next);
+
+            this._invalidateWorkoutHistoryCache();
 
             const originalBuiltin = getOriginalBuiltinName(exerciseId);
             const mapEx = (ex) => {

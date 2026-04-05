@@ -88,6 +88,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const { ExerciseIdService } = await import('./services/exercise-id.service.js');
         const idService = new ExerciseIdService(storage);
+        if (typeof storage.invalidateWorkoutHistoryCache === 'function') {
+            storage.invalidateWorkoutHistoryCache();
+        }
         const workouts = await storage.getWorkoutHistory();
         const { migrated, changed } = await idService.migrateWorkouts(workouts);
         if (changed) {
@@ -101,6 +104,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.addEventListener('workoutHistoryUpdate', async () => {
             await workoutManager.displayWorkoutHistory();
         });
+
+        if (typeof storage.invalidateWorkoutHistoryCache === 'function') {
+            window.addEventListener('online', () => {
+                storage.invalidateWorkoutHistoryCache();
+                window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
+            });
+        }
 
         // Загружаем статистику при переходе на вкладку
         ui.navigation.onTabChange = (page) => {

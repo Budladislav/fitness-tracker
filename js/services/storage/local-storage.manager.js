@@ -96,7 +96,7 @@ export class LocalStorageManager extends StorageInterface {
     }
 
     // Существующие методы остаются теми же, но становятся асинхронными
-    async getWorkoutHistory() {
+    async getWorkoutHistory(_options = {}) {
         try {
             const data = localStorage.getItem(this.EXERCISES_KEY);
             return data ? JSON.parse(data) : [];
