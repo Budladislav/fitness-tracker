@@ -132,7 +132,7 @@ export class BackupManager {
                 defaultWeights: defaultWeights && typeof defaultWeights === 'object' ? defaultWeights : {},
                 presets: Array.isArray(presets) ? presets : []
             };
-            const catalogBlock = `# TrainingLog v3\n${CATALOG_BEGIN}${JSON.stringify(catalog)}${CATALOG_END}\n\n`;
+            const catalogBlock = `# TrainingLog v3\n# Каталог (JSON): кастомные упражнения, веса по умолчанию, пресеты тренировок\n${CATALOG_BEGIN}${JSON.stringify(catalog)}${CATALOG_END}\n\n`;
             const backupText = catalogBlock + this.workoutsToText(workouts);
 
             // Форматируем текущую дату и время для имени файла
@@ -528,10 +528,34 @@ export class BackupManager {
                 return false;
             }
 
+            let catalogOk = true;
+            if (
+                parsed &&
+                typeof parsed === 'object' &&
+                parsed.catalog &&
+                typeof parsed.catalog === 'object' &&
+                typeof this.storage.restoreUserCatalog === 'function'
+            ) {
+                catalogOk = await this.storage.restoreUserCatalog({
+                    customExercises: parsed.catalog.customExercises,
+                    defaultWeights: parsed.catalog.defaultWeights,
+                    presets: parsed.catalog.presets
+                });
+            }
+
+            if (!catalogOk) {
+                return false;
+            }
+
             const ok = await this.storage.restoreWorkouts(workouts);
             if (ok && this.ui && typeof this.ui.displayWorkoutHistory === 'function') {
                 const list = await this.storage.getWorkoutHistory();
                 this.ui.displayWorkoutHistory(list);
+            }
+            if (ok) {
+                window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
+                window.dispatchEvent(new CustomEvent('exerciseListUpdated'));
+                window.dispatchEvent(new CustomEvent('presetsUpdated'));
             }
             return ok;
         } catch (error) {

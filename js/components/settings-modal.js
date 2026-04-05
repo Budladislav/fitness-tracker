@@ -124,7 +124,7 @@ export class SettingsModal {
                     <!-- TAB: DATA -->
                     <div class="settings-pane hidden" data-pane="data">
                         <h3 class="settings-section-title">Резервная копия</h3>
-                        <p class="settings-hint settings-auto-backup-hint">Автобекап истории сохраняется в браузере (ключ <code>workouts_backup</code>) при каждом изменении списка тренировок.</p>
+                        <p class="settings-hint settings-auto-backup-hint">Автобекап в браузере (ключ <code>workouts_backup</code>): история тренировок и каталог (пресеты, кастомные упражнения, веса по умолчанию). Обновляется при изменениях истории и каталога.</p>
                         <div class="data-actions">
                             <button class="btn secondary-btn settings-full-btn" id="settings-backup-btn">📥 Резервировать историю</button>
                             <button class="btn secondary-btn settings-full-btn" id="settings-restore-btn">📤 Восстановить историю</button>
@@ -227,7 +227,6 @@ export class SettingsModal {
                 const ok = await this.backupManager.restoreFromAutoBackup();
                 if (ok) {
                     this.notifications.success('История восстановлена из автобекапа');
-                    window.dispatchEvent(new CustomEvent('workoutHistoryUpdate'));
                 } else {
                     this.notifications.error('Не удалось восстановить: нет автобекапа или данные повреждены');
                 }

@@ -83,7 +83,8 @@ export class StorageInterface {
     }
 
     /**
-     * Создать автоматический бэкап
+     * Создать автоматический бэкап (история + каталог: упражнения, веса, пресеты)
+     * @returns {Promise<boolean>|boolean}
      */
     createAutoBackup() {
         throw new Error('Method not implemented');

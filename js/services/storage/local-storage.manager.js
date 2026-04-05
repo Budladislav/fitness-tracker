@@ -118,7 +118,7 @@ export class LocalStorageManager extends StorageInterface {
             const success = this.saveToStorage(this.EXERCISES_KEY, filteredWorkouts);
             
             if (success) {
-                this.createAutoBackup();
+                await this.createAutoBackup();
             }
             
             return success;
@@ -137,7 +137,7 @@ export class LocalStorageManager extends StorageInterface {
                 const success = this.saveToStorage(this.EXERCISES_KEY, workouts);
                 
                 if (success) {
-                    this.createAutoBackup();
+                    await this.createAutoBackup();
                 }
                 
                 return success;
@@ -159,7 +159,7 @@ export class LocalStorageManager extends StorageInterface {
         const success = this.saveToStorage(this.EXERCISES_KEY, workouts);
         
         if (success) {
-            this.createAutoBackup();
+            await this.createAutoBackup();
         }
         
         return success;
@@ -217,17 +217,33 @@ export class LocalStorageManager extends StorageInterface {
         }
     }
 
-    createAutoBackup() {
-        const workouts = this.getFromStorage(this.EXERCISES_KEY) || [];
-        const payload = {
-            v: 2,
-            savedAt: new Date().toISOString(),
-            workouts
-        };
-        return this.saveToStorage(this.BACKUP_KEY, payload);
+    async createAutoBackup() {
+        try {
+            const workouts = this.getFromStorage(this.EXERCISES_KEY) || [];
+            const [customExercises, defaultWeights, presets] = await Promise.all([
+                this.getCustomExercises(),
+                this.getDefaultWeights(),
+                this.getPresets()
+            ]);
+            const catalog = {
+                customExercises: Array.isArray(customExercises) ? customExercises : [],
+                defaultWeights: defaultWeights && typeof defaultWeights === 'object' ? defaultWeights : {},
+                presets: Array.isArray(presets) ? presets : []
+            };
+            const payload = {
+                v: 3,
+                savedAt: new Date().toISOString(),
+                workouts,
+                catalog
+            };
+            return this.saveToStorage(this.BACKUP_KEY, payload);
+        } catch (e) {
+            console.error('[LocalStorage] createAutoBackup', e);
+            return false;
+        }
     }
 
-    restoreFromAutoBackup() {
+    async restoreFromAutoBackup() {
         const raw = this.getFromStorage(this.BACKUP_KEY);
         if (!raw) return false;
 
@@ -238,6 +254,14 @@ export class LocalStorageManager extends StorageInterface {
             backupWorkouts = raw.workouts;
         } else {
             return false;
+        }
+
+        if (!Array.isArray(raw) && raw.catalog && typeof raw.catalog === 'object') {
+            await this.restoreUserCatalog({
+                customExercises: raw.catalog.customExercises,
+                defaultWeights: raw.catalog.defaultWeights,
+                presets: raw.catalog.presets
+            });
         }
 
         const formattedWorkouts = backupWorkouts.map(workout =>
@@ -256,7 +280,7 @@ export class LocalStorageManager extends StorageInterface {
             allowEmptyReplace: true
         });
         if (ok) {
-            this.createAutoBackup();
+            await this.createAutoBackup();
         }
         return ok;
     }
@@ -310,6 +334,7 @@ export class LocalStorageManager extends StorageInterface {
             exercises.push(exercise);
         }
         localStorage.setItem('custom_exercises', JSON.stringify(exercises));
+        await this.createAutoBackup();
         return true;
     }
 
@@ -317,6 +342,7 @@ export class LocalStorageManager extends StorageInterface {
         const exercises = await this.getCustomExercises();
         const filtered = exercises.filter(e => e.id !== exerciseId);
         localStorage.setItem('custom_exercises', JSON.stringify(filtered));
+        await this.createAutoBackup();
         return true;
     }
 
@@ -330,6 +356,7 @@ export class LocalStorageManager extends StorageInterface {
         const weights = await this.getDefaultWeights();
         weights[exerciseName] = weight;
         localStorage.setItem('default_weights', JSON.stringify(weights));
+        await this.createAutoBackup();
         return true;
     }
 
@@ -391,7 +418,6 @@ export class LocalStorageManager extends StorageInterface {
         });
         if (historyChanged) {
             this.saveToStorage(this.EXERCISES_KEY, migratedHistory);
-            this.createAutoBackup();
         }
 
         const current = await this.getCurrentWorkout();
@@ -424,6 +450,7 @@ export class LocalStorageManager extends StorageInterface {
             localStorage.setItem('presets', JSON.stringify(newPresets));
         }
 
+        await this.createAutoBackup();
         return true;
     }
 
@@ -442,6 +469,7 @@ export class LocalStorageManager extends StorageInterface {
             presets.push(preset);
         }
         localStorage.setItem('presets', JSON.stringify(presets));
+        await this.createAutoBackup();
         return true;
     }
 
@@ -449,6 +477,7 @@ export class LocalStorageManager extends StorageInterface {
         const presets = await this.getPresets();
         const filtered = presets.filter(p => p.id !== presetId);
         localStorage.setItem('presets', JSON.stringify(filtered));
+        await this.createAutoBackup();
         return true;
     }
 

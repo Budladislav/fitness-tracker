@@ -76,14 +76,30 @@ export class FirebaseStorageManager extends StorageInterface {
         this._workoutHistoryCacheUserId = null;
     }
 
-    /** Копия истории в localStorage (ключ workouts_backup) — видна в DevTools и общая с локальным режимом */
-    _mirrorLocalAutoBackup(workouts) {
+    async _fetchCatalogSnapshot() {
+        const [customExercises, defaultWeights, presets] = await Promise.all([
+            this.getCustomExercises(),
+            this.getDefaultWeights(),
+            this.getPresets()
+        ]);
+        return {
+            customExercises: Array.isArray(customExercises) ? customExercises : [],
+            defaultWeights: defaultWeights && typeof defaultWeights === 'object' ? defaultWeights : {},
+            presets: Array.isArray(presets) ? presets : []
+        };
+    }
+
+    /** Копия истории + каталога в localStorage (ключ workouts_backup) */
+    async _writeLocalMirror(workouts, catalog) {
         try {
+            const w = Array.isArray(workouts) ? workouts : [];
+            const cat = catalog || await this._fetchCatalogSnapshot();
             const payload = JSON.stringify({
-                v: 2,
+                v: 3,
                 savedAt: new Date().toISOString(),
                 source: 'firebase',
-                workouts: Array.isArray(workouts) ? workouts : []
+                workouts: w,
+                catalog: cat
             });
             localStorage.setItem('workouts_backup', payload);
         } catch (e) {
@@ -164,7 +180,7 @@ export class FirebaseStorageManager extends StorageInterface {
 
             this._workoutHistoryCache = workouts;
             this._workoutHistoryCacheUserId = this.userId;
-            this._mirrorLocalAutoBackup(workouts);
+            await this._writeLocalMirror(workouts);
             return workouts;
         } catch (error) {
             console.error('Error getting workout history:', error);
@@ -385,10 +401,12 @@ export class FirebaseStorageManager extends StorageInterface {
                 return false;
             }
 
-            this._mirrorLocalAutoBackup(workouts);
+            const catalog = await this._fetchCatalogSnapshot();
+            await this._writeLocalMirror(workouts, catalog);
 
             const backupData = {
-                workouts: workouts,
+                workouts,
+                catalog,
                 userId: this.userId,
                 timestamp: new Date().toISOString()
             };
@@ -609,6 +627,7 @@ export class FirebaseStorageManager extends StorageInterface {
                 const exercisesRef = collection(this.db, 'custom_exercises');
                 await addDoc(exercisesRef, dataToSave);
             }
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error saving custom exercise:', error);
@@ -620,6 +639,7 @@ export class FirebaseStorageManager extends StorageInterface {
         try {
             const docRef = doc(this.db, 'custom_exercises', exerciseId);
             await deleteDoc(docRef);
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error deleting custom exercise:', error);
@@ -658,6 +678,7 @@ export class FirebaseStorageManager extends StorageInterface {
                     [exerciseName]: weight
                 }
             });
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error updating default weight:', error);
@@ -784,6 +805,7 @@ export class FirebaseStorageManager extends StorageInterface {
             }
 
             this._invalidateWorkoutHistoryCache();
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error propagating exercise rename:', error);
@@ -827,6 +849,7 @@ export class FirebaseStorageManager extends StorageInterface {
                 userId: this.userId,
                 presets: presets
             });
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error saving preset:', error);
@@ -848,6 +871,7 @@ export class FirebaseStorageManager extends StorageInterface {
                 userId: this.userId,
                 presets: filtered
             });
+            await this.createAutoBackup();
             return true;
         } catch (error) {
             console.error('Error deleting preset:', error);
